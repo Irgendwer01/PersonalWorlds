@@ -1,0 +1,16 @@
+[
+{
+  "modid": "personalworlds",
+  "name": "Personal Worlds",
+  "description": "A Mod allowing Players to create their own personal Worlds/Dimensions.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Irgendwer"],
+  "credits": "Authors of this project",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
