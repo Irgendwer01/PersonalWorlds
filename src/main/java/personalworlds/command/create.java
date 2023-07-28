@@ -5,16 +5,15 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Biomes;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeProviderSingle;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.DimensionManager;
+import personalworlds.PersonalWorlds;
+import personalworlds.world.Config;
 import personalworlds.world.PWTeleporter;
+import personalworlds.world.PWWorldProvider;
 
 public class create extends CommandBase {
     @Override
@@ -34,11 +33,14 @@ public class create extends CommandBase {
         DimensionManager.registerDimension(ID, DimensionType.getById(10));
         DimensionManager.initDimension(ID);
         WorldServer world = DimensionManager.getWorld(ID);
+        ((PWWorldProvider)world.provider).setConfig(new Config(PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/personal_world_" + ID + "/PWConfig.dat"));
+        Config config = ((PWWorldProvider)world.provider).getConfig();
+        config.setPassiveSpawn(true);
+        config.setPopulate(true);
+        config.setStarsVisibility(1F);
+        config.setSkyColor(0x07f26d);
+        config.update();
         world.provider.biomeProvider = new BiomeProviderSingle(Biomes.PLAINS);
         player.changeDimension(ID, new PWTeleporter(world));
-        int x = player.getPosition().getX();
-        int y = player.getPosition().getY();
-        int z = player.getPosition().getZ();
-        world.setBlockState(new BlockPos(x, y-1, z), Blocks.STONEBRICK.getDefaultState());
     }
 }

@@ -104,6 +104,8 @@ dependencies {
     }
 
     implementation 'curse.maven:MUI-624243:4541320'
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
 
     if (project.use_mixins.toBoolean()) {
         // Change your mixin refmap name here:

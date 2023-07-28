@@ -3,6 +3,7 @@ package personalworlds;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
@@ -12,6 +13,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.command.create;
@@ -19,7 +22,10 @@ import personalworlds.world.PWWorldProvider;
 
 @Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version)
 public class PersonalWorlds {
+
+    public static final Logger log = LogManager.getLogger("personalworlds");
     private final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
+    public static MinecraftServer server;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
@@ -30,6 +36,7 @@ public class PersonalWorlds {
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent e) {
         e.registerServerCommand(new create());
+        server = e.getServer();
     }
 
     @SubscribeEvent
