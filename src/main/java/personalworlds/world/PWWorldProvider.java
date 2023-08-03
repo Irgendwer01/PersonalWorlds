@@ -1,6 +1,8 @@
 package personalworlds.world;
 
+import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
@@ -14,6 +16,10 @@ public class PWWorldProvider extends WorldProvider {
 
     @Setter
     private Config config;
+
+    @Setter
+    @Getter
+    private Block[] blocks;
 
     public PWWorldProvider() {
     }

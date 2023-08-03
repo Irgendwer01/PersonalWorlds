@@ -48,9 +48,8 @@ public class Config {
                 this.starsVisibility = configNBT.getInteger("stars_visibility");
                 this.passiveSpawn = configNBT.getBoolean("passive_spawn");
                 this.owner = configNBT.getUniqueId("owner");
-                this.spawnPos = new BlockPos(configNBT.getIntArray("spawn_pos")[0], configNBT.getIntArray("spawn_pos")[1], configNBT.getIntArray("spawn_pos")[2]);
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not load config in %s, error: %s", config.getAbsolutePath(), e.getMessage()));
+                PersonalWorlds.log.error(String.format("Could not load config in %s, error: %s", config.getAbsolutePath(), e));
             }
         }
     }
@@ -60,7 +59,7 @@ public class Config {
             try {
                 config.createNewFile();
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not create config in %s, error: %s", config.getAbsolutePath(), e.getMessage()));
+                PersonalWorlds.log.error(String.format("Could not create config in %s, error: %s", config.getAbsolutePath(), e));
                 return false;
             }
         }
@@ -70,11 +69,10 @@ public class Config {
         configNBT.setFloat("stars_visibility", this.starsVisibility);
         configNBT.setBoolean("passive_spawn", this.passiveSpawn);
         configNBT.setIntArray("spawn_pos", new int[]{this.spawnPos.getX(), this.spawnPos.getY(), this.spawnPos.getZ()});
-        configNBT.setUniqueId("owner", this.owner);
         try {
             CompressedStreamTools.writeCompressed(configNBT, Files.newOutputStream(config.toPath()));
         } catch (IOException e) {
-            PersonalWorlds.log.error(String.format("Could not save config in %s, error: %s", config.getAbsolutePath(), e.getMessage()));
+            PersonalWorlds.log.error(String.format("Could not save config in %s, error: %s", config.getAbsolutePath(), e));
             return false;
         }
         return true;

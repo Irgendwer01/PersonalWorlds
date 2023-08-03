@@ -1,7 +1,6 @@
 package personalworlds.world;
 
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -25,9 +24,11 @@ public class PWChunkGenerator implements IChunkGenerator {
     @Override
     public Chunk generateChunk(int x, int z) {
         ChunkPrimer chunkPrimer = new ChunkPrimer();
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                chunkPrimer.setBlockState(i, 4, j, Blocks.GRASS.getDefaultState());
+        for (int y = 0; y < ((PWWorldProvider)world.provider).getBlocks().length; y++) {
+            for (int i = 0; i < 16; i++) {
+                for (int j = 0; j < 16; j++) {
+                    chunkPrimer.setBlockState(i, 4 + y, j, ((PWWorldProvider)world.provider).getBlocks()[y].getDefaultState());
+                }
             }
         }
         Chunk chunk = new Chunk(world, chunkPrimer, x, z);
