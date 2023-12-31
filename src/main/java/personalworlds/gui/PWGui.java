@@ -281,7 +281,7 @@ public class PWGui extends GuiScreen {
                 3 * (skyRed.position.height + 1) - 2,
                 0xFF000000 | config.getSkyColor());
         Icons.bindTexture();
-        GL11.glColor4f(1, 1, 1, config.getSkyColor());
+        GL11.glColor4f(1, 1, 1, config.getStarsVisibility());
         Icons.STAR.drawAt(132, this.skyRed.position.y + 2);
         Icons.STAR.drawAt(145, this.skyRed.position.y + 12);
         Icons.STAR.drawAt(134, this.skyRed.position.y + 21);
