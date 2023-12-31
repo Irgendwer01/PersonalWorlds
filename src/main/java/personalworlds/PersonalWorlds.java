@@ -1,7 +1,12 @@
 package personalworlds;
 
-import lombok.SneakyThrows;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -9,31 +14,30 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
+import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortal;
-
 import personalworlds.world.PWWorldProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
 
 @Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version)
 public class PersonalWorlds {
+
+    public final static String CHANNEL = PWValues.modID;
 
     public static final Logger log = LogManager.getLogger("personalworlds");
     private final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
@@ -42,25 +46,31 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
-        dimType = DimensionType.register("personal_world", "personalworlds", DimensionType.values().length, PWWorldProvider.class, false);
+        dimType = DimensionType.register("personal_world", "personalworlds", DimensionType.values().length,
+                PWWorldProvider.class, false);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     @Mod.EventHandler
-    public void onServerStarting(FMLServerStartingEvent e) {
+    public void onInit(FMLInitializationEvent e) {
+    }
 
+    @Mod.EventHandler
+    public void onServerStarting(FMLServerStartingEvent e) {
         server = e.getServer();
     }
 
     @SubscribeEvent
     public void registerItems(RegistryEvent.Register<Item> e) {
-        e.getRegistry().register(new ItemBlock(blockPersonalPortal).setRegistryName(blockPersonalPortal.getRegistryName()));
+        e.getRegistry()
+                .register(new ItemBlock(blockPersonalPortal).setRegistryName(blockPersonalPortal.getRegistryName()));
     }
 
     @SubscribeEvent
     public void registerBlocks(RegistryEvent.Register<Block> e) {
         e.getRegistry().register(blockPersonalPortal);
-        GameRegistry.registerTileEntity(TilePersonalPortal.class, new ResourceLocation("personalworlds:tile_personal_portal"));
+        GameRegistry.registerTileEntity(TilePersonalPortal.class,
+                new ResourceLocation("personalworlds:tile_personal_portal"));
     }
 
     @SubscribeEvent

@@ -1,5 +1,7 @@
 package personalworlds.blocks;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
@@ -13,12 +15,12 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGui;
 
-import javax.annotation.Nullable;
-
 public class BlockPersonalPortal extends Block implements ITileEntityProvider {
+
     public BlockPersonalPortal() {
         super(Material.ROCK, MapColor.BLUE);
         this.setRegistryName("personal_portal");
@@ -33,9 +35,10 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
+                                    EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         TilePersonalPortal tilePersonalPortal = (TilePersonalPortal) worldIn.getTileEntity(pos);
-        if (!worldIn.isRemote) {
+        if (worldIn.isRemote) {
             if (tilePersonalPortal != null) {
                 if (tilePersonalPortal.getTileData().hasKey("dimID")) {
                     if (playerIn.isSneaking()) {

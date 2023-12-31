@@ -1,21 +1,23 @@
 package personalworlds.gui;
 
-import codechicken.lib.gui.GuiDraw;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.MathHelper;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-import personalworlds.world.Config;
-import personalworlds.world.Enums;
-
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.MathHelper;
+
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
+
+import codechicken.lib.gui.GuiDraw;
+import personalworlds.world.Config;
+import personalworlds.world.Enums;
 
 public class PWGui extends GuiScreen {
 
@@ -39,7 +41,6 @@ public class PWGui extends GuiScreen {
     Widget rootWidget = new Widget();
     EntityPlayer player;
     Config config = new Config(4);
-
 
     public PWGui(EntityPlayer player) {
         super();
@@ -137,16 +138,16 @@ public class PWGui extends GuiScreen {
 
         this.ySize += 4;
         /*
-        addWidget(new WLabel(0, this.ySize, I18n.format("gui.personalWorld.biome"), false));
-        this.biome = new WTextField(new Rectangle(0, this.ySize, 142, 18), desiredConfig.getBiomeId());
-        this.biomeEditButton = new WButton(new Rectangle(144, 0, 18, 18), "", false, 0, Icons.PENCIL, () -> {
-            this.biomeCycle = (this.biomeEditButton.lastButton == 0) ? (this.biomeCycle + 1)
-                    : (this.biomeCycle + PersonalSpaceMod.clientAllowedBiomes.size() - 1);
-            this.biomeCycle = this.biomeCycle % PersonalSpaceMod.clientAllowedBiomes.size();
-            this.biome.textField.setText(PersonalSpaceMod.clientAllowedBiomes.get(this.biomeCycle));
-        });
-        this.biome.addChild(biomeEditButton);
-        addWidget(this.biome);
+         * addWidget(new WLabel(0, this.ySize, I18n.format("gui.personalWorld.biome"), false));
+         * this.biome = new WTextField(new Rectangle(0, this.ySize, 142, 18), desiredConfig.getBiomeId());
+         * this.biomeEditButton = new WButton(new Rectangle(144, 0, 18, 18), "", false, 0, Icons.PENCIL, () -> {
+         * this.biomeCycle = (this.biomeEditButton.lastButton == 0) ? (this.biomeCycle + 1)
+         * : (this.biomeCycle + PersonalSpaceMod.clientAllowedBiomes.size() - 1);
+         * this.biomeCycle = this.biomeCycle % PersonalSpaceMod.clientAllowedBiomes.size();
+         * this.biome.textField.setText(PersonalSpaceMod.clientAllowedBiomes.get(this.biomeCycle));
+         * });
+         * this.biome.addChild(biomeEditButton);
+         * addWidget(this.biome);
          */
         this.ySize += 4;
         this.generateTrees = new WToggleButton(
@@ -172,8 +173,8 @@ public class PWGui extends GuiScreen {
                 "",
                 false,
                 0,
-                config.isPopulate(),
-                () -> config.setPopulate(generateVegetation.getValue()));
+                config.isVegetation(),
+                () -> config.setVegetation(generateVegetation.getValue()));
         this.generateVegetation.addChild(new WLabel(24, 4, I18n.format("gui.personalWorld.vegetation"), false));
         addWidget(generateVegetation);
         this.enableClouds = new WToggleButton(
@@ -187,62 +188,62 @@ public class PWGui extends GuiScreen {
         rootWidget.addChild(this.enableClouds);
 
         /*
-        voidPresetName = I18n.format("gui.personalWorld.voidWorld");
-
-        this.ySize += 2;
-        this.presetEntry = new WTextField(new Rectangle(0, this.ySize, 160, 20), desiredConfig.getLayersAsString());
-        if (this.presetEntry.textField.getText().isEmpty()) {
-            this.presetEntry.textField.setText(voidPresetName);
-        }
-        addWidget(presetEntry);
-        this.ySize += 2;
-
-        addWidget(new WLabel(0, this.ySize, I18n.format("gui.personalWorld.presets"), false));
-
-        int px = 8, pi = 1;
-        for (String preset : Config.defaultPresets) {
-            if (preset.isEmpty()) {
-                preset = voidPresetName;
-            }
-            String finalPreset = preset;
-            presetButtons.add(
-                    new WButton(
-                            new Rectangle(px, this.ySize, 24, 18),
-                            Integer.toString(pi),
-                            true,
-                            WButton.DEFAULT_COLOR,
-                            null,
-                            () -> this.presetEntry.textField.setText(finalPreset)));
-            rootWidget.addChild(presetButtons.get(presetButtons.size() - 1));
-            ++pi;
-            px += 26;
-        }
-        this.ySize += 20;
-
-
-        this.save = new WButton(
-                new Rectangle(0, ySize, 128, 20),
-                I18n.format("gui.done"),
-                true,
-                WButton.DEFAULT_COLOR,
-                Icons.CHECKMARK,
-                () -> {
-                    Packets.INSTANCE.sendChangeWorldSettings(this.tile, desiredConfig).sendToServer();
-                    Minecraft.getMinecraft().displayGuiScreen(null);
-                });
-        rootWidget.addChild(
-                new WButton(
-                        new Rectangle(130, ySize, 128, 20),
-                        I18n.format("gui.cancel"),
-                        true,
-                        WButton.DEFAULT_COLOR,
-                        Icons.CROSS,
-                        () -> Minecraft.getMinecraft().displayGuiScreen(null)));
-        addWidget(save);
-
-        this.presetEditor = new Widget();
-        this.presetEditor.position = new Rectangle(172, 0, 1, 1);
-        this.rootWidget.addChild(this.presetEditor);
+         * voidPresetName = I18n.format("gui.personalWorld.voidWorld");
+         * 
+         * this.ySize += 2;
+         * this.presetEntry = new WTextField(new Rectangle(0, this.ySize, 160, 20), desiredConfig.getLayersAsString());
+         * if (this.presetEntry.textField.getText().isEmpty()) {
+         * this.presetEntry.textField.setText(voidPresetName);
+         * }
+         * addWidget(presetEntry);
+         * this.ySize += 2;
+         * 
+         * addWidget(new WLabel(0, this.ySize, I18n.format("gui.personalWorld.presets"), false));
+         * 
+         * int px = 8, pi = 1;
+         * for (String preset : Config.defaultPresets) {
+         * if (preset.isEmpty()) {
+         * preset = voidPresetName;
+         * }
+         * String finalPreset = preset;
+         * presetButtons.add(
+         * new WButton(
+         * new Rectangle(px, this.ySize, 24, 18),
+         * Integer.toString(pi),
+         * true,
+         * WButton.DEFAULT_COLOR,
+         * null,
+         * () -> this.presetEntry.textField.setText(finalPreset)));
+         * rootWidget.addChild(presetButtons.get(presetButtons.size() - 1));
+         * ++pi;
+         * px += 26;
+         * }
+         * this.ySize += 20;
+         * 
+         * 
+         * this.save = new WButton(
+         * new Rectangle(0, ySize, 128, 20),
+         * I18n.format("gui.done"),
+         * true,
+         * WButton.DEFAULT_COLOR,
+         * Icons.CHECKMARK,
+         * () -> {
+         * Packets.INSTANCE.sendChangeWorldSettings(this.tile, desiredConfig).sendToServer();
+         * Minecraft.getMinecraft().displayGuiScreen(null);
+         * });
+         * rootWidget.addChild(
+         * new WButton(
+         * new Rectangle(130, ySize, 128, 20),
+         * I18n.format("gui.cancel"),
+         * true,
+         * WButton.DEFAULT_COLOR,
+         * Icons.CROSS,
+         * () -> Minecraft.getMinecraft().displayGuiScreen(null)));
+         * addWidget(save);
+         * 
+         * this.presetEditor = new Widget();
+         * this.presetEditor.position = new Rectangle(172, 0, 1, 1);
+         * this.rootWidget.addChild(this.presetEditor);
          */
 
         this.xSize = 320 - 16;
@@ -291,7 +292,6 @@ public class PWGui extends GuiScreen {
         GL11.glPopMatrix();
     }
 
-
     @Override
     protected void keyTyped(char character, int key) throws IOException {
         super.keyTyped(character, key);
@@ -316,10 +316,10 @@ public class PWGui extends GuiScreen {
         int x = (Mouse.getEventX() * this.width / this.mc.displayWidth) - guiLeft;
         int y = (this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1) - guiTop;
         int btn = Mouse.getEventButton();
-        super.handleMouseInput();
-        if (x > 0 || y > 0 || this.selectedButton != null && btn == 0) {
+        if (btn != -1) {
             rootWidget.mouseMovedOrUp(x, y, btn);
         }
+        super.handleMouseInput();
     }
 
     @Override
@@ -339,5 +339,4 @@ public class PWGui extends GuiScreen {
     public boolean doesGuiPauseGame() {
         return false;
     }
-
 }

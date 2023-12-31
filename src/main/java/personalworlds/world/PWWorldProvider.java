@@ -1,4 +1,5 @@
 package personalworlds.world;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -6,13 +7,11 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 
-
 public class PWWorldProvider extends WorldProvider {
 
     private Config config;
 
-    public PWWorldProvider() {
-    }
+    public PWWorldProvider() {}
 
     public Config getConfig() {
         if (config == null) {
