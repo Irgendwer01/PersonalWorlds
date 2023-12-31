@@ -3,7 +3,6 @@ package personalworlds.blocks.tile;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
-
 public class TilePersonalPortal extends TileEntity {
 
     @Override

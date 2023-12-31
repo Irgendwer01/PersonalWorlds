@@ -1,10 +1,6 @@
 package personalworlds.world;
 
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
-import personalworlds.PersonalWorlds;
+import static personalworlds.PersonalWorlds.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +10,10 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static personalworlds.PersonalWorlds.*;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
 
 public class WorldUtils {
 
@@ -24,7 +23,8 @@ public class WorldUtils {
         WorldServer world = DimensionManager.getWorld(dimID);
         config.setSpawnPos(world.getSpawnPoint());
         if (!config.update()) {
-            log.error(String.format("Failed to create Config for Personal World %s! Removing Personal World...", dimID));
+            log.error(
+                    String.format("Failed to create Config for Personal World %s! Removing Personal World...", dimID));
             removeWorld(dimID);
             return false;
         }
@@ -62,7 +62,7 @@ public class WorldUtils {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not create PWWorlds.dat! Error: %s", e));
+                log.error(String.format("Could not create PWWorlds.dat! Error: %s", e));
                 return false;
             }
             nbtTagCompound = new NBTTagCompound();
@@ -70,14 +70,14 @@ public class WorldUtils {
             try {
                 nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+                log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
                 return false;
             }
         }
         int[] intArray;
         if (nbtTagCompound.hasKey("dimensions")) {
             int[] dimensions = nbtTagCompound.getIntArray("dimensions");
-            intArray = new int[dimensions.length+1];
+            intArray = new int[dimensions.length + 1];
             System.arraycopy(dimensions, 0, intArray, 0, dimensions.length);
             intArray[dimensions.length] = dimID;
             nbtTagCompound.setIntArray("dimensions", intArray);
@@ -89,7 +89,7 @@ public class WorldUtils {
         try {
             CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
         } catch (IOException e) {
-            PersonalWorlds.log.error(String.format("Could not save PWWorlds.dat! Error: %s", e));
+            log.error(String.format("Could not save PWWorlds.dat! Error: %s", e));
             return false;
         }
         return true;
@@ -100,9 +100,9 @@ public class WorldUtils {
         if (file.exists()) {
             NBTTagCompound nbtTagCompound;
             try {
-               nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+                nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+                log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
                 return false;
             }
             int[] dimensions = nbtTagCompound.getIntArray("dimensions");
@@ -112,7 +112,7 @@ public class WorldUtils {
             try {
                 CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not save PWWorlds.dat! Error: %s", e));
+                log.error(String.format("Could not save PWWorlds.dat! Error: %s", e));
                 return false;
             }
         }

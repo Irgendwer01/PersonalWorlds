@@ -5,6 +5,7 @@ import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 
 public class PWTeleporter extends Teleporter {
+
     public PWTeleporter(WorldServer worldIn) {
         super(worldIn);
     }
@@ -25,10 +26,8 @@ public class PWTeleporter extends Teleporter {
     }
 
     @Override
-    public void placeInPortal(Entity entityIn, float rotationYaw) {
-    }
+    public void placeInPortal(Entity entityIn, float rotationYaw) {}
 
     @Override
-    public void removeStalePortalLocations(long worldTime) {
-    }
+    public void removeStalePortalLocations(long worldTime) {}
 }

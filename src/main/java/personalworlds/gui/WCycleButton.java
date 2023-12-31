@@ -1,9 +1,9 @@
 package personalworlds.gui;
 
-import personalworlds.world.Enums;
-
 import java.awt.Rectangle;
 import java.util.List;
+
+import personalworlds.world.Enums;
 
 public class WCycleButton extends WButton {
 

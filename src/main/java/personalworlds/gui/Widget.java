@@ -1,8 +1,9 @@
 package personalworlds.gui;
 
-import com.google.common.collect.Lists;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -10,14 +11,13 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.init.SoundEvents;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import java.awt.Rectangle;
-import java.util.ArrayList;
+import com.google.common.collect.Lists;
 
 public class Widget {
-
 
     public Rectangle position = new Rectangle(0, 0, 1, 1);
     public boolean visible = true, enabled = true;
@@ -140,7 +140,8 @@ public class Widget {
     }
 
     public final void clickSound() {
-        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        Minecraft.getMinecraft().getSoundHandler()
+                .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     public static void drawGradientRect(int xLeft, int yTop, int xRight, int yBottom, int topRGBA, int bottomRGBA,
@@ -263,6 +264,4 @@ public class Widget {
         }
         GL11.glPopAttrib();
     }
-
-
 }

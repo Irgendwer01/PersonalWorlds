@@ -1,10 +1,11 @@
 package personalworlds.gui;
 
+import java.awt.Rectangle;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
-import org.lwjgl.opengl.GL11;
 
-import java.awt.Rectangle;
+import org.lwjgl.opengl.GL11;
 
 public class WTextField extends Widget {
 
