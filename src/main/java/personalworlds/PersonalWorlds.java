@@ -1,6 +1,5 @@
 package personalworlds;
 
-import lombok.SneakyThrows;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -11,7 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -24,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortal;
-import personalworlds.command.create;
 import personalworlds.world.PWWorldProvider;
 
 import java.io.File;
@@ -48,7 +45,6 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent e) {
-        e.registerServerCommand(new create());
         server = e.getServer();
     }
 
