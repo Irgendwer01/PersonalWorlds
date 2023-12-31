@@ -24,7 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortal;
-import personalworlds.command.create;
+
 import personalworlds.world.PWWorldProvider;
 
 import java.io.File;
@@ -48,7 +48,7 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent e) {
-        e.registerServerCommand(new create());
+
         server = e.getServer();
     }
 
