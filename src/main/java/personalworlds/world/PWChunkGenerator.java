@@ -1,12 +1,17 @@
 package personalworlds.world;
 
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.init.Biomes;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.IChunkGenerator;
+import net.minecraft.world.gen.feature.WorldGenAbstractTree;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
+import net.minecraftforge.event.terraingen.TerrainGen;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -21,16 +26,23 @@ public class PWChunkGenerator implements IChunkGenerator {
         this.world = world;
     }
 
+
     @Override
     public Chunk generateChunk(int x, int z) {
         ChunkPrimer chunkPrimer = new ChunkPrimer();
-        for (int y = 0; y < ((PWWorldProvider)world.provider).getBlocks().length; y++) {
-            for (int i = 0; i < 16; i++) {
-                for (int j = 0; j < 16; j++) {
-                    chunkPrimer.setBlockState(i, 4 + y, j, ((PWWorldProvider)world.provider).getBlocks()[y].getDefaultState());
+        if (((PWWorldProvider)world.provider).getConfig().getBlocks() != null) {
+            for (int y = 0; y < ((PWWorldProvider)world.provider).getConfig().getBlocks().size(); y++) {
+                if (y > ((PWWorldProvider)world.provider).getConfig().getBlocks().size()-1) {
+                    continue;
+                }
+                for (int i = 0; i < 16; i++) {
+                    for (int j = 0; j < 16; j++) {
+                        chunkPrimer.setBlockState(i, 4 + y, j, ((PWWorldProvider)world.provider).getConfig().getBlocks().get(y).getBlock().getDefaultState());
+                    }
                 }
             }
         }
+
         Chunk chunk = new Chunk(world, chunkPrimer, x, z);
         chunk.generateSkylightMap();
         return chunk;
@@ -41,6 +53,21 @@ public class PWChunkGenerator implements IChunkGenerator {
         if (((PWWorldProvider)world.provider).getConfig().isPopulate()) {
             world.provider.biomeProvider.getBiome(new BlockPos(0, 0, 0)).decorate(world, random, new BlockPos(x * 16, 0, z * 16));
         }
+
+        if (((PWWorldProvider)world.provider).getConfig().isGenerateTrees() && TerrainGen.decorate(
+                world,
+                random,
+                new ChunkPos(x, z),
+                DecorateBiomeEvent.Decorate.EventType.TREE)) {
+            x = x + random.nextInt(16) + 8;
+            z = z + random.nextInt(16) + 8;
+            int y = this.world.getHeight(x, z);
+            WorldGenAbstractTree worldgenabstracttree = Biomes.PLAINS.getRandomTreeFeature(random);
+            if (worldgenabstracttree.generate(world, random, new BlockPos(x, y, z))) {
+                worldgenabstracttree.generate(world, random, new BlockPos(x, y, z));
+            }
+        }
+
     }
 
     @Override
@@ -70,4 +97,5 @@ public class PWChunkGenerator implements IChunkGenerator {
     public boolean isInsideStructure(World worldIn, String structureName, BlockPos pos) {
         return false;
     }
+
 }

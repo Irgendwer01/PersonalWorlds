@@ -1,11 +1,11 @@
 package personalworlds.blocks;
 
-import com.cleanroommc.modularui.manager.GuiInfos;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -14,6 +14,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import personalworlds.blocks.tile.TilePersonalPortal;
+import personalworlds.gui.PWGui;
 
 import javax.annotation.Nullable;
 
@@ -33,8 +34,17 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        TilePersonalPortal tilePersonalPortal = (TilePersonalPortal) worldIn.getTileEntity(pos);
         if (!worldIn.isRemote) {
-            GuiInfos.TILE_ENTITY.open(playerIn, worldIn, pos);
+            if (tilePersonalPortal != null) {
+                if (tilePersonalPortal.getTileData().hasKey("dimID")) {
+                    if (playerIn.isSneaking()) {
+                        Minecraft.getMinecraft().displayGuiScreen(new PWGui(playerIn));
+                    }
+                } else {
+                    Minecraft.getMinecraft().displayGuiScreen(new PWGui(playerIn));
+                }
+            }
         }
         return true;
     }

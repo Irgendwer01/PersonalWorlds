@@ -100,10 +100,10 @@ dependencies {
         implementation 'com.cleanroommc:assetmover:2.5'
     }
     if (project.use_mixins.toBoolean()) {
-        implementation 'zone.rong:mixinbooter:7.1'
+        implementation 'zone.rong:mixinbooter:8.0'
     }
 
-    implementation 'curse.maven:MUI-624243:4541320'
+    implementation 'curse.maven:CCL-242818:2779848'
     compileOnly 'org.projectlombok:lombok:1.18.28'
     annotationProcessor 'org.projectlombok:lombok:1.18.28'
 

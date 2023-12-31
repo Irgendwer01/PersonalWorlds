@@ -23,4 +23,12 @@ public class PWTeleporter extends Teleporter {
     public boolean makePortal(Entity entityIn) {
         return false;
     }
+
+    @Override
+    public void placeInPortal(Entity entityIn, float rotationYaw) {
+    }
+
+    @Override
+    public void removeStalePortalLocations(long worldTime) {
+    }
 }

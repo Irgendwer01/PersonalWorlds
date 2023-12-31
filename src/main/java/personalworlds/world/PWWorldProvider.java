@@ -1,32 +1,22 @@
 package personalworlds.world;
-
-import lombok.Getter;
-import lombok.Setter;
-import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.gen.IChunkGenerator;
-import personalworlds.PersonalWorlds;
 
-import javax.annotation.Nullable;
 
 public class PWWorldProvider extends WorldProvider {
 
-    @Setter
     private Config config;
-
-    @Setter
-    @Getter
-    private Block[] blocks;
 
     public PWWorldProvider() {
     }
 
     public Config getConfig() {
         if (config == null) {
-            config = new Config(PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" + getSaveFolder() + "/PWConfig.dat");
+            config = new Config(this.getDimension());
         }
         return config;
     }
@@ -41,7 +31,6 @@ public class PWWorldProvider extends WorldProvider {
         return new PWChunkGenerator(this.world);
     }
 
-    @Nullable
     @Override
     public String getSaveFolder() {
         return "personal_world_" + this.getDimension();
@@ -65,5 +54,28 @@ public class PWWorldProvider extends WorldProvider {
     @Override
     public Vec3d getSkyColor(Entity cameraEntity, float partialTicks) {
         return getFogColor(0.0F, partialTicks);
+    }
+
+    @Override
+    public float getCloudHeight() {
+        return getConfig().isClouds() ? 256.0F : Float.NEGATIVE_INFINITY;
+    }
+
+    @Override
+    public boolean isSurfaceWorld() {
+        return true;
+    }
+
+    @Override
+    public boolean canCoordinateBeSpawn(int x, int z) {
+        BlockPos blockPos = this.world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z));
+        return this.world.getBlockState(blockPos).getMaterial().blocksMovement();
+    }
+
+    @Override
+    public void updateWeather() {
+        if (getConfig().isWeather()) {
+            super.updateWeather();
+        } else {}
     }
 }

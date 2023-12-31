@@ -11,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -27,6 +28,7 @@ import personalworlds.command.create;
 import personalworlds.world.PWWorldProvider;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 
@@ -40,7 +42,7 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
-        dimType = DimensionType.register("PWWorld", "t", DimensionType.values().length, PWWorldProvider.class, false);
+        dimType = DimensionType.register("personal_world", "personalworlds", DimensionType.values().length, PWWorldProvider.class, false);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -61,27 +63,39 @@ public class PersonalWorlds {
         GameRegistry.registerTileEntity(TilePersonalPortal.class, new ResourceLocation("personalworlds:tile_personal_portal"));
     }
 
-    @SneakyThrows
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load e) {
         if (e.getWorld().provider.getDimension() == 0) {
             File file = new File(e.getWorld().getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
             if (file.exists()) {
-                NBTTagCompound configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
-                int[] dimensions = configNBT.getIntArray("dimensions");
-                Arrays.stream(dimensions).forEach(dim -> DimensionManager.registerDimension(dim, dimType));
+                NBTTagCompound configNBT = null;
+                try {
+                    configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+                } catch (IOException ex) {
+                    PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+                }
+                if (configNBT != null) {
+                    int[] dimensions = configNBT.getIntArray("dimensions");
+                    Arrays.stream(dimensions).forEach(dim -> DimensionManager.registerDimension(dim, dimType));
+                }
             }
         }
     }
 
-    @SneakyThrows
     @Mod.EventHandler
     public void onServerStopping(FMLServerStoppingEvent e) {
         File file = new File(server.getWorld(0).getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
         if (file.exists()) {
-            NBTTagCompound configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
-            int[] dimensions = configNBT.getIntArray("dimensions");
-            Arrays.stream(dimensions).forEach(DimensionManager::unregisterDimension);
+            NBTTagCompound configNBT = null;
+            try {
+                configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+            } catch (IOException ex) {
+                PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+            }
+            if (configNBT != null) {
+                int[] dimensions = configNBT.getIntArray("dimensions");
+                Arrays.stream(dimensions).forEach(DimensionManager::unregisterDimension);
+            }
         }
     }
 }
