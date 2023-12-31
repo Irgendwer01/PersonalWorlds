@@ -37,6 +37,8 @@ import personalworlds.world.PWWorldProvider;
 @Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version)
 public class PersonalWorlds {
 
+    public final static String CHANNEL = PWValues.modID;
+
     public static final Logger log = LogManager.getLogger("personalworlds");
     private final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
     public static MinecraftServer server;

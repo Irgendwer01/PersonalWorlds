@@ -63,7 +63,7 @@ public class Config {
     private UUID owner;
 
     @Getter
-    private List<FlatLayerInfo> blocks = new ArrayList<>();
+    private List<FlatLayerInfo> layers = new ArrayList<>();
 
     public Config(int dimID) {
         this.config = new File(
@@ -84,7 +84,7 @@ public class Config {
                 this.clouds = configNBT.getBoolean("clouds");
                 this.weather = configNBT.getBoolean("weather");
                 if (configNBT.hasKey("blocks")) {
-                    this.blocks = LayersFromString(configNBT.getString("blocks"));
+                    this.layers = LayersFromString(configNBT.getString("blocks"));
                 }
             } catch (IOException e) {
                 PersonalWorlds.log
@@ -116,8 +116,8 @@ public class Config {
         configNBT.setBoolean("generate_trees", this.generateTrees);
         configNBT.setInteger("daylightcycle", this.daylightCycle.ordinal());
         configNBT.setBoolean("weather", this.weather);
-        if (!blocks.isEmpty()) {
-            configNBT.setString("blocks", LayersToString(blocks));
+        if (!layers.isEmpty()) {
+            configNBT.setString("blocks", LayersToString(layers));
         }
         try {
             CompressedStreamTools.writeCompressed(configNBT, Files.newOutputStream(config.toPath()));
@@ -172,4 +172,5 @@ public class Config {
         block = Block.REGISTRY.getObject(new ResourceLocation(string));
         return new FlatLayerInfo(3, layers, block, metadata);
     }
+
 }

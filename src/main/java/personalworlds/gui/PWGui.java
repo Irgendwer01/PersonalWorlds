@@ -317,7 +317,7 @@ public class PWGui extends GuiScreen {
         int y = (this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1) - guiTop;
         int btn = Mouse.getEventButton();
         super.handleMouseInput();
-        if (x > 0 || y > 0 || this.selectedButton != null && btn == 0) {
+        if (btn != -1) {
             rootWidget.mouseMovedOrUp(x, y, btn);
         }
     }

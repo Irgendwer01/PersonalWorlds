@@ -33,14 +33,14 @@ public class PWChunkGenerator implements IChunkGenerator {
     @Override
     public Chunk generateChunk(int x, int z) {
         ChunkPrimer chunkPrimer = new ChunkPrimer();
-        if (config.getBlocks() != null) {
-            for (int y = 0; y < config.getBlocks().size(); y++) {
-                if (y > config.getBlocks().size() - 1) {
+        if (config.getLayers() != null) {
+            for (int y = 0; y < config.getLayers().size(); y++) {
+                if (y > config.getLayers().size() - 1) {
                     continue;
                 }
                 for (int i = 0; i < 16; i++) {
                     for (int j = 0; j < 16; j++) {
-                        chunkPrimer.setBlockState(i, 4 + y, j, config.getBlocks().get(y).getLayerMaterial());
+                        chunkPrimer.setBlockState(i, 4 + y, j, config.getLayers().get(y).getLayerMaterial());
                     }
                 }
             }
