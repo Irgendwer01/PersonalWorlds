@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.config.Config;
 
 @Config(modid = PWValues.modID)
@@ -57,6 +58,14 @@ public class PWConfig {
             "minecraft:concrete:15"
     };
 
+    @Config.Comment("Biomes allowed to be used in an Personal World.")
+    public static String[] allowedBiomes = {
+            "minecraft:plains",
+            "minecraft:void",
+            "minecraft:river",
+            "minecraft:desert"
+    };
+
     public static List<IBlockState> getAllowedBlocks() {
         int metaData = 0;
         List<IBlockState> allowedBlocks = new ArrayList<>();
@@ -77,5 +86,17 @@ public class PWConfig {
             }
         }
         return allowedBlocks;
+    }
+
+    public static List<Biome> getAllowedBiomes() {
+        List<Biome> allowedBiomes = new ArrayList<>();
+        for (String string : PWConfig.allowedBiomes) {
+            Biome biome = Biome.REGISTRY.getObject(new ResourceLocation(string));
+            if (biome == null) {
+                continue;
+            }
+            allowedBiomes.add(biome);
+        }
+        return allowedBiomes;
     }
 }

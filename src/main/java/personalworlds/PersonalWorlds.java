@@ -53,7 +53,6 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent e) {
-        log.error(new FlatLayerInfo(3, 4, Blocks.STAINED_HARDENED_CLAY, 15).toString());
     }
 
     @Mod.EventHandler
