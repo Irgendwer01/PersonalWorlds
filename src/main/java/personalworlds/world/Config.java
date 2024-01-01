@@ -6,17 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import codechicken.lib.packet.PacketCustom;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.gen.FlatLayerInfo;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraftforge.common.DimensionManager;
 import personalworlds.PWConfig;
 import personalworlds.PersonalWorlds;
+import personalworlds.proxy.CommonProxy;
 
 public class Config {
 
@@ -65,6 +69,17 @@ public class Config {
     @Getter
     private List<FlatLayerInfo> layers = new ArrayList<>();
 
+    @Getter
+    private boolean needsSaving = true;
+
+
+
+    public Config() {
+        this.config = new File(
+                PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" +
+                        "personal_world_" + 0 + "/PWConfig.dat");
+    }
+
     public Config(int dimID) {
         this.config = new File(
                 PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" +
@@ -76,9 +91,6 @@ public class Config {
                 this.skyColor = configNBT.getInteger("sky_color");
                 this.starsVisibility = configNBT.getInteger("stars_visibility");
                 this.passiveSpawn = configNBT.getBoolean("passive_spawn");
-                this.owner = configNBT.getUniqueId("owner");
-                this.spawnPos = new BlockPos(configNBT.getInteger("spawn_pos_x"), configNBT.getInteger("spawn_pos_y"),
-                        configNBT.getInteger("spawn_pos_z"));
                 this.generateTrees = configNBT.getBoolean("generate_trees");
                 this.daylightCycle = Enums.DaylightCycle.fromOrdinal(configNBT.getInteger("daylightcycle"));
                 this.clouds = configNBT.getBoolean("clouds");
@@ -91,6 +103,56 @@ public class Config {
                         .error(String.format("Could not load config in %s! Error: %s", config.getAbsolutePath(), e));
             }
         }
+    }
+
+    public static Config fromPacket(PacketCustom packet) {
+        Config cfg = new Config();
+        cfg.readFromPacket(packet);
+        return cfg;
+    }
+
+    public void readFromPacket(PacketCustom packet) {
+        this.needsSaving = true;
+        this.setSkyColor(packet.readInt());
+        this.setStarsVisibility(packet.readFloat());
+        this.setDaylightCycle(Enums.DaylightCycle.fromOrdinal(packet.readVarInt()));
+        this.setClouds(packet.readBoolean());
+        this.setWeather(packet.readBoolean());
+        this.setVegetation(packet.readBoolean());
+        this.setGenerateTrees(packet.readBoolean());
+    }
+
+    public void writeToPacket(PacketCustom packet) {
+        packet.writeInt(skyColor);
+        packet.writeFloat(starsVisibility);
+        packet.writeInt(daylightCycle.ordinal());
+        packet.writeBoolean(clouds);
+        packet.writeBoolean(weather);
+        packet.writeBoolean(vegetation);
+        packet.writeBoolean(generateTrees);
+    }
+
+    public boolean copyFrom(Config source, boolean copySaveInfo, boolean copyVisualInfo, boolean copyGenerationInfo) {
+        this.needsSaving = false;
+        if(copySaveInfo) {
+
+        }
+        if(copyVisualInfo) {
+            this.setSkyColor(source.getSkyColor());
+            this.setStarsVisibility(source.getStarsVisibility());
+            this.setDaylightCycle(source.getDaylightCycle());
+            this.setClouds(source.isClouds());
+            this.setWeather(source.isWeather());
+        }
+        if(copyGenerationInfo) {
+            this.setGenerateTrees(source.isGenerateTrees());
+            this.setVegetation(source.isVegetation());
+            this.layers = source.layers;
+            this.needsSaving = true;
+        }
+        boolean modified = this.needsSaving;
+        this.needsSaving = true;
+        return modified;
     }
 
     public boolean update() {
@@ -108,10 +170,6 @@ public class Config {
         configNBT.setBoolean("vegetation", this.vegetation);
         configNBT.setFloat("stars_visibility", this.starsVisibility);
         configNBT.setBoolean("passive_spawn", this.passiveSpawn);
-        configNBT.setInteger("spawn_pos_x", this.spawnPos.getX());
-        configNBT.setInteger("spawn_pos_y", this.spawnPos.getY());
-        configNBT.setInteger("spawn_pos_z", this.spawnPos.getZ());
-        configNBT.setUniqueId("owner", this.owner);
         configNBT.setBoolean("clouds", this.clouds);
         configNBT.setBoolean("generate_trees", this.generateTrees);
         configNBT.setInteger("daylightcycle", this.daylightCycle.ordinal());
@@ -127,6 +185,12 @@ public class Config {
             return false;
         }
         return true;
+    }
+
+    public static Config getForDimension(int dimId, boolean isClient) {
+        synchronized (CommonProxy.getDimensionConfigs(isClient)) {
+            return CommonProxy.getDimensionConfigs(isClient).get(dimId);
+        }
     }
 
     public String LayersToString(List<FlatLayerInfo> flatLayerInfos) {
@@ -171,6 +235,21 @@ public class Config {
         }
         block = Block.REGISTRY.getObject(new ResourceLocation(string));
         return new FlatLayerInfo(3, layers, block, metadata);
+    }
+
+    public void registerWithDimManager(int dimID, boolean isClient) {
+        if(!DimensionManager.isDimensionRegistered(dimID)) {
+            DimensionType dimType = DimensionType.register("personalWorld", "personalWorld", dimID, PWWorldProvider.class, false);
+            DimensionManager.registerDimension(dimID, dimType);
+            PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient, new Throwable());
+        }
+        synchronized (CommonProxy.getDimensionConfigs(isClient)) {
+            if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
+                CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
+            } else {
+                CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
+            }
+        }
     }
 
 }

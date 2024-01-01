@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 
+import codechicken.lib.packet.ICustomPacketHandler;
+import codechicken.lib.packet.PacketCustom;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -20,6 +23,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -32,6 +36,9 @@ import org.apache.logging.log4j.Logger;
 
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortal;
+import personalworlds.packet.Packets;
+import personalworlds.proxy.CommonProxy;
+import personalworlds.world.Config;
 import personalworlds.world.PWWorldProvider;
 
 @Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version)
@@ -40,15 +47,24 @@ public class PersonalWorlds {
     public final static String CHANNEL = PWValues.modID;
 
     public static final Logger log = LogManager.getLogger("personalworlds");
-    private final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
+    public static BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
     public static MinecraftServer server;
     public static DimensionType dimType;
+
+    @SidedProxy(
+            clientSide = "personalworlds.proxy.ClientProxy",
+            serverSide = "personalworlds.proxy.CommonProxy")
+    public static CommonProxy proxy;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
         dimType = DimensionType.register("personal_world", "personalworlds", DimensionType.values().length,
                 PWWorldProvider.class, false);
         MinecraftForge.EVENT_BUS.register(this);
+
+        if(e.getSide().isClient())
+            PacketCustom.assignHandler(CHANNEL, (ICustomPacketHandler.IClientPacketHandler) Packets.INSTANCE::handleClientPacket);
+        PacketCustom.assignHandler(CHANNEL, (ICustomPacketHandler.IServerPacketHandler) Packets.INSTANCE::handleServerPacket);
     }
 
     @Mod.EventHandler
@@ -89,6 +105,22 @@ public class PersonalWorlds {
                     Arrays.stream(dimensions).forEach(dim -> DimensionManager.registerDimension(dim, dimType));
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void worldSave(WorldEvent.Save event) {
+        try {
+            if(!(event.getWorld().provider instanceof PWWorldProvider PWWP)) {
+                return;
+            }
+            Config cfg = PWWP.getConfig();
+            if(cfg == null || !cfg.isNeedsSaving()) {
+                return;
+            }
+            // save the config
+        } catch (Exception e) {
+            log.fatal("couldnt save person dimension data for" + event.getWorld().provider.getDimension(), e);
         }
     }
 

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
@@ -16,11 +17,14 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import codechicken.lib.gui.GuiDraw;
+import personalworlds.blocks.tile.TilePersonalPortal;
+import personalworlds.packet.Packets;
 import personalworlds.world.Config;
 import personalworlds.world.Enums;
 
 public class PWGui extends GuiScreen {
 
+    public TilePersonalPortal tpp;
     int xSize, ySize, guiLeft, guiTop;
 
     WSlider skyRed, skyGreen, skyBlue;
@@ -39,12 +43,12 @@ public class PWGui extends GuiScreen {
     List<WButton> presetButtons = new ArrayList<>();
     Widget presetEditor;
     Widget rootWidget = new Widget();
-    EntityPlayer player;
+
     Config config = new Config(4);
 
-    public PWGui(EntityPlayer player) {
+    public PWGui(TilePersonalPortal tile) {
         super();
-        this.player = player;
+        this.tpp = tile;
     }
 
     @Override
@@ -187,6 +191,20 @@ public class PWGui extends GuiScreen {
         this.enableClouds.addChild(new WLabel(24, 4, I18n.format("gui.personalWorld.clouds"), false));
         rootWidget.addChild(this.enableClouds);
 
+        this.ySize += 20;
+        this.save = new WButton(
+              new Rectangle(0, ySize, 128, 20),
+            I18n.format("gui.done"), true, WButton.DEFAULT_COLOR, Icons.CHECKMARK, () -> {
+                  Packets.INSTANCE.sendChangeWorldSettings(this.tpp, config).sendToServer();
+                  Minecraft.getMinecraft().displayGuiScreen(null);
+              });
+        rootWidget.addChild(new WButton(new Rectangle(130, ySize, 128, 20),
+                I18n.format("gui.cancel"),
+                true,
+                WButton.DEFAULT_COLOR,
+                Icons.CROSS, () -> Minecraft.getMinecraft().displayGuiScreen(null)));
+         addWidget(save);
+
         /*
          * voidPresetName = I18n.format("gui.personalWorld.voidWorld");
          * 
@@ -218,28 +236,7 @@ public class PWGui extends GuiScreen {
          * ++pi;
          * px += 26;
          * }
-         * this.ySize += 20;
-         * 
-         * 
-         * this.save = new WButton(
-         * new Rectangle(0, ySize, 128, 20),
-         * I18n.format("gui.done"),
-         * true,
-         * WButton.DEFAULT_COLOR,
-         * Icons.CHECKMARK,
-         * () -> {
-         * Packets.INSTANCE.sendChangeWorldSettings(this.tile, desiredConfig).sendToServer();
-         * Minecraft.getMinecraft().displayGuiScreen(null);
-         * });
-         * rootWidget.addChild(
-         * new WButton(
-         * new Rectangle(130, ySize, 128, 20),
-         * I18n.format("gui.cancel"),
-         * true,
-         * WButton.DEFAULT_COLOR,
-         * Icons.CROSS,
-         * () -> Minecraft.getMinecraft().displayGuiScreen(null)));
-         * addWidget(save);
+         *
          * 
          * this.presetEditor = new Widget();
          * this.presetEditor.position = new Rectangle(172, 0, 1, 1);
