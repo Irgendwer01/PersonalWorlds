@@ -6,6 +6,11 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.gen.IChunkGenerator;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import personalworlds.PersonalWorlds;
+import personalworlds.proxy.CommonProxy;
+
+import java.util.Arrays;
 
 public class PWWorldProvider extends WorldProvider {
 
@@ -14,10 +19,19 @@ public class PWWorldProvider extends WorldProvider {
     public PWWorldProvider() {}
 
     public Config getConfig() {
-        if (config == null) {
-            config = new Config(this.getDimension());
+        if (this.config == null) {
+            boolean isClient = (this.world != null) ? this.world.isRemote : FMLCommonHandler.instance().getEffectiveSide().isClient();
+            this.config = Config.getForDimension(this.getDimension(), isClient);
+            if(this.config == null) {
+                PersonalWorlds.log.fatal("PersonalSpace couldn't find dimension config for dimension {}, detected side: {}\nknown client dimension IDs: {}\nknown server dimension IDs: {}\n",
+                        this.getDimension(),
+                        isClient ? "CLIENT" : "SERVER",
+                        Arrays.toString(CommonProxy.getDimensionConfigs(true).keys()),
+                        Arrays.toString(CommonProxy.getDimensionConfigs(false).keys()),
+                        new Throwable());
+            }
         }
-        return config;
+        return this.config;
     }
 
     @Override
@@ -75,6 +89,6 @@ public class PWWorldProvider extends WorldProvider {
     public void updateWeather() {
         if (getConfig().isWeather()) {
             super.updateWeather();
-        } else {}
+        }
     }
 }

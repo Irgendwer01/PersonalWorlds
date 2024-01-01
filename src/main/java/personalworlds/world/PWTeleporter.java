@@ -1,18 +1,24 @@
 package personalworlds.world;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
+import personalworlds.blocks.tile.TilePersonalPortal;
 
 public class PWTeleporter extends Teleporter {
 
-    public PWTeleporter(WorldServer worldIn) {
+    private BlockPos pos;
+    TilePersonalPortal tpp;
+    public PWTeleporter(WorldServer worldIn, BlockPos pos) {
         super(worldIn);
+        this.pos = pos;
     }
 
-    @Override
-    public boolean placeInExistingPortal(Entity entityIn, float rotationYaw) {
-        return false;
+    public PWTeleporter(WorldServer worldIn, TilePersonalPortal tpp) {
+        super(worldIn);
+        this.tpp = tpp;
+        this.pos = tpp.getPos();
     }
 
     @Override
@@ -22,11 +28,22 @@ public class PWTeleporter extends Teleporter {
 
     @Override
     public boolean makePortal(Entity entityIn) {
-        return false;
+        return true;
     }
 
     @Override
-    public void placeInPortal(Entity entityIn, float rotationYaw) {}
+    public void placeInPortal(Entity entityIn, float rotationYaw) {
+        placeInExistingPortal(entityIn, rotationYaw);
+    }
+
+    @Override
+    public boolean placeInExistingPortal(Entity entityIn, float rotationYaw) {
+        entityIn.setLocationAndAngles(pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, rotationYaw, 0.0F);
+        entityIn.motionX = 0.0F;
+        entityIn.motionY = 0.0F;
+        entityIn.motionZ = 0.0F;
+        return true;
+    }
 
     @Override
     public void removeStalePortalLocations(long worldTime) {}
