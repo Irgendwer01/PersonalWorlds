@@ -5,13 +5,17 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import codechicken.lib.packet.PacketCustom;
+import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.gen.FlatLayerInfo;
 
@@ -22,7 +26,7 @@ import personalworlds.PWConfig;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
 
-public class Config {
+public class DimensionConfig {
 
     private final File config;
 
@@ -72,15 +76,20 @@ public class Config {
     @Getter
     private boolean needsSaving = true;
 
+    public static final String PRESET_UW_VOID = "";
+    public static final String PRESET_UW_GARDEN = "minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
+    public static final String PRESET_UW_MINING = "4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
+    public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
+            .compile("^(?:[1-9][0-9]*\\*)?(?:[a-zA-Z]+):(?:[a-zA-Z]+)(?:,(?:[1-9][0-9]*\\*)?(?:[a-zA-Z]+):(?:[a-zA-Z]+))*$");
 
 
-    public Config() {
+    public DimensionConfig() {
         this.config = new File(
                 PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" +
                         "personal_world_" + 0 + "/PWConfig.dat");
     }
 
-    public Config(int dimID) {
+    public DimensionConfig(int dimID) {
         this.config = new File(
                 PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" +
                         "personal_world_" + dimID + "/PWConfig.dat");
@@ -105,8 +114,8 @@ public class Config {
         }
     }
 
-    public static Config fromPacket(PacketCustom packet) {
-        Config cfg = new Config();
+    public static DimensionConfig fromPacket(PacketCustom packet) {
+        DimensionConfig cfg = new DimensionConfig();
         cfg.readFromPacket(packet);
         return cfg;
     }
@@ -120,6 +129,18 @@ public class Config {
         this.setWeather(packet.readBoolean());
         this.setVegetation(packet.readBoolean());
         this.setGenerateTrees(packet.readBoolean());
+        int layerCount = packet.readVarInt();
+        ArrayList<FlatLayerInfo> layers = new ArrayList<>(layerCount);
+        int y = 0;
+        for(int layerI = 0; layerI < layerCount; ++layerI) {
+            int blockID = packet.readVarInt();
+            int count = packet.readVarInt();
+            FlatLayerInfo info = new FlatLayerInfo(count, Block.getBlockById(blockID));
+            info.setMinY(y);
+            layers.add(info);
+            y += count;
+        }
+        this.layers = layers;
     }
 
     public void writeToPacket(PacketCustom packet) {
@@ -130,9 +151,14 @@ public class Config {
         packet.writeBoolean(weather);
         packet.writeBoolean(vegetation);
         packet.writeBoolean(generateTrees);
+        packet.writeVarInt(layers.size());
+        for (FlatLayerInfo info : layers) {
+            packet.writeVarInt(Block.getIdFromBlock(info.getLayerMaterial().getBlock()));
+            packet.writeVarInt(info.getLayerCount());
+        }
     }
 
-    public boolean copyFrom(Config source, boolean copySaveInfo, boolean copyVisualInfo, boolean copyGenerationInfo) {
+    public boolean copyFrom(DimensionConfig source, boolean copySaveInfo, boolean copyVisualInfo, boolean copyGenerationInfo) {
         this.needsSaving = false;
         if(copySaveInfo) {
 
@@ -187,7 +213,7 @@ public class Config {
         return true;
     }
 
-    public static Config getForDimension(int dimId, boolean isClient) {
+    public static DimensionConfig getForDimension(int dimId, boolean isClient) {
         synchronized (CommonProxy.getDimensionConfigs(isClient)) {
             return CommonProxy.getDimensionConfigs(isClient).get(dimId);
         }
@@ -201,7 +227,7 @@ public class Config {
         return string;
     }
 
-    public List<FlatLayerInfo> LayersFromString(String string) {
+    public static List<FlatLayerInfo> LayersFromString(String string) {
         int currY = 0;
         ArrayList<FlatLayerInfo> flatLayerInfos = new ArrayList<>();
         String[] stringArray = string.split(",");
@@ -213,7 +239,7 @@ public class Config {
         return flatLayerInfos;
     }
 
-    public FlatLayerInfo LayerFromString(String string) {
+    public static FlatLayerInfo LayerFromString(String string) {
         int metadata = 0;
         Block block;
         String[] stringArray = string.split("\\*", 2);
@@ -237,9 +263,38 @@ public class Config {
         return new FlatLayerInfo(3, layers, block, metadata);
     }
 
+    public String getLayersAsString() {
+        return LayersToString(this.layers);
+    }
+
+    public static boolean canUseLayers(String preset, boolean onClient) {
+        if (preset == null) {
+            preset = "";
+        }
+        if (preset.equals(PRESET_UW_GARDEN) || preset.equals(PRESET_UW_VOID) || preset.equals(PRESET_UW_MINING)) {
+            return true;
+        }
+        List<FlatLayerInfo> infos = LayersFromString(preset);
+        if (infos.isEmpty() && !preset.trim().isEmpty()) {
+            return false;
+        }
+        for (FlatLayerInfo info : infos) {
+
+            IBlockState blockState = info.getLayerMaterial();
+            if(PWConfig.getAllowedBlocks().contains(blockState)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void setLayers(String preset) {
+        this.layers = LayersFromString(preset);
+    }
+
     public void registerWithDimManager(int dimID, boolean isClient) {
         if(!DimensionManager.isDimensionRegistered(dimID)) {
-            DimensionType dimType = DimensionType.register("personalWorld", "personalWorld", dimID, PWWorldProvider.class, false);
+            DimensionType dimType = DimensionType.register("personalWorld", "", dimID, PWWorldProvider.class, false);
             DimensionManager.registerDimension(dimID, dimType);
             PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient, new Throwable());
         }

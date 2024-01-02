@@ -14,15 +14,15 @@ import java.util.Arrays;
 
 public class PWWorldProvider extends WorldProvider {
 
-    private Config config;
+    private DimensionConfig dimensionConfig;
 
     public PWWorldProvider() {}
 
-    public Config getConfig() {
-        if (this.config == null) {
+    public DimensionConfig getConfig() {
+        if (this.dimensionConfig == null) {
             boolean isClient = (this.world != null) ? this.world.isRemote : FMLCommonHandler.instance().getEffectiveSide().isClient();
-            this.config = Config.getForDimension(this.getDimension(), isClient);
-            if(this.config == null) {
+            this.dimensionConfig = DimensionConfig.getForDimension(this.getDimension(), isClient);
+            if(this.dimensionConfig == null) {
                 PersonalWorlds.log.fatal("PersonalSpace couldn't find dimension config for dimension {}, detected side: {}\nknown client dimension IDs: {}\nknown server dimension IDs: {}\n",
                         this.getDimension(),
                         isClient ? "CLIENT" : "SERVER",
@@ -31,7 +31,7 @@ public class PWWorldProvider extends WorldProvider {
                         new Throwable());
             }
         }
-        return this.config;
+        return this.dimensionConfig;
     }
 
     @Override
@@ -91,4 +91,6 @@ public class PWWorldProvider extends WorldProvider {
             super.updateWeather();
         }
     }
+
+
 }

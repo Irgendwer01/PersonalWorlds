@@ -11,7 +11,7 @@ import net.minecraftforge.common.DimensionManager;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.packet.Packets;
-import personalworlds.world.Config;
+import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
 
@@ -28,7 +28,7 @@ public class TilePersonalPortal extends TileEntity {
             return;
         }
 
-        PWTeleporter tp = new PWTeleporter((WorldServer)world, pos);
+        PWTeleporter tp = new PWTeleporter((WorldServer)world, targetPos);
 
         player.changeDimension(this.targetID, tp);
 
@@ -83,7 +83,7 @@ public class TilePersonalPortal extends TileEntity {
         }
         if(otherPortal != null) {
             otherPortal.isActive = true;
-            Config otherPortalCfg = Config.getForDimension(otherPortal.targetID, false);
+            DimensionConfig otherPortalCfg = DimensionConfig.getForDimension(otherPortal.targetID, false);
             if(otherPortal.targetID != world.provider.getDimension() && otherPortalCfg != null) {
                 if(player != null) {
                     player.sendMessage(new TextComponentTranslation("chat.personalWorld.relinked.error"));
@@ -110,7 +110,7 @@ public class TilePersonalPortal extends TileEntity {
         }
     }
 
-    public void updateSettings(EntityPlayerMP player, Config conf) {
+    public void updateSettings(EntityPlayerMP player, DimensionConfig conf) {
         if(world.isRemote || player == null) {
             return;
         }
@@ -120,7 +120,7 @@ public class TilePersonalPortal extends TileEntity {
             return;
         }
 
-        Config sanitized = new Config();
+        DimensionConfig sanitized = new DimensionConfig();
         sanitized.copyFrom(conf, false, true, true);
         boolean createNewDim = false;
         int targetID = 0;
@@ -131,7 +131,7 @@ public class TilePersonalPortal extends TileEntity {
         }
         boolean changed = true;
         if(targetID > 0) {
-            Config realConf = Config.getForDimension(targetID, false);
+            DimensionConfig realConf = DimensionConfig.getForDimension(targetID, false);
             if(realConf == null) {
                 return;
             }
