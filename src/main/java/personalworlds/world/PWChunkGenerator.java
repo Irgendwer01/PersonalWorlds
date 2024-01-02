@@ -22,25 +22,25 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     private final World world;
     private final Random random;
-    private final Config config;
+    private final DimensionConfig dimensionConfig;
 
     public PWChunkGenerator(World world) {
         this.world = world;
         this.random = world.rand;
-        this.config = ((PWWorldProvider) world.provider).getConfig();
+        this.dimensionConfig = ((PWWorldProvider) world.provider).getConfig();
     }
 
     @Override
     public Chunk generateChunk(int x, int z) {
         ChunkPrimer chunkPrimer = new ChunkPrimer();
-        if (config.getLayers() != null) {
-            for (int y = 0; y < config.getLayers().size(); y++) {
-                if (y > config.getLayers().size() - 1) {
+        if (dimensionConfig.getLayers() != null) {
+            for (int y = 0; y < dimensionConfig.getLayers().size(); y++) {
+                if (y > dimensionConfig.getLayers().size() - 1) {
                     continue;
                 }
                 for (int i = 0; i < 16; i++) {
                     for (int j = 0; j < 16; j++) {
-                        chunkPrimer.setBlockState(i, 4 + y, j, config.getLayers().get(y).getLayerMaterial());
+                        chunkPrimer.setBlockState(i, 4 + y, j, dimensionConfig.getLayers().get(y).getLayerMaterial());
                     }
                 }
             }
@@ -53,12 +53,12 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public void populate(int x, int z) {
-        if (config.isVegetation()) {
+        if (dimensionConfig.isVegetation()) {
             world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).decorate(world, random,
                     new BlockPos(x * 16, 0, z * 16));
         }
 
-        if (config.isGenerateTrees() && TerrainGen.decorate(
+        if (dimensionConfig.isGenerateTrees() && TerrainGen.decorate(
                 world,
                 random,
                 new ChunkPos(x, z),
@@ -80,7 +80,7 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public List<Biome.SpawnListEntry> getPossibleCreatures(EnumCreatureType creatureType, BlockPos pos) {
-        if (config.isPassiveSpawn()) {
+        if (dimensionConfig.isPassiveSpawn()) {
             return world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).getSpawnableList(creatureType);
         }
         return null;

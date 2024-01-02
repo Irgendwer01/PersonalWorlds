@@ -10,7 +10,10 @@ import net.minecraft.util.math.BlockPos;
 import personalworlds.PWValues;
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.proxy.CommonProxy;
-import personalworlds.world.Config;
+import personalworlds.world.DimensionConfig;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public enum Packets {
     INSTANCE;
@@ -22,14 +25,14 @@ public enum Packets {
         CHANGE_WORLD_SETTINGS;
     }
 
-    public PacketCustom sendChangeWorldSettings(TilePersonalPortal tile, Config config) {
+    public PacketCustom sendChangeWorldSettings(TilePersonalPortal tile, DimensionConfig dimensionConfig) {
         PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
         pkt.writeVarInt(tile.getWorld().provider.getDimension());
         pkt.writeVarInt(tile.getPos().getX());
         pkt.writeVarInt(tile.getPos().getY());
         pkt.writeVarInt(tile.getPos().getZ());
-        config.writeToPacket(pkt);
-        config.update();
+        dimensionConfig.writeToPacket(pkt);
+        dimensionConfig.update();
         return pkt;
     }
 
@@ -58,7 +61,7 @@ public enum Packets {
                 int x = packet.readVarInt();
                 int y = packet.readVarInt();
                 int z = packet.readVarInt();
-                Config conf = Config.fromPacket(packet);
+                DimensionConfig conf = DimensionConfig.fromPacket(packet);
                 if(player != null && player.getServerWorld() != null && player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
                     if(te instanceof TilePersonalPortal tpp) {
@@ -83,10 +86,17 @@ public enum Packets {
     }
 
     private static void handleWorldList(PacketCustom pkt) {
+//        int allowedBlocks = pkt.readVarInt();
+//        List<String> tmpList = new ArrayList<>(allowedBlocks);
+//        for (int i = 0; i < allowedBlocks; ++i) {
+//            tmpList.add(pkt.readString());
+//        }
+//        PersonalSpaceMod.clientAllowedBlocks = tmpList;
+
         int dimConfigs = pkt.readVarInt();
         for(int i = 0; i< dimConfigs; i++) {
             int dimID = pkt.readVarInt();
-            Config cfg = Config.fromPacket(pkt);
+            DimensionConfig cfg = DimensionConfig.fromPacket(pkt);
             cfg.registerWithDimManager(dimID, true);
         }
     }

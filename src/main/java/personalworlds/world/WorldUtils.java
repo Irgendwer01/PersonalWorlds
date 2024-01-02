@@ -17,12 +17,12 @@ import net.minecraftforge.common.DimensionManager;
 
 public class WorldUtils {
 
-    public static boolean createWorld(Config config, int dimID) {
+    public static boolean createWorld(DimensionConfig dimensionConfig, int dimID) {
         DimensionManager.registerDimension(dimID, dimType);
         DimensionManager.initDimension(dimID);
         WorldServer world = DimensionManager.getWorld(dimID);
-        config.setSpawnPos(world.getSpawnPoint());
-        if (!config.update()) {
+        dimensionConfig.setSpawnPos(world.getSpawnPoint());
+        if (!dimensionConfig.update()) {
             log.error(
                     String.format("Failed to create Config for Personal World %s! Removing Personal World...", dimID));
             removeWorld(dimID);

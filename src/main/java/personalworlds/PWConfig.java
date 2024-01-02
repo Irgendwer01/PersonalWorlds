@@ -8,6 +8,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.config.Config;
+import personalworlds.world.DimensionConfig;
 
 @Config(modid = PWValues.modID)
 public class PWConfig {
@@ -64,6 +65,11 @@ public class PWConfig {
             "minecraft:void",
             "minecraft:river",
             "minecraft:desert"
+    };
+
+    @Config.Comment("Default Presets used for generating a world")
+    public static String[] defaultPresets = new String[] {
+            DimensionConfig.PRESET_UW_VOID, DimensionConfig.PRESET_UW_GARDEN, DimensionConfig.PRESET_UW_MINING
     };
 
     public static List<IBlockState> getAllowedBlocks() {
