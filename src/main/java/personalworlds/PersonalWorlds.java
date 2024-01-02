@@ -92,60 +92,51 @@ public class PersonalWorlds {
     }
 
     @SubscribeEvent
+    public void worldSave(WorldEvent.Save event) {
+        if(!(event.getWorld().provider instanceof PWWorldProvider PWWP)) {
+            return;
+        }
+        DimensionConfig cfg = PWWP.getConfig();
+        if(cfg == null || !cfg.isNeedsSaving()) {
+            return;
+        }
+        cfg.update();
+    }
+
+    //Needs to be run at this point because earlier will throw NPE
+    @Mod.EventHandler
     public void onWorldLoad(WorldEvent.Load e) {
         if (e.getWorld().provider.getDimension() == 0) {
-            File file = new File(e.getWorld().getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
+            loadDimensionConfigs();
+        }
+    }
+
+    public void clientDisconnectionHandler(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        unregisterDims(true);
+    }
+
+    private void loadDimensionConfigs() {
+            unregisterDims(false);
+            File file = new File(server.getWorld(0).getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
             if (file.exists()) {
                 NBTTagCompound configNBT = null;
                 try {
                     configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
                 } catch (IOException ex) {
-                    PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+                    PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", ex));
                 }
                 if (configNBT != null) {
                     int[] dimensions = configNBT.getIntArray("dimensions");
-                    Arrays.stream(dimensions).forEach(dim -> DimensionManager.registerDimension(dim, dimType));
+                    Arrays.stream(dimensions).forEach(dimID -> {
+                        try {
+                            DimensionConfig dimCFG = new DimensionConfig(dimID);
+                            dimCFG.registerWithDimManager(dimID, false);
+                        } catch(Exception e) {
+                            log.error("Couldn't load personal dimension data from ", e);
+                        }
+                    });
                 }
             }
-        }
-    }
-
-    @SubscribeEvent
-    public void worldSave(WorldEvent.Save event) {
-        try {
-            if(!(event.getWorld().provider instanceof PWWorldProvider PWWP)) {
-                return;
-            }
-            DimensionConfig cfg = PWWP.getConfig();
-            if(cfg == null || !cfg.isNeedsSaving()) {
-                return;
-            }
-            // save the config
-        } catch (Exception e) {
-            log.fatal("couldnt save person dimension data for" + event.getWorld().provider.getDimension(), e);
-        }
-    }
-
-    @Mod.EventHandler
-    public void serverAboutToStart(FMLServerAboutToStartEvent event) {
-        loadDimensionConfigs();
-    }
-
-    void loadDimensionConfigs() {
-        try {
-            deregisterDims(false);
-            // load the file
-
-            try {
-                DimensionConfig dimCFG = new DimensionConfig();
-                int dimID = 0;
-                dimCFG.registerWithDimManager(dimID, false);
-            } catch(Exception e) {
-                log.error("Couldn't load personal dimension data from ", e);
-            }
-        }catch(Exception e) {
-            log.error("Error loading and registering Personal World dimensions", e);
-        }
 
     }
 
@@ -156,20 +147,19 @@ public class PersonalWorlds {
             if(dimCFG == null || !dimCFG.isNeedsSaving()) {
                 return true;
             }
-            try {
-                saveConfig(dimID, dimCFG);
-            } catch(IOException e) {
-                log.error("Couldn't save dimension " + dimID, e);
-            }
+            saveConfig(dimID, dimCFG);
             return true;
         });
     }
 
-    private void deregisterDims(boolean isClient) {
+    private void unregisterDims(boolean isClient) {
+        if (CommonProxy.getDimensionConfigs(isClient).isEmpty()) {
+            return;
+        }
         synchronized (CommonProxy.getDimensionConfigs(isClient)) {
             CommonProxy.getDimensionConfigs(isClient).forEachEntry((dimID, dimCFG) -> {
                 if(DimensionManager.isDimensionRegistered(dimID)) {
-                    FMLLog.info("deregistering PersonalWorld dimension %d", dimID);
+                    FMLLog.info("unregistering PersonalWorld dimension %d", dimID);
                     DimensionManager.unregisterDimension(dimID);
                 }
                 return true;
@@ -180,9 +170,9 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void serverStopped(FMLServerStoppedEvent event) {
-        deregisterDims(false);
+        unregisterDims(false);
         if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-            deregisterDims(true);
+            unregisterDims(true);
             synchronized (CommonProxy.getDimensionConfigs(true)) {
                 CommonProxy.getDimensionConfigs(true).clear();
             }
@@ -199,13 +189,7 @@ public class PersonalWorlds {
         }
     }
 
-    @SubscribeEvent
-    public void clientDisconnectionHandler(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
-        deregisterDims(true);
-        deregisterDims(false);
-    }
-
-    private void saveConfig(int dimID, DimensionConfig config) throws IOException {
+    private void saveConfig(int dimID, DimensionConfig config) {
         File file = new File(server.getWorld(dimID).getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
         if (file.exists()) {
             NBTTagCompound configNBT = null;
@@ -219,5 +203,6 @@ public class PersonalWorlds {
                 Arrays.stream(dimensions).forEach(DimensionManager::unregisterDimension);
             }
         }
+        config.update();
     }
 }

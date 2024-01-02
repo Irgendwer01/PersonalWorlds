@@ -1,5 +1,7 @@
 package personalworlds.blocks.tile;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -17,10 +19,18 @@ import personalworlds.world.PWWorldProvider;
 
 public class TilePersonalPortal extends TileEntity {
 
-    public boolean isActive = false;
-    public int targetID;
-    public BlockPos targetPos = new BlockPos(8, 8, 8);
-    public EnumFacing facing;
+    @Getter
+    private boolean isActive = false;
+
+    @Getter
+    private int targetID;
+
+    @Getter
+    private BlockPos targetPos = new BlockPos(8, 8, 8);
+
+    @Getter
+    @Setter
+    private EnumFacing facing;
 
     public void transport(EntityPlayerMP player) {
 

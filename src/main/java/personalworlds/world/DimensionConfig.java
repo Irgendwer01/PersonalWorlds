@@ -3,9 +3,12 @@ package personalworlds.world;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import codechicken.lib.packet.PacketCustom;
 import com.google.common.collect.Lists;
@@ -26,9 +29,11 @@ import personalworlds.PWConfig;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
 
+import static personalworlds.PersonalWorlds.*;
+
 public class DimensionConfig {
 
-    private final File config;
+    private File config;
 
     @Getter
     @Setter
@@ -84,9 +89,6 @@ public class DimensionConfig {
 
 
     public DimensionConfig() {
-        this.config = new File(
-                PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" +
-                        "personal_world_" + 0 + "/PWConfig.dat");
     }
 
     public DimensionConfig(int dimID) {
@@ -161,7 +163,7 @@ public class DimensionConfig {
     public boolean copyFrom(DimensionConfig source, boolean copySaveInfo, boolean copyVisualInfo, boolean copyGenerationInfo) {
         this.needsSaving = false;
         if(copySaveInfo) {
-
+            this.needsSaving = source.needsSaving;
         }
         if(copyVisualInfo) {
             this.setSkyColor(source.getSkyColor());
@@ -293,10 +295,22 @@ public class DimensionConfig {
     }
 
     public void registerWithDimManager(int dimID, boolean isClient) {
+        this.config = new File(
+                PersonalWorlds.server.getWorld(0).getSaveHandler().getWorldDirectory().getAbsolutePath() + "/" +
+                        "personal_world_" + dimID + "/PWConfig.dat");
         if(!DimensionManager.isDimensionRegistered(dimID)) {
-            DimensionType dimType = DimensionType.register("personalWorld", "", dimID, PWWorldProvider.class, false);
+            if (!isClient) {
+                if (!registerDimension(dimID)) {
+                    log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
+                    return;
+                }
+            }
             DimensionManager.registerDimension(dimID, dimType);
             PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient, new Throwable());
+        }
+        if (!isClient) {
+            this.needsSaving = false;
+            this.update();
         }
         synchronized (CommonProxy.getDimensionConfigs(isClient)) {
             if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
@@ -307,4 +321,67 @@ public class DimensionConfig {
         }
     }
 
+    private boolean registerDimension(int dimID) {
+        NBTTagCompound nbtTagCompound;
+        File file = new File(server.getWorld(0).getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                log.error(String.format("Could not create PWWorlds.dat! Error: %s", e));
+                return false;
+            }
+            nbtTagCompound = new NBTTagCompound();
+        } else {
+            try {
+                nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+            } catch (IOException e) {
+                log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+                return false;
+            }
+        }
+        int[] intArray;
+        if (nbtTagCompound.hasKey("dimensions")) {
+            int[] dimensions = nbtTagCompound.getIntArray("dimensions");
+            intArray = new int[dimensions.length + 1];
+            System.arraycopy(dimensions, 0, intArray, 0, dimensions.length);
+            intArray[dimensions.length] = dimID;
+            nbtTagCompound.setIntArray("dimensions", intArray);
+        } else {
+            intArray = new int[1];
+            intArray[0] = dimID;
+            nbtTagCompound.setIntArray("dimensions", intArray);
+        }
+        try {
+            CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
+        } catch (IOException e) {
+            log.error(String.format("Could not save PWWorlds.dat! Error: %s", e));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean unregisterDimension(int dimID) {
+        File file = new File(server.getWorld(0).getSaveHandler().getWorldDirectory() + "/PWWorlds.dat");
+        if (file.exists()) {
+            NBTTagCompound nbtTagCompound;
+            try {
+                nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+            } catch (IOException e) {
+                log.error(String.format("Could not read PWWorlds.dat! Error: %s", e));
+                return false;
+            }
+            int[] dimensions = nbtTagCompound.getIntArray("dimensions");
+            List<Integer> dimensionsList = Arrays.stream(dimensions).boxed().collect(Collectors.toList());
+            dimensionsList.removeIf(Predicate.isEqual(dimID));
+            nbtTagCompound.setIntArray("dimensions", dimensionsList.stream().mapToInt(Integer::intValue).toArray());
+            try {
+                CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
+            } catch (IOException e) {
+                log.error(String.format("Could not save PWWorlds.dat! Error: %s", e));
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -43,13 +43,12 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
                                     EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        //TilePersonalPortal tilePersonalPortal = (TilePersonalPortal) worldIn.getTileEntity(pos);
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {
             if (worldIn.isRemote) {
                 OpenGUI(playerIn, tpp);
             } else {
-                if (tpp.isActive && !playerIn.isSneaking()) {
+                if (tpp.isActive() && !playerIn.isSneaking()) {
                     tpp.transport((EntityPlayerMP) playerIn);
                     return true;
                 }
@@ -61,7 +60,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
 
     @SideOnly(Side.CLIENT)
     public boolean OpenGUI(EntityPlayer player, TilePersonalPortal portal) {
-        if (portal.isActive) {
+        if (portal.isActive()) {
             if (player.isSneaking()) {
                 Minecraft.getMinecraft().displayGuiScreen(new PWGui(portal));
                 return true;
@@ -83,9 +82,9 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         double dx = placer.posX - pos.getX();
         double dz = placer.posZ - pos.getZ();
         if(Math.abs(dx) > Math.abs(dz)) {
-            tpp.facing = (dx > 0) ? EnumFacing.EAST : EnumFacing.WEST;
+            tpp.setFacing((dx > 0) ? EnumFacing.EAST : EnumFacing.WEST);
         } else {
-            tpp.facing = (dz > 0) ? EnumFacing.SOUTH : EnumFacing.NORTH;
+            tpp.setFacing((dz > 0) ? EnumFacing.SOUTH : EnumFacing.NORTH);
         }
         if(world.isRemote)
             return;
