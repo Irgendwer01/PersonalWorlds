@@ -52,7 +52,7 @@ public class DimensionConfig {
     public static final String PRESET_MINING = "4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
     public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
             .compile(
-                    "^(?:[1-9][0-9]*\\*)?(?:[a-zA-Z]+):(?:[a-zA-Z]+)(?:,(?:[1-9][0-9]*\\*)?(?:[a-zA-Z]+):(?:[a-zA-Z]+))*$");
+                    "^(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?(?:,(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+:(?:[1-9][0-9]?)?+)*$");
 
     public DimensionConfig() {}
 
@@ -314,7 +314,7 @@ public class DimensionConfig {
         for (FlatLayerInfo info : infos) {
 
             IBlockState blockState = info.getLayerMaterial();
-            if (PWConfig.getAllowedBlocks().contains(blockState)) {
+            if (!PWConfig.getAllowedBlocks().contains(blockState)) {
                 return false;
             }
         }

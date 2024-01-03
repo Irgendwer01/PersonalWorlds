@@ -4,14 +4,21 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.IntConsumer;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.gen.FlatLayerInfo;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -256,6 +263,8 @@ public class PWGui extends GuiScreen {
         this.presetEditor.position = new Rectangle(172, 0, 1, 1);
         this.rootWidget.addChild(this.presetEditor);
 
+        regeneratePresetEditor();
+
         this.xSize = 320 - 16;
         this.ySize = 240 - 16;
         this.guiLeft = (this.width - this.xSize) / 2;
@@ -338,105 +347,103 @@ public class PWGui extends GuiScreen {
     }
 
     private void regeneratePresetEditor() {
-        // final boolean generationEnabled = desiredConfig.getAllowGenerationChanges();
-        // this.presetEditor.children.clear();
-        // // Palette
-        // int curX = 0;
-        // int curY = 0;
-        // for (String bl : PersonalSpaceMod.clientAllowedBlocks) {
-        // String[] blName = bl.split(":");
-        // if (blName.length != 2) continue;
-        // Block block = GameRegistry.findBlock(blName[0], blName[1]);
-        // ItemStack is = new ItemStack(block);
-        // WButton addBtn = new WButton(new Rectangle(curX, curY, 20, 20), "", false, 0, null, () -> {
-        // FlatLayerInfo fli = new FlatLayerInfo(1, block);
-        // this.dimensionConfig.getMutableLayers().add(fli);
-        // this.dimensionConfig.setLayers(this.dimensionConfig.getLayersAsString());
-        // this.configToPreset();
-        // });
-        // addBtn.itemStack = is;
-        // addBtn.itemStackText = "+";
-        // addBtn.tooltip = (is.getItem() != null) ? is.getDisplayName() : block.getLocalizedName();
-        // addBtn.enabled = generationEnabled;
-        // this.presetEditor.addChild(addBtn);
-        // curY += 21;
-        // if (curY > 188) {
-        // curY = 0;
-        // curX += 21;
-        // }
-        // }
-        // // Layers
-        // curY = 0;
-        // curX += 22;
-        // this.presetEditor.addChild(new WLabel(curX, curY, I18n.format("gui.personalWorld.layers"), false));
-        // curY += 10;
-        // List<FlatLayerInfo> fli = this.dimensionConfig.getLayers();
-        // for (int i = fli.size() - 1; i >= 0; i--) {
-        // FlatLayerInfo info = fli.get(i);
-        // final int finalI = i;
-        // WButton block = new WButton(new Rectangle(curX + 12, curY, 20, 28), "", false, 0, null, null);
-        // Block gameBlock = info.func_151536_b();
-        // block.enabled = false;
-        // block.itemStack = new ItemStack(gameBlock);
-        // block.itemStackText = Integer.toString(info.getLayerCount());
-        // block.tooltip = gameBlock.getLocalizedName();
-        // this.presetEditor.addChild(block);
-        //
-        // // up
-        // if (i < fli.size() - 1) {
-        // block.addChild(new WButton(new Rectangle(-12, 0, 10, 10), "", false, 0, Icons.SMALL_UP, () -> {
-        // Collections.swap(this.dimensionConfig.getMutableLayers(), finalI, finalI + 1);
-        // this.configToPreset();
-        // }));
-        // }
-        // block.addChild(new WButton(new Rectangle(-12, 9, 10, 10), "", false, 0, Icons.SMALL_CROSS, () -> {
-        // this.dimensionConfig.getMutableLayers().remove(finalI);
-        // this.configToPreset();
-        // }));
-        // if (i > 0) {
-        // block.addChild(new WButton(new Rectangle(-12, 18, 10, 10), "", false, 0, Icons.SMALL_DOWN, () -> {
-        // Collections.swap(this.dimensionConfig.getMutableLayers(), finalI, finalI - 1);
-        // this.configToPreset();
-        // }));
-        // }
-        // IntConsumer plusMinus = (mul) -> {
-        // FlatLayerInfo orig = this.dimensionConfig.getMutableLayers().get(finalI);
-        // boolean shiftHeld = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-        // boolean ctrlHeld = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL);
-        // int newCnt = ctrlHeld ? 64 : (shiftHeld ? 10 : 1);
-        // newCnt *= mul;
-        // newCnt = MathHelper.clamp(orig.getLayerCount() + newCnt, 1, 255);
-        // this.dimensionConfig.getMutableLayers().set(finalI, new FlatLayerInfo(newCnt, orig.func_151536_b()));
-        // this.dimensionConfig.setLayers(this.dimensionConfig.getLayersAsString());
-        // this.configToPreset();
-        // };
-        // block.addChild(
-        // new WButton(
-        // new Rectangle(21, 5, 18, 18),
-        // "",
-        // false,
-        // 0,
-        // generationEnabled ? Icons.PLUS : Icons.LOCK,
-        // () -> plusMinus.accept(1)));
-        // block.addChild(
-        // new WButton(
-        // new Rectangle(40, 5, 18, 18),
-        // "",
-        // false,
-        // 0,
-        // generationEnabled ? Icons.MINUS : Icons.LOCK,
-        // () -> plusMinus.accept(-1)));
-        //
-        // for (Widget child : block.children) {
-        // child.enabled = generationEnabled;
-        // }
-        //
-        // curY += 30;
-        // if (curY > 188) {
-        // curY = 10;
-        // curX += 21;
-        // }
-        // }
+        final boolean generationEnabled = dimensionConfig.allowGenerationChanges();
+        this.presetEditor.children.clear();
+        // Palette
+        int curX = 0;
+        int curY = 0;
+        for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
+            ItemStack is = new ItemStack(blockState.getBlock(), 1, blockState.getBlock().getMetaFromState(blockState));
+            WButton addBtn = new WButton(new Rectangle(curX, curY, 20, 20), "", false, 0, null, () -> {
+                FlatLayerInfo fli = new FlatLayerInfo(3, 1, blockState.getBlock(), blockState.getBlock().getMetaFromState(blockState));
+                this.dimensionConfig.getLayers().add(fli);
+                this.dimensionConfig.setLayers(this.dimensionConfig.getLayersAsString());
+                this.configToPreset();
+            });
+            addBtn.itemStack = is;
+            addBtn.itemStackText = "+";
+            addBtn.tooltip = (is.getItem() != null) ? is.getDisplayName() : blockState.getBlock().getLocalizedName();
+            addBtn.enabled = generationEnabled;
+            this.presetEditor.addChild(addBtn);
+            curY += 21;
+            if (curY > 188) {
+                curY = 0;
+                curX += 21;
+            }
+        }
+        // Layers
+        curY = 0;
+        curX += 22;
+        this.presetEditor.addChild(new WLabel(curX, curY, I18n.format("gui.personalWorld.layers"), false));
+        curY += 10;
+        List<FlatLayerInfo> fli = this.dimensionConfig.getLayers();
+        for (int i = fli.size() - 1; i >= 0; i--) {
+            FlatLayerInfo info = fli.get(i);
+            final int finalI = i;
+            WButton block = new WButton(new Rectangle(curX + 12, curY, 20, 28), "", false, 0, null, null);
+            Block gameBlock = info.getLayerMaterial().getBlock();
+            block.enabled = false;
+            ItemStack is = new ItemStack(gameBlock, 1, gameBlock.getMetaFromState(info.getLayerMaterial()));
+            block.itemStack = is;
+            block.itemStackText = Integer.toString(info.getLayerCount());
+            block.tooltip = (is.getItem() != null) ? is.getDisplayName() : gameBlock.getLocalizedName();
+            this.presetEditor.addChild(block);
+
+            // up
+            if (i < fli.size() - 1) {
+                block.addChild(new WButton(new Rectangle(-12, 0, 10, 10), "", false, 0, Icons.SMALL_UP, () -> {
+                    Collections.swap(this.dimensionConfig.getLayers(), finalI, finalI + 1);
+                    this.configToPreset();
+                }));
+            }
+            block.addChild(new WButton(new Rectangle(-12, 9, 10, 10), "", false, 0, Icons.SMALL_CROSS, () -> {
+                this.dimensionConfig.getLayers().remove(finalI);
+                this.configToPreset();
+            }));
+            if (i > 0) {
+                block.addChild(new WButton(new Rectangle(-12, 18, 10, 10), "", false, 0, Icons.SMALL_DOWN, () -> {
+                    Collections.swap(this.dimensionConfig.getLayers(), finalI, finalI - 1);
+                    this.configToPreset();
+                }));
+            }
+            IntConsumer plusMinus = (mul) -> {
+                FlatLayerInfo orig = this.dimensionConfig.getLayers().get(finalI);
+                boolean shiftHeld = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
+                boolean ctrlHeld = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL);
+                int newCnt = ctrlHeld ? 64 : (shiftHeld ? 10 : 1);
+                newCnt *= mul;
+                newCnt = MathHelper.clamp(orig.getLayerCount() + newCnt, 1, 255);
+                this.dimensionConfig.getLayers().set(finalI, new FlatLayerInfo(3, newCnt, orig.getLayerMaterial().getBlock(), orig.getLayerMaterial().getBlock().getMetaFromState(orig.getLayerMaterial())));
+                this.dimensionConfig.setLayers(this.dimensionConfig.getLayersAsString());
+                this.configToPreset();
+            };
+            block.addChild(
+                    new WButton(
+                            new Rectangle(21, 5, 18, 18),
+                            "",
+                            false,
+                            0,
+                            generationEnabled ? Icons.PLUS : Icons.LOCK,
+                            () -> plusMinus.accept(1)));
+            block.addChild(
+                    new WButton(
+                            new Rectangle(40, 5, 18, 18),
+                            "",
+                            false,
+                            0,
+                            generationEnabled ? Icons.MINUS : Icons.LOCK,
+                            () -> plusMinus.accept(-1)));
+
+            for (Widget child : block.children) {
+                child.enabled = generationEnabled;
+            }
+
+            curY += 30;
+            if (curY > 188) {
+                curY = 10;
+                curX += 21;
+            }
+        }
     }
 
     @Override
@@ -485,5 +492,14 @@ public class PWGui extends GuiScreen {
     @Override
     public boolean doesGuiPauseGame() {
         return false;
+    }
+
+    private void configToPreset() {
+        String preset = this.dimensionConfig.getLayersAsString();
+        if (preset == null || preset.isEmpty()) {
+            preset = voidPresetName;
+        }
+        this.presetEntry.textField.setText(preset);
+        this.presetEntry.textField.setCursorPositionZero();
     }
 }
