@@ -282,7 +282,7 @@ public class PWGui extends GuiScreen {
 
         boolean inputsValid = true;
 
-        if(!DimensionConfig.PRESET_VALIDATION_PATTERN.matcher(actualText).matches()) {
+        if(!DimensionConfig.PRESET_VALIDATION_PATTERN.matcher(actualText).matches() && !actualText.equals("")) {
             this.presetEntry.textField.setTextColor(0xFF0000);
             this.presetEntry.tooltip = I18n.format("gui.personalWorld.invalidSyntax");
             inputsValid = false;

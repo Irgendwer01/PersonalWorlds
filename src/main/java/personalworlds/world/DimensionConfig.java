@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import codechicken.lib.data.MCDataInput;
+import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.packet.PacketCustom;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
@@ -122,7 +124,7 @@ public class DimensionConfig {
         return cfg;
     }
 
-    public void readFromPacket(PacketCustom packet) {
+    public void readFromPacket(MCDataInput packet) {
         this.needsSaving = true;
         this.setSkyColor(packet.readInt());
         this.setStarsVisibility(packet.readFloat());
@@ -131,21 +133,11 @@ public class DimensionConfig {
         this.setWeather(packet.readBoolean());
         this.setVegetation(packet.readBoolean());
         this.setGenerateTrees(packet.readBoolean());
-        int layerCount = packet.readVarInt();
-        ArrayList<FlatLayerInfo> layers = new ArrayList<>(layerCount);
-        int y = 0;
-        for(int layerI = 0; layerI < layerCount; ++layerI) {
-            int blockID = packet.readVarInt();
-            int count = packet.readVarInt();
-            FlatLayerInfo info = new FlatLayerInfo(count, Block.getBlockById(blockID));
-            info.setMinY(y);
-            layers.add(info);
-            y += count;
-        }
-        this.layers = layers;
+        String temp = packet.readString();
+        this.layers = LayersFromString(temp);
     }
 
-    public void writeToPacket(PacketCustom packet) {
+    public void writeToPacket(MCDataOutput packet) {
         packet.writeInt(skyColor);
         packet.writeFloat(starsVisibility);
         packet.writeInt(daylightCycle.ordinal());
@@ -153,11 +145,8 @@ public class DimensionConfig {
         packet.writeBoolean(weather);
         packet.writeBoolean(vegetation);
         packet.writeBoolean(generateTrees);
-        packet.writeVarInt(layers.size());
-        for (FlatLayerInfo info : layers) {
-            packet.writeVarInt(Block.getIdFromBlock(info.getLayerMaterial().getBlock()));
-            packet.writeVarInt(info.getLayerCount());
-        }
+        String temp = LayersToString(layers);
+        packet.writeString(temp);
     }
 
     public boolean copyFrom(DimensionConfig source, boolean copySaveInfo, boolean copyVisualInfo, boolean copyGenerationInfo) {
@@ -222,12 +211,17 @@ public class DimensionConfig {
     }
 
     public String LayersToString(List<FlatLayerInfo> flatLayerInfos) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String string = "";
-        for (FlatLayerInfo flatLayerInfo : flatLayerInfos)
-            string = stringBuilder.append(string).append(flatLayerInfo.toString()).append(",").toString();
-        return string;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < flatLayerInfos.size(); i++) {
+            sb.append(flatLayerInfos.get(i).toString());
+            if (i != flatLayerInfos.size() - 1) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
+
+    //string = stringBuilder.append(string).append(flatLayerInfo.toString()).append(",").toString();
 
     public static List<FlatLayerInfo> LayersFromString(String string) {
         int currY = 0;
@@ -237,6 +231,7 @@ public class DimensionConfig {
             currY++;
             FlatLayerInfo flatLayerInfo = LayerFromString(string1);
             flatLayerInfo.setMinY(PWConfig.minY + currY);
+            flatLayerInfos.add(flatLayerInfo);
         }
         return flatLayerInfos;
     }
