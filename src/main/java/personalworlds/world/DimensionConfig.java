@@ -52,7 +52,7 @@ public class DimensionConfig {
     public static final String PRESET_MINING = "4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
     public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
             .compile(
-                    "^(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?(?:,(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+:(?:[1-9][0-9]?)?+)*$");
+                    "^(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?(?:,(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?+)*$");
 
     public DimensionConfig() {}
 
@@ -300,7 +300,7 @@ public class DimensionConfig {
         return LayersToString(this.layers);
     }
 
-    public static boolean canUseLayers(String preset, boolean onClient) {
+    public static boolean canUseLayers(String preset) {
         if (preset == null) {
             preset = "";
         }

@@ -311,7 +311,7 @@ public class PWGui extends GuiScreen {
             this.presetEntry.textField.setTextColor(0xFF0000);
             this.presetEntry.tooltip = I18n.format("gui.personalWorld.invalidSyntax");
             inputsValid = false;
-        } else if (!DimensionConfig.canUseLayers(actualText, true)) {
+        } else if (!DimensionConfig.canUseLayers(actualText)) {
             this.presetEntry.textField.setTextColor(0xFFFF00);
             this.presetEntry.tooltip = I18n.format("gui.personalWorld.notAllowed");
             inputsValid = false;
@@ -353,7 +353,7 @@ public class PWGui extends GuiScreen {
         int curX = 0;
         int curY = 0;
         for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
-            ItemStack is = new ItemStack(blockState.getBlock(), 1, blockState.getBlock().getMetaFromState(blockState));
+            ItemStack is = new ItemStack(blockState.getBlock(), 1, blockState.getBlock().damageDropped(blockState));
             WButton addBtn = new WButton(new Rectangle(curX, curY, 20, 20), "", false, 0, null, () -> {
                 FlatLayerInfo fli = new FlatLayerInfo(3, 1, blockState.getBlock(), blockState.getBlock().getMetaFromState(blockState));
                 this.dimensionConfig.getLayers().add(fli);
@@ -383,7 +383,7 @@ public class PWGui extends GuiScreen {
             WButton block = new WButton(new Rectangle(curX + 12, curY, 20, 28), "", false, 0, null, null);
             Block gameBlock = info.getLayerMaterial().getBlock();
             block.enabled = false;
-            ItemStack is = new ItemStack(gameBlock, 1, gameBlock.getMetaFromState(info.getLayerMaterial()));
+            ItemStack is = new ItemStack(gameBlock, 1, gameBlock.damageDropped(info.getLayerMaterial()));
             block.itemStack = is;
             block.itemStackText = Integer.toString(info.getLayerCount());
             block.tooltip = (is.getItem() != null) ? is.getDisplayName() : gameBlock.getLocalizedName();
