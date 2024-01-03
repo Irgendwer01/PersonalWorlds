@@ -2,6 +2,7 @@ package personalworlds.blocks;
 
 import javax.annotation.Nullable;
 
+import com.cleanroommc.modularui.factory.ClientGUI;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
@@ -24,6 +25,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGui;
+import personalworlds.gui.PWGuiMUI;
 
 public class BlockPersonalPortal extends Block implements ITileEntityProvider {
 
@@ -46,7 +48,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {
             if (worldIn.isRemote) {
-                OpenGUI(worldIn, playerIn, tpp);
+                ClientGUI.open(new PWGuiMUI(tpp).createGUI());
             } else {
                 if (tpp.isActive() && !playerIn.isSneaking()) {
                     tpp.transport((EntityPlayerMP) playerIn);
