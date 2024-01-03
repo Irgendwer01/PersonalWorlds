@@ -5,14 +5,17 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Biomes;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
+import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
@@ -33,14 +36,19 @@ public class PWChunkGenerator implements IChunkGenerator {
     @Override
     public Chunk generateChunk(int x, int z) {
         ChunkPrimer chunkPrimer = new ChunkPrimer();
+        int y = 0;
         if (dimensionConfig.getLayers() != null) {
-            for (int y = 0; y < dimensionConfig.getLayers().size(); y++) {
-                if (y > dimensionConfig.getLayers().size() - 1) {
+            for(FlatLayerInfo fli : dimensionConfig.getLayers()) {
+                Block block = fli.getLayerMaterial().getBlock();
+                if(block == null || block == Blocks.AIR) {
+                    y += fli.getLayerCount();
                     continue;
                 }
-                for (int i = 0; i < 16; i++) {
-                    for (int j = 0; j < 16; j++) {
-                        chunkPrimer.setBlockState(i, 4 + y, j, dimensionConfig.getLayers().get(y).getLayerMaterial());
+                for(; y < fli.getMinY() + fli.getLayerCount() && y < world.getHeight(); ++y) {
+                    for (int i = 0; i < 16; i++) {
+                        for (int j = 0; j < 16; j++) {
+                            chunkPrimer.setBlockState(i, y, j, fli.getLayerMaterial());
+                        }
                     }
                 }
             }
@@ -53,24 +61,24 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public void populate(int x, int z) {
-        if (dimensionConfig.isVegetation()) {
-            world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).decorate(world, random,
-                    new BlockPos(x * 16, 0, z * 16));
-        }
-
-        if (dimensionConfig.isGenerateTrees() && TerrainGen.decorate(
-                world,
-                random,
-                new ChunkPos(x, z),
-                DecorateBiomeEvent.Decorate.EventType.TREE)) {
-            x = x + random.nextInt(16) + 8;
-            z = z + random.nextInt(16) + 8;
-            int y = this.world.getHeight(x, z);
-            WorldGenAbstractTree worldgenabstracttree = Biomes.PLAINS.getRandomTreeFeature(random);
-            if (worldgenabstracttree.generate(world, random, new BlockPos(x, y, z))) {
-                worldgenabstracttree.generate(world, random, new BlockPos(x, y, z));
-            }
-        }
+//        if (dimensionConfig.isVegetation()) {
+//            world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).decorate(world, random,
+//                    new BlockPos(x * 16, 0, z * 16));
+//        }
+//
+//        if (dimensionConfig.isGenerateTrees() && TerrainGen.decorate(
+//                world,
+//                random,
+//                new ChunkPos(x, z),
+//                DecorateBiomeEvent.Decorate.EventType.TREE)) {
+//            x = x + random.nextInt(16) + 8;
+//            z = z + random.nextInt(16) + 8;
+//            int y = this.world.getHeight(x, z);
+//            WorldGenAbstractTree worldgenabstracttree = Biomes.PLAINS.getRandomTreeFeature(random);
+//            if (worldgenabstracttree.generate(world, random, new BlockPos(x, y, z))) {
+//                worldgenabstracttree.generate(world, random, new BlockPos(x, y, z));
+//            }
+//        }
     }
 
     @Override

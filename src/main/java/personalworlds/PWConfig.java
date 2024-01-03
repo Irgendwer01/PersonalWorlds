@@ -14,7 +14,7 @@ import personalworlds.world.DimensionConfig;
 public class PWConfig {
 
     @Config.Comment("Y Level where Flat World will start")
-    public static int minY = 4;
+    public static int minY = 0;
 
     @Config.Comment("Blocks allowed to be used in an Flat World.")
     public static String[] allowedBlocks = {

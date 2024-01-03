@@ -104,11 +104,9 @@ public class PersonalWorlds {
     }
 
     //Needs to be run at this point because earlier will throw NPE
-    @Mod.EventHandler
+    @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load e) {
-        if (e.getWorld().provider.getDimension() == 0) {
-            loadDimensionConfigs();
-        }
+        //loadDimensionConfigs();
     }
 
     public void clientDisconnectionHandler(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {

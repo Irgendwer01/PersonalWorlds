@@ -155,6 +155,7 @@ public class TilePersonalPortal extends TileEntity {
             conf.registerWithDimManager(targetID, false);
             this.isActive = true;
             this.targetID = targetID;
+            this.targetPos = new BlockPos(this.targetPos.getX(), sanitized.getGroundLevel(), this.targetPos.getZ());
             markDirty();
             createNewDim = true;
 
