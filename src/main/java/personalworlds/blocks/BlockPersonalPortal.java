@@ -17,6 +17,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import net.minecraftforge.fml.relauncher.Side;
@@ -46,7 +47,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {
             if (worldIn.isRemote) {
-                OpenGUI(playerIn, tpp);
+                OpenGUI(worldIn, playerIn, tpp);
             } else {
                 if (tpp.isActive() && !playerIn.isSneaking()) {
                     tpp.transport((EntityPlayerMP) playerIn);
@@ -59,13 +60,17 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     }
 
     @SideOnly(Side.CLIENT)
-    public boolean OpenGUI(EntityPlayer player, TilePersonalPortal portal) {
+    public boolean OpenGUI(World world, EntityPlayer player, TilePersonalPortal portal) {
         if (portal.isActive()) {
             if (player.isSneaking()) {
                 Minecraft.getMinecraft().displayGuiScreen(new PWGui(portal));
                 return true;
             }
         } else {
+            if(world.provider.getDimension() != 0) {
+                player.sendMessage(new TextComponentTranslation("chat.overworldPersonalDimension"));
+                return false;
+            }
             Minecraft.getMinecraft().displayGuiScreen(new PWGui(portal));
             return true;
         }

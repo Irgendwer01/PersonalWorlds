@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -13,6 +15,7 @@ import net.minecraftforge.common.DimensionManager;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.packet.Packets;
+import personalworlds.proxy.ClientProxy;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
@@ -173,7 +176,10 @@ public class TilePersonalPortal extends TileEntity {
     @Override
     public void markDirty() {
         super.markDirty();
-
+        if (world != null) {
+            world.markBlockRangeForRenderUpdate(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1,
+                    pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        }
     }
 
 
@@ -202,5 +208,13 @@ public class TilePersonalPortal extends TileEntity {
         }
 
         super.readFromNBT(compound);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        if(world.isRemote) {
+            readFromNBT(pkt.getNbtCompound());
+            ((ClientProxy)PersonalWorlds.proxy).closeGUI(this);
+        }
     }
 }
