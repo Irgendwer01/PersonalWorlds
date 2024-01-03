@@ -8,13 +8,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.config.Config;
+
 import personalworlds.world.DimensionConfig;
 
 @Config(modid = PWValues.modID)
 public class PWConfig {
-
-    @Config.Comment("Y Level where Flat World will start")
-    public static int minY = 0;
 
     @Config.Comment("Blocks allowed to be used in an Flat World.")
     public static String[] allowedBlocks = {
@@ -69,7 +67,7 @@ public class PWConfig {
 
     @Config.Comment("Default Presets used for generating a world")
     public static String[] defaultPresets = new String[] {
-            DimensionConfig.PRESET_UW_VOID, DimensionConfig.PRESET_UW_GARDEN, DimensionConfig.PRESET_UW_MINING
+            DimensionConfig.PRESET_VOID, DimensionConfig.PRESET_FLAT, DimensionConfig.PRESET_MINING
     };
 
     public static List<IBlockState> getAllowedBlocks() {

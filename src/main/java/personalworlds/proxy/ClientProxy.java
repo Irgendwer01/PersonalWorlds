@@ -2,6 +2,7 @@ package personalworlds.proxy;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGui;
 

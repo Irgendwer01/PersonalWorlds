@@ -37,14 +37,14 @@ public class PWChunkGenerator implements IChunkGenerator {
     public Chunk generateChunk(int x, int z) {
         ChunkPrimer chunkPrimer = new ChunkPrimer();
         int y = 0;
-        if (dimensionConfig.getLayers() != null) {
-            for(FlatLayerInfo fli : dimensionConfig.getLayers()) {
+        if (!dimensionConfig.getLayers().isEmpty()) {
+            for (FlatLayerInfo fli : dimensionConfig.getLayers()) {
                 Block block = fli.getLayerMaterial().getBlock();
-                if(block == null || block == Blocks.AIR) {
+                if (block == null || block == Blocks.AIR) {
                     y += fli.getLayerCount();
                     continue;
                 }
-                for(; y < fli.getMinY() + fli.getLayerCount() && y < world.getHeight(); ++y) {
+                for (; y < fli.getMinY() + fli.getLayerCount() && y < world.getHeight(); ++y) {
                     for (int i = 0; i < 16; i++) {
                         for (int j = 0; j < 16; j++) {
                             chunkPrimer.setBlockState(i, y, j, fli.getLayerMaterial());
@@ -53,7 +53,6 @@ public class PWChunkGenerator implements IChunkGenerator {
                 }
             }
         }
-
         Chunk chunk = new Chunk(world, chunkPrimer, x, z);
         chunk.generateSkylightMap();
         return chunk;
@@ -61,24 +60,24 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public void populate(int x, int z) {
-//        if (dimensionConfig.isVegetation()) {
-//            world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).decorate(world, random,
-//                    new BlockPos(x * 16, 0, z * 16));
-//        }
-//
-//        if (dimensionConfig.isGenerateTrees() && TerrainGen.decorate(
-//                world,
-//                random,
-//                new ChunkPos(x, z),
-//                DecorateBiomeEvent.Decorate.EventType.TREE)) {
-//            x = x + random.nextInt(16) + 8;
-//            z = z + random.nextInt(16) + 8;
-//            int y = this.world.getHeight(x, z);
-//            WorldGenAbstractTree worldgenabstracttree = Biomes.PLAINS.getRandomTreeFeature(random);
-//            if (worldgenabstracttree.generate(world, random, new BlockPos(x, y, z))) {
-//                worldgenabstracttree.generate(world, random, new BlockPos(x, y, z));
-//            }
-//        }
+        if (dimensionConfig.generateVegetation()) {
+            world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).decorate(world, random,
+                    new BlockPos(x * 16, 0, z * 16));
+        }
+
+        if (dimensionConfig.generateTrees() && TerrainGen.decorate(
+                world,
+                random,
+                new ChunkPos(x, z),
+                DecorateBiomeEvent.Decorate.EventType.TREE)) {
+            x = x + random.nextInt(16) + 8;
+            z = z + random.nextInt(16) + 8;
+            int y = this.world.getHeight(x, z);
+            WorldGenAbstractTree worldgenabstracttree = Biomes.PLAINS.getRandomTreeFeature(random);
+            if (worldgenabstracttree.generate(world, random, new BlockPos(x, y, z))) {
+                worldgenabstracttree.generate(world, random, new BlockPos(x, y, z));
+            }
+        }
     }
 
     @Override
@@ -88,7 +87,7 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public List<Biome.SpawnListEntry> getPossibleCreatures(EnumCreatureType creatureType, BlockPos pos) {
-        if (dimensionConfig.isPassiveSpawn()) {
+        if (dimensionConfig.passiveSpawn()) {
             return world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).getSpawnableList(creatureType);
         }
         return null;

@@ -4,12 +4,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
+
 import personalworlds.blocks.tile.TilePersonalPortal;
 
 public class PWTeleporter extends Teleporter {
 
     private BlockPos pos;
     TilePersonalPortal tpp;
+
     public PWTeleporter(WorldServer worldIn, BlockPos pos) {
         super(worldIn);
         this.pos = pos;

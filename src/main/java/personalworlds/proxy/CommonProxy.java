@@ -10,7 +10,7 @@ public class CommonProxy {
     final TIntObjectHashMap<DimensionConfig> serverDimensionConfigs = new TIntObjectHashMap<>();
 
     public static TIntObjectHashMap<DimensionConfig> getDimensionConfigs(boolean isClient) {
-        if(isClient)
+        if (isClient)
             return PersonalWorlds.proxy.clientDimensionConfigs;
         return PersonalWorlds.proxy.serverDimensionConfigs;
     }

@@ -19,9 +19,9 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGui;
 
@@ -39,7 +39,6 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new TilePersonalPortal();
     }
-
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
@@ -67,7 +66,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
                 return true;
             }
         } else {
-            if(world.provider.getDimension() != 0) {
+            if (world.provider.getDimension() != 0) {
                 player.sendMessage(new TextComponentTranslation("chat.overworldPersonalDimension"));
                 return false;
             }
@@ -78,27 +77,28 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer,
+                                ItemStack stack) {
         TileEntity te = world.getTileEntity(pos);
-        if(!(te instanceof TilePersonalPortal tpp)) {
+        if (!(te instanceof TilePersonalPortal tpp)) {
             return;
         }
 
         double dx = placer.posX - pos.getX();
         double dz = placer.posZ - pos.getZ();
-        if(Math.abs(dx) > Math.abs(dz)) {
+        if (Math.abs(dx) > Math.abs(dz)) {
             tpp.setFacing((dx > 0) ? EnumFacing.EAST : EnumFacing.WEST);
         } else {
             tpp.setFacing((dz > 0) ? EnumFacing.SOUTH : EnumFacing.NORTH);
         }
-        if(world.isRemote)
+        if (world.isRemote)
             return;
 
-        if(stack.hasTagCompound()) {
+        if (stack.hasTagCompound()) {
             tpp.readFromNBT(stack.getTagCompound());
             EntityPlayerMP player = null;
-            if(placer instanceof EntityPlayerMP) {
-               player = (EntityPlayerMP)placer;
+            if (placer instanceof EntityPlayerMP) {
+                player = (EntityPlayerMP) placer;
             }
             tpp.linkOtherPortal(false, player);
         }

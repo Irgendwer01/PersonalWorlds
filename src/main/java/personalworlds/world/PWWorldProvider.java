@@ -1,19 +1,22 @@
 package personalworlds.world;
 
+import java.util.Arrays;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.biome.BiomeProviderSingle;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
-
-import java.util.Arrays;
 
 public class PWWorldProvider extends WorldProvider {
 
@@ -23,15 +26,16 @@ public class PWWorldProvider extends WorldProvider {
 
     public DimensionConfig getConfig() {
         if (this.dimensionConfig == null) {
-            boolean isClient = (this.world != null) ? this.world.isRemote : FMLCommonHandler.instance().getEffectiveSide().isClient();
+            boolean isClient = (this.world != null) ? this.world.isRemote :
+                    FMLCommonHandler.instance().getEffectiveSide().isClient();
             this.dimensionConfig = DimensionConfig.getForDimension(this.getDimension(), isClient);
-            if(this.dimensionConfig == null) {
-                PersonalWorlds.log.fatal("PersonalSpace couldn't find dimension config for dimension {}, detected side: {}\nknown client dimension IDs: {}\nknown server dimension IDs: {}\n",
+            if (this.dimensionConfig == null) {
+                PersonalWorlds.log.fatal(
+                        "PersonalSpace couldn't find dimension config for dimension {}, detected side: {}\nknown client dimension IDs: {}\nknown server dimension IDs: {}\n",
                         this.getDimension(),
                         isClient ? "CLIENT" : "SERVER",
                         Arrays.toString(CommonProxy.getDimensionConfigs(true).keys()),
-                        Arrays.toString(CommonProxy.getDimensionConfigs(false).keys()),
-                        new Throwable());
+                        Arrays.toString(CommonProxy.getDimensionConfigs(false).keys()));
             }
         }
         return this.dimensionConfig;
@@ -79,26 +83,26 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public boolean canRespawnHere() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isDaytime() {
-        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.isDaytime();
+        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.isDaytime();
 
         return !(this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON);
     }
 
     @Override
     public float getSunBrightnessFactor(float par1) {
-        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightnessFactor(par1);
+        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightnessFactor(par1);
 
         return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.0f : 1.0f;
     }
 
     @Override
     public float getSunBrightness(float par1) {
-        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightness(par1);
+        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightness(par1);
 
         return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.2f : 1.0f;
     }
@@ -106,13 +110,14 @@ public class PWWorldProvider extends WorldProvider {
     @SideOnly(Side.CLIENT)
     @Override
     public float getStarBrightness(float brightness) {
-        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getStarBrightness(brightness);
+        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getStarBrightness(brightness);
         return getConfig().getStarVisibility();
     }
 
     @Override
     public float calculateCelestialAngle(long worldTime, float partialTicks) {
-        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.calculateCelestialAngle(worldTime, partialTicks);
+        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE)
+            return super.calculateCelestialAngle(worldTime, partialTicks);
 
         return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.5f : 0.0f;
     }
@@ -167,5 +172,10 @@ public class PWWorldProvider extends WorldProvider {
     @Override
     public boolean canSnowAt(BlockPos pos, boolean checkLight) {
         return this.getConfig().weatherEnabled() && super.canSnowAt(pos, checkLight);
+    }
+
+    @Override
+    public BiomeProvider getBiomeProvider() {
+        return new BiomeProviderSingle(this.dimensionConfig.getBiome());
     }
 }
