@@ -74,12 +74,11 @@ public class PWConfig {
         int metaData = 0;
         List<IBlockState> allowedBlocks = new ArrayList<>();
         for (String string : PWConfig.allowedBlocks) {
-            String[] stringArray = string.split(":", 2);
+            String[] stringArray = string.split(":");
             if (stringArray.length == 3) {
                 metaData = Integer.parseInt(stringArray[2]);
-                string = stringArray[0] + stringArray[1];
             }
-            Block block = Block.REGISTRY.getObject(new ResourceLocation(string));
+            Block block = Block.REGISTRY.getObject(new ResourceLocation(stringArray[0], stringArray[1]));
             if (block == null) {
                 continue;
             }

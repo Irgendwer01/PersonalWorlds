@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.FlatLayerInfo;
@@ -355,7 +356,8 @@ public class PWGui extends GuiScreen {
         for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
             ItemStack is = new ItemStack(blockState.getBlock(), 1, blockState.getBlock().damageDropped(blockState));
             WButton addBtn = new WButton(new Rectangle(curX, curY, 20, 20), "", false, 0, null, () -> {
-                FlatLayerInfo fli = new FlatLayerInfo(3, 1, blockState.getBlock(), blockState.getBlock().getMetaFromState(blockState));
+                FlatLayerInfo fli = new FlatLayerInfo(3, 1, blockState.getBlock(),
+                        blockState.getBlock().getMetaFromState(blockState));
                 this.dimensionConfig.getLayers().add(fli);
                 this.dimensionConfig.setLayers(this.dimensionConfig.getLayersAsString());
                 this.configToPreset();
@@ -386,7 +388,8 @@ public class PWGui extends GuiScreen {
             ItemStack is = new ItemStack(gameBlock, 1, gameBlock.damageDropped(info.getLayerMaterial()));
             block.itemStack = is;
             block.itemStackText = Integer.toString(info.getLayerCount());
-            block.tooltip = (is.getItem() != null) ? is.getDisplayName() : gameBlock.getLocalizedName();
+            block.tooltip = (is.getItem() != Items.AIR || is.getItem() != null) ? is.getDisplayName() :
+                    gameBlock.getLocalizedName();
             this.presetEditor.addChild(block);
 
             // up
@@ -413,7 +416,9 @@ public class PWGui extends GuiScreen {
                 int newCnt = ctrlHeld ? 64 : (shiftHeld ? 10 : 1);
                 newCnt *= mul;
                 newCnt = MathHelper.clamp(orig.getLayerCount() + newCnt, 1, 255);
-                this.dimensionConfig.getLayers().set(finalI, new FlatLayerInfo(3, newCnt, orig.getLayerMaterial().getBlock(), orig.getLayerMaterial().getBlock().getMetaFromState(orig.getLayerMaterial())));
+                this.dimensionConfig.getLayers().set(finalI,
+                        new FlatLayerInfo(3, newCnt, orig.getLayerMaterial().getBlock(),
+                                orig.getLayerMaterial().getBlock().getMetaFromState(orig.getLayerMaterial())));
                 this.dimensionConfig.setLayers(this.dimensionConfig.getLayersAsString());
                 this.configToPreset();
             };

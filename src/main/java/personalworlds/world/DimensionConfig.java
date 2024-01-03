@@ -287,10 +287,10 @@ public class DimensionConfig {
             }
             string = stringArray[1];
         }
-        String[] stringArray1 = string.split(":", 2);
+        String[] stringArray1 = string.split(":");
         if (stringArray1.length == 3) {
             metadata = Integer.parseInt(stringArray1[2]);
-            string = stringArray1[0] + stringArray1[1];
+            string = stringArray1[0] + ":" + stringArray1[1];
         }
         block = Block.REGISTRY.getObject(new ResourceLocation(string));
         return new FlatLayerInfo(3, layers, block, metadata);
