@@ -5,8 +5,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
 
@@ -50,11 +53,6 @@ public class PWWorldProvider extends WorldProvider {
     }
 
     @Override
-    public float getStarBrightness(float par1) {
-        return getConfig().getStarsVisibility();
-    }
-
-    @Override
     public Vec3d getFogColor(float p_76562_1_, float p_76562_2_) {
         int color = getConfig().getSkyColor();
 
@@ -71,12 +69,52 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public float getCloudHeight() {
-        return getConfig().isClouds() ? 256.0F : Float.NEGATIVE_INFINITY;
+        return getConfig().cloudsEnabled() ? 256.0F : Float.NEGATIVE_INFINITY;
     }
 
     @Override
     public boolean isSurfaceWorld() {
         return true;
+    }
+
+    @Override
+    public boolean canRespawnHere() {
+        return false;
+    }
+
+    @Override
+    public boolean isDaytime() {
+        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.isDaytime();
+
+        return !(this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON);
+    }
+
+    @Override
+    public float getSunBrightnessFactor(float par1) {
+        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightnessFactor(par1);
+
+        return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.0f : 1.0f;
+    }
+
+    @Override
+    public float getSunBrightness(float par1) {
+        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightness(par1);
+
+        return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.2f : 1.0f;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public float getStarBrightness(float brightness) {
+        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getStarBrightness(brightness);
+        return getConfig().getStarVisibility();
+    }
+
+    @Override
+    public float calculateCelestialAngle(long worldTime, float partialTicks) {
+        if(getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.calculateCelestialAngle(worldTime, partialTicks);
+
+        return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.5f : 0.0f;
     }
 
     @Override
@@ -87,10 +125,47 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void updateWeather() {
-        if (getConfig().isWeather()) {
+        if (!this.world.isRemote && getConfig().weatherEnabled()) {
             super.updateWeather();
+        } else {
+            this.world.rainingStrength = 0.0f;
+            this.world.thunderingStrength = 0.0f;
+            this.world.prevRainingStrength = 0.0f;
+            this.world.prevThunderingStrength = 0.0f;
         }
     }
 
+    @Override
+    public void calculateInitialWeather() {
+        if (!this.world.isRemote && getConfig().weatherEnabled()) {
+            super.calculateInitialWeather();
+        } else {
+            this.world.rainingStrength = 0.0f;
+            this.world.thunderingStrength = 0.0f;
+            this.world.prevRainingStrength = 0.0f;
+            this.world.prevThunderingStrength = 0.0f;
+            this.world.getWorldInfo().setRaining(false);
+            this.world.getWorldInfo().setThundering(false);
+        }
+    }
 
+    @Override
+    public boolean canDoLightning(Chunk chunk) {
+        return this.getConfig().weatherEnabled();
+    }
+
+    @Override
+    public boolean canDoRainSnowIce(Chunk chunk) {
+        return this.getConfig().weatherEnabled();
+    }
+
+    @Override
+    public boolean canBlockFreeze(BlockPos pos, boolean byWater) {
+        return this.getConfig().weatherEnabled() && super.canBlockFreeze(pos, byWater);
+    }
+
+    @Override
+    public boolean canSnowAt(BlockPos pos, boolean checkLight) {
+        return this.getConfig().weatherEnabled() && super.canSnowAt(pos, checkLight);
+    }
 }

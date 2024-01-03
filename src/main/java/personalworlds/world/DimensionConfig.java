@@ -38,41 +38,20 @@ import static personalworlds.PersonalWorlds.*;
 public class DimensionConfig {
 
     private File config;
-
-    @Getter
-    @Setter
     private boolean generateTrees = false;
-
-    @Getter
-    @Setter
     private Enums.DaylightCycle daylightCycle = Enums.DaylightCycle.CYCLE;
 
     @Getter
     @Setter
     private boolean passiveSpawn = false;
-
-    @Getter
-    @Setter
     private boolean vegetation = false;
-
-    @Getter
-    @Setter
     private boolean clouds = true;
-
-    @Getter
-    @Setter
     private boolean weather = false;
-
-    @Getter
-    @Setter
     private int skyColor = 0xc0d8ff;
 
     @Getter
     @Setter
     private BlockPos spawnPos;
-
-    @Getter
-    @Setter
     private float starsVisibility = 1F;
 
     @Getter
@@ -129,14 +108,15 @@ public class DimensionConfig {
     public void readFromPacket(MCDataInput packet) {
         this.needsSaving = true;
         this.setSkyColor(packet.readInt());
-        this.setStarsVisibility(packet.readFloat());
-        this.setDaylightCycle(Enums.DaylightCycle.fromOrdinal(packet.readVarInt()));
-        this.setClouds(packet.readBoolean());
-        this.setWeather(packet.readBoolean());
-        this.setVegetation(packet.readBoolean());
-        this.setGenerateTrees(packet.readBoolean());
+        this.setStarVisibility(packet.readFloat());
+        this.setDaylightCycle(Enums.DaylightCycle.fromOrdinal(packet.readInt()));
+        this.enableClouds(packet.readBoolean());
+        this.enableWeather(packet.readBoolean());
+        this.setGeneratingVegetation(packet.readBoolean());
+        this.setGeneratingTrees(packet.readBoolean());
         int layers = packet.readVarInt();
         for(int i=0; i < layers; i++) {
+            int minY = packet.readInt();
             int layerCount = packet.readVarInt();
             Block block = Block.getBlockById(packet.readVarInt());
             byte meta = packet.readByte();
@@ -145,6 +125,7 @@ public class DimensionConfig {
                 continue;
             }
             FlatLayerInfo fli = new FlatLayerInfo(3, layerCount, block, meta);
+            fli.setMinY(minY);
             this.layers.add(fli);
         }
     }
@@ -157,9 +138,9 @@ public class DimensionConfig {
         packet.writeBoolean(weather);
         packet.writeBoolean(vegetation);
         packet.writeBoolean(generateTrees);
-
         packet.writeVarInt(layers.size());
         for(FlatLayerInfo fli : layers) {
+            packet.writeInt(fli.getMinY());
             packet.writeVarInt(fli.getLayerCount());
             packet.writeVarInt(Block.getIdFromBlock(fli.getLayerMaterial().getBlock()));
             packet.writeByte((byte)fli.getLayerMaterial().getBlock().getMetaFromState(fli.getLayerMaterial()));
@@ -173,14 +154,14 @@ public class DimensionConfig {
         }
         if(copyVisualInfo) {
             this.setSkyColor(source.getSkyColor());
-            this.setStarsVisibility(source.getStarsVisibility());
+            this.setStarVisibility(source.getStarVisibility());
             this.setDaylightCycle(source.getDaylightCycle());
-            this.setClouds(source.isClouds());
-            this.setWeather(source.isWeather());
+            this.enableClouds(source.cloudsEnabled());
+            this.enableWeather(source.weatherEnabled());
         }
         if(copyGenerationInfo) {
-            this.setGenerateTrees(source.isGenerateTrees());
-            this.setVegetation(source.isVegetation());
+            this.setGeneratingTrees(source.generateTrees());
+            this.setGeneratingVegetation(source.generateVegetation());
             this.layers = source.layers;
             this.needsSaving = true;
         }
@@ -245,10 +226,12 @@ public class DimensionConfig {
         ArrayList<FlatLayerInfo> flatLayerInfos = new ArrayList<>();
         String[] stringArray = string.split(",");
         for (String string1 : stringArray) {
-            currY++;
             FlatLayerInfo flatLayerInfo = LayerFromString(string1);
             flatLayerInfo.setMinY(PWConfig.minY + currY);
             flatLayerInfos.add(flatLayerInfo);
+            currY += flatLayerInfo.getLayerCount();
+            if(currY > 255)
+                break;
         }
         return flatLayerInfos;
     }
@@ -395,5 +378,93 @@ public class DimensionConfig {
             }
         }
         return true;
+    }
+
+    public int getGroundLevel() {
+        if (layers.isEmpty()) {
+            return 128;
+        }
+        int y = 0;
+        for (FlatLayerInfo info : layers) {
+            y += info.getLayerCount();
+        }
+        return MathHelper.clamp(y, 0, 255);
+    }
+
+    public float getStarVisibility() {
+        return this.starsVisibility;
+    }
+
+    public void setStarVisibility(float starVisibility) {
+        if(this.starsVisibility != starVisibility) {
+            this.needsSaving = true;
+            this.starsVisibility = MathHelper.clamp(starVisibility, 0.0f, 1.0f);
+        }
+    }
+
+    public int getSkyColor() {
+        return this.skyColor;
+    }
+
+    public void setSkyColor(int skyColor) {
+        if(this.skyColor != skyColor) {
+            this.needsSaving = true;
+            this.skyColor = MathHelper.clamp(skyColor, 0, 0xFFFFFF);
+        }
+    }
+
+    public boolean weatherEnabled() {
+        return this.weather;
+    }
+
+    public void enableWeather(boolean enableWeather) {
+        if(this.weather != enableWeather) {
+            this.needsSaving = true;
+            this.weather = enableWeather;
+        }
+    }
+
+    public Enums.DaylightCycle getDaylightCycle() {
+        return this.daylightCycle;
+    }
+
+    public void setDaylightCycle(Enums.DaylightCycle cycle) {
+        if(this.daylightCycle != cycle) {
+            this.needsSaving = true;
+            this.daylightCycle = cycle;
+        }
+    }
+
+    public boolean cloudsEnabled() {
+        return this.clouds;
+    }
+
+    public void enableClouds(boolean enableClouds) {
+        if(this.clouds != enableClouds) {
+            this.needsSaving = true;
+            this.clouds = enableClouds;
+        }
+    }
+
+    public boolean generateVegetation() {
+        return this.vegetation;
+    }
+
+    public void setGeneratingVegetation(boolean generateVegetation) {
+        if(this.vegetation != generateVegetation) {
+            this.needsSaving = true;
+            this.vegetation = generateVegetation;
+        }
+    }
+
+    public boolean generateTrees() {
+        return this.generateTrees;
+    }
+
+    public void setGeneratingTrees(boolean generateTrees) {
+        if(this.generateTrees != generateTrees) {
+            this.needsSaving = true;
+            this.generateTrees = generateTrees;
+        }
     }
 }

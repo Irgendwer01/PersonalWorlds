@@ -36,7 +36,6 @@ public enum Packets {
         pkt.writeVarInt(tile.getPos().getY());
         pkt.writeVarInt(tile.getPos().getZ());
         dimensionConfig.writeToPacket(pkt);
-        //dimensionConfig.update();
         return pkt;
     }
 

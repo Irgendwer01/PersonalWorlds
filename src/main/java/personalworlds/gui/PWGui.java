@@ -1,6 +1,6 @@
 package personalworlds.gui;
 
-import java.awt.Rectangle;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +25,7 @@ import codechicken.lib.gui.GuiDraw;
 import personalworlds.PWConfig;
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.packet.Packets;
+import personalworlds.proxy.CommonProxy;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.Enums;
 
@@ -56,6 +57,18 @@ public class PWGui extends GuiScreen {
     public PWGui(TilePersonalPortal tile) {
         super();
         this.tpp = tile;
+        int targetID = 0;
+        DimensionConfig currentCFG = DimensionConfig.getForDimension(tpp.getWorld().provider.getDimension(), true);
+        if(currentCFG != null) {
+            this.dimensionConfig.copyFrom(currentCFG, false, true, true);
+        } else if(tpp.isActive() && tile.getTargetID() > 1) {
+            DimensionConfig currentCFG1 = CommonProxy.getDimensionConfigs(true).get(tpp.getTargetID());
+            if(currentCFG1 != null) {
+                this.dimensionConfig.copyFrom(currentCFG1, false, true, true);
+            } else {
+            }
+        } else {
+        }
     }
 
     @Override
@@ -139,7 +152,7 @@ public class PWGui extends GuiScreen {
                 "%.2f",
                 0.0,
                 1.0,
-                dimensionConfig.getStarsVisibility(),
+                dimensionConfig.getStarVisibility(),
                 0.01,
                 false,
                 0xFFFFFF,
@@ -166,35 +179,38 @@ public class PWGui extends GuiScreen {
                 "",
                 false,
                 0,
-                dimensionConfig.isGenerateTrees(),
-                () -> dimensionConfig.setGenerateTrees(generateTrees.getValue()));
+                dimensionConfig.generateTrees(),
+                () -> dimensionConfig.setGeneratingTrees(generateTrees.getValue()));
         this.generateTrees.addChild(new WLabel(24, 4, I18n.format("gui.personalWorld.trees"), false));
         addWidget(generateTrees);
+
         this.enableWeather = new WToggleButton(
                 new Rectangle(90, this.generateTrees.position.y, 18, 18),
                 "",
                 false,
                 0,
-                dimensionConfig.isWeather(),
-                () -> dimensionConfig.setWeather(enableWeather.getValue()));
+                dimensionConfig.weatherEnabled(),
+                () -> dimensionConfig.enableWeather(enableWeather.getValue()));
         this.enableWeather.addChild(new WLabel(24, 4, I18n.format("gui.personalWorld.weather"), false));
         rootWidget.addChild(this.enableWeather);
+
         this.generateVegetation = new WToggleButton(
                 new Rectangle(0, this.ySize, 18, 18),
                 "",
                 false,
                 0,
-                dimensionConfig.isVegetation(),
-                () -> dimensionConfig.setVegetation(generateVegetation.getValue()));
+                dimensionConfig.generateVegetation(),
+                () -> dimensionConfig.setGeneratingVegetation(generateVegetation.getValue()));
         this.generateVegetation.addChild(new WLabel(24, 4, I18n.format("gui.personalWorld.vegetation"), false));
         addWidget(generateVegetation);
+
         this.enableClouds = new WToggleButton(
                 new Rectangle(90, this.generateVegetation.position.y, 18, 18),
                 "",
                 false,
                 0,
-                dimensionConfig.isClouds(),
-                () -> dimensionConfig.setClouds(enableClouds.getValue()));
+                dimensionConfig.cloudsEnabled(),
+                () -> dimensionConfig.enableClouds(enableClouds.getValue()));
         this.enableClouds.addChild(new WLabel(24, 4, I18n.format("gui.personalWorld.clouds"), false));
         rootWidget.addChild(this.enableClouds);
 
@@ -270,7 +286,7 @@ public class PWGui extends GuiScreen {
         int skyG = MathHelper.clamp(skyGreen.getValueInt(), 0, 255);
         int skyB = MathHelper.clamp(skyBlue.getValueInt(), 0, 255);
         dimensionConfig.setSkyColor((skyR << 16) | (skyG << 8) | skyB);
-        dimensionConfig.setStarsVisibility((float) this.starBrightness.getValue());
+        dimensionConfig.setStarVisibility((float) this.starBrightness.getValue());
 
 
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -310,7 +326,7 @@ public class PWGui extends GuiScreen {
                 3 * (skyRed.position.height + 1) - 2,
                 0xFF000000 | dimensionConfig.getSkyColor());
         Icons.bindTexture();
-        GL11.glColor4f(1, 1, 1, dimensionConfig.getStarsVisibility());
+        GL11.glColor4f(1, 1, 1, dimensionConfig.getStarVisibility());
         Icons.STAR.drawAt(132, this.skyRed.position.y + 2);
         Icons.STAR.drawAt(145, this.skyRed.position.y + 12);
         Icons.STAR.drawAt(134, this.skyRed.position.y + 21);
