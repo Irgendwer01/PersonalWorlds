@@ -106,7 +106,7 @@ public class PersonalWorlds {
     //Needs to be run at this point because earlier will throw NPE
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load e) {
-        loadDimensionConfigs();
+        //loadDimensionConfigs();
     }
 
     public void clientDisconnectionHandler(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {

@@ -27,6 +27,8 @@ import net.minecraft.world.gen.FlatLayerInfo;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 import personalworlds.PWConfig;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
@@ -133,8 +135,18 @@ public class DimensionConfig {
         this.setWeather(packet.readBoolean());
         this.setVegetation(packet.readBoolean());
         this.setGenerateTrees(packet.readBoolean());
-        String temp = packet.readString();
-        this.layers = LayersFromString(temp);
+        int layers = packet.readVarInt();
+        for(int i=0; i < layers; i++) {
+            int layerCount = packet.readVarInt();
+            Block block = Block.getBlockById(packet.readVarInt());
+            byte meta = packet.readByte();
+            if(block == null) {
+                log.error("Block was missing");
+                continue;
+            }
+            FlatLayerInfo fli = new FlatLayerInfo(3, layerCount, block, meta);
+            this.layers.add(fli);
+        }
     }
 
     public void writeToPacket(MCDataOutput packet) {
@@ -145,8 +157,13 @@ public class DimensionConfig {
         packet.writeBoolean(weather);
         packet.writeBoolean(vegetation);
         packet.writeBoolean(generateTrees);
-        String temp = LayersToString(layers);
-        packet.writeString(temp);
+
+        packet.writeVarInt(layers.size());
+        for(FlatLayerInfo fli : layers) {
+            packet.writeVarInt(fli.getLayerCount());
+            packet.writeVarInt(Block.getIdFromBlock(fli.getLayerMaterial().getBlock()));
+            packet.writeByte((byte)fli.getLayerMaterial().getBlock().getMetaFromState(fli.getLayerMaterial()));
+        }
     }
 
     public boolean copyFrom(DimensionConfig source, boolean copySaveInfo, boolean copyVisualInfo, boolean copyGenerationInfo) {
