@@ -2,6 +2,7 @@ package personalworlds.gui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -42,6 +43,7 @@ public class PWGuiMUI {
     private final IDrawable crossmark = UITexture.builder().imageSize(16, 16).location("personalworlds", "crossmark")
             .build();
 
+    private final ArrayList<String> layers = new ArrayList<>();
     private final ArrayList<IWidget> blockList = new ArrayList<>();
     private ModularPanel panel;
     private final DimensionConfig dimensionConfig = new DimensionConfig(0);
@@ -67,7 +69,7 @@ public class PWGuiMUI {
                     .addTooltipLine(stack.getDisplayName())
                     .tooltipScale(0.6F)
                     .onMousePressed(i -> {
-                        dimensionConfig.getLayers().add(new FlatLayerInfo(3, 1, block, meta));
+                        layers.add(new FlatLayerInfo(3, 1, block, meta).toString());
                         redrawLayers();
                         return true;
                     }));
@@ -204,19 +206,20 @@ public class PWGuiMUI {
         if (layersWidget != null) {
             panel.getChildren().removeIf(widget -> widget.equals(layersWidget));
         }
-        ArrayList<IWidget> layers = new ArrayList<>();
-        for (int i = 0; i < dimensionConfig.getLayers().size(); i++) {
-            FlatLayerInfo layerInfo = dimensionConfig.getLayers().get(i);
+        int currY = 0;
+        ArrayList<IWidget> layerWidget = new ArrayList<>();
+        for (int i = 0; i < layers.size(); i++) {
+            FlatLayerInfo layerInfo = DimensionConfig.LayerFromString(layers.get(i));
             AtomicInteger layerCount = new AtomicInteger(layerInfo.getLayerCount());
             IBlockState blockState = layerInfo.getLayerMaterial();
             Block block = layerInfo.getLayerMaterial().getBlock();
             int itemMeta = block.damageDropped(blockState);
             int meta = block.getMetaFromState(blockState);
             ItemStack stack = new ItemStack(block, 1, itemMeta);
-            boolean arrowDown = i != dimensionConfig.getLayers().size() - 1 && dimensionConfig.getLayers().size() != 1;
+            boolean arrowDown = i != layers.size() - 1 && layers.size() != 1;
             boolean arrowUp = i > 0;
             AtomicInteger finalI = new AtomicInteger(i);
-            layers.add(i, new ParentWidget<>().size(15, 15)
+            layerWidget.add(i, new ParentWidget<>().size(15, 15)
                     .overlay(new ItemDrawable(stack))
                     .addTooltipLine(stack.getDisplayName())
                     .tooltipScale(0.6F)
@@ -230,7 +233,7 @@ public class PWGuiMUI {
                             .onMousePressed(mouse -> {
                                 FlatLayerInfo newLayer = new FlatLayerInfo(3, layerCount.incrementAndGet(), block,
                                         meta);
-                                dimensionConfig.getLayers().set(finalI.get(), newLayer);
+                                layers.set(finalI.get(), newLayer.toString());
                                 redrawLayers();
                                 return true;
                             }))
@@ -245,7 +248,7 @@ public class PWGuiMUI {
                                 }
                                 FlatLayerInfo newLayer = new FlatLayerInfo(3, layerCount.decrementAndGet(), block,
                                         meta);
-                                dimensionConfig.getLayers().set(finalI.get(), newLayer);
+                                layers.set(finalI.get(), newLayer.toString());
                                 redrawLayers();
                                 return true;
                             }))
@@ -255,7 +258,7 @@ public class PWGuiMUI {
                             .addTooltipLine("Remove")
                             .tooltipScale(0.6F)
                             .onMousePressed(mouse -> {
-                                dimensionConfig.getLayers().remove(finalI.get());
+                                layers.remove(finalI.get());
                                 redrawLayers();
                                 return true;
                             }))
@@ -265,7 +268,7 @@ public class PWGuiMUI {
                             .addTooltipLine("Move up")
                             .tooltipScale(0.6F)
                             .onMousePressed(mouse -> {
-                                Collections.swap(dimensionConfig.getLayers(), finalI.getAndDecrement(), finalI.get());
+                                Collections.swap(layers, finalI.getAndDecrement(), finalI.get());
                                 redrawLayers();
                                 return true;
                             }))
@@ -275,18 +278,29 @@ public class PWGuiMUI {
                             .addTooltipLine("Move down")
                             .tooltipScale(0.6F)
                             .onMousePressed(mouse -> {
-                                Collections.swap(dimensionConfig.getLayers(), finalI.getAndIncrement(), finalI.get());
+                                Collections.swap(layers, finalI.getAndIncrement(), finalI.get());
                                 redrawLayers();
                                 return true;
                             })));
 
         }
-
-        layersWidget = new ListWidget<>(layers)
+        dimensionConfig.setLayers(toPreset(layers));
+        layersWidget = new ListWidget<>(layerWidget)
                 .top(20).right(20)
                 .size(15, 115);
         panel.child(layersWidget);
         WidgetTree.resize(panel);
         WidgetTree.resize(layersWidget);
+    }
+
+    private String toPreset(List<String> layerList) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = layerList.size()-1; i > -1; i--) {
+            sb.append(layerList.get(i));
+            if (i != 0) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
 }

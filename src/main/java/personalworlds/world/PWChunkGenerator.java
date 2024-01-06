@@ -41,7 +41,6 @@ public class PWChunkGenerator implements IChunkGenerator {
             for (FlatLayerInfo fli : dimensionConfig.getLayers()) {
                 Block block = fli.getLayerMaterial().getBlock();
                 if (block == null || block == Blocks.AIR) {
-                    y += fli.getLayerCount();
                     continue;
                 }
                 for (; y < fli.getMinY() + fli.getLayerCount() && y < world.getHeight(); ++y) {
