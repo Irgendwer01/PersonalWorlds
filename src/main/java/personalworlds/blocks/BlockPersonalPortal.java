@@ -2,13 +2,11 @@ package personalworlds.blocks;
 
 import javax.annotation.Nullable;
 
-import com.cleanroommc.modularui.factory.ClientGUI;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,8 +21,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import com.cleanroommc.modularui.factory.ClientGUI;
+
 import personalworlds.blocks.tile.TilePersonalPortal;
-import personalworlds.gui.PWGui;
 import personalworlds.gui.PWGuiMUI;
 
 public class BlockPersonalPortal extends Block implements ITileEntityProvider {
@@ -48,7 +47,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {
             if (worldIn.isRemote) {
-                ClientGUI.open(new PWGuiMUI(tpp).createGUI());
+                OpenGUI(worldIn, playerIn, tpp);
             } else {
                 if (tpp.isActive() && !playerIn.isSneaking()) {
                     tpp.transport((EntityPlayerMP) playerIn);
@@ -64,7 +63,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     public boolean OpenGUI(World world, EntityPlayer player, TilePersonalPortal portal) {
         if (portal.isActive()) {
             if (player.isSneaking()) {
-                Minecraft.getMinecraft().displayGuiScreen(new PWGui(portal));
+                ClientGUI.open(new PWGuiMUI(portal).createGUI());
                 return true;
             }
         } else {
@@ -72,7 +71,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
                 player.sendMessage(new TextComponentTranslation("chat.overworldPersonalDimension"));
                 return false;
             }
-            Minecraft.getMinecraft().displayGuiScreen(new PWGui(portal));
+            ClientGUI.open(new PWGuiMUI(portal).createGUI());
             return true;
         }
         return false;
