@@ -76,12 +76,6 @@ public class CommonProxy {
 
     public void serverStopped(FMLServerStoppedEvent event) {
         unregisterDims(false);
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-            unregisterDims(true);
-            synchronized (CommonProxy.getDimensionConfigs(true)) {
-                CommonProxy.getDimensionConfigs(true).clear();
-            }
-        }
     }
 
     @SubscribeEvent
