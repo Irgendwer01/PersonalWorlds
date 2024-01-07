@@ -11,6 +11,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.terraingen.BiomeEvent;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -145,6 +147,22 @@ public class CommonProxy {
                 return true;
             });
             CommonProxy.getDimensionConfigs(isClient).clear();
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onOreGenerate(OreGenEvent.GenerateMinable event) {
+        if (event.getWorld().provider instanceof PWWorldProvider) {
+            event.setResult(Event.Result.DENY);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
+        if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
+            if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE) && !PWWP.getConfig().generateTrees()) {
+                event.setResult(Event.Result.DENY);
+            }
         }
     }
 }

@@ -8,7 +8,6 @@ import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import personalworlds.proxy.CommonProxy;
-import personalworlds.world.PWOreBusListener;
 
 @Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version)
 public class PersonalWorlds {
@@ -22,7 +21,8 @@ public class PersonalWorlds {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
-        MinecraftForge.ORE_GEN_BUS.register(new PWOreBusListener());
+        MinecraftForge.ORE_GEN_BUS.register(new CommonProxy());
+        MinecraftForge.TERRAIN_GEN_BUS.register(new CommonProxy());
         proxy.onPreInit(e);
     }
 

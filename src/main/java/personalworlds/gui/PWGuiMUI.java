@@ -27,7 +27,6 @@ import com.cleanroommc.modularui.widget.ParentWidget;
 import com.cleanroommc.modularui.widget.WidgetTree;
 
 import personalworlds.PWConfig;
-import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
 
@@ -65,7 +64,6 @@ public class PWGuiMUI {
             dimensionConfig = DimensionConfig.getForDimension(targetDim, true);
         }
         final ArrayList<IWidget> blockList = new ArrayList<>();
-        Consumer<Integer> skyColor = dimensionConfig::setSkyColor;
         for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
             Block block = blockState.getBlock();
             int itemMeta = block.damageDropped(blockState);
@@ -113,7 +111,7 @@ public class PWGuiMUI {
                 .top(22).left(35));
         panel.child(new SliderWidget()
                 .size(100, 15)
-                .top(35).left(7)
+                .top(53).left(7)
                 .value(new DoubleValue(dimensionConfig.getStarVisibility()))
                 .onUpdateListener(widget -> {
                     dimensionConfig.setStarVisibility((float) widget.getSliderValue());
@@ -125,7 +123,7 @@ public class PWGuiMUI {
                 .background(GuiTextures.MC_BUTTON_DISABLED));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(53).left(8)
+                .top(35).left(10)
                 .overlay(checkmark)
                 .addTooltipLine("Trees").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -137,7 +135,7 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(53).left(30)
+                .top(35).left(30)
                 .overlay(checkmark)
                 .addTooltipLine("Vegetation").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -149,7 +147,7 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(53).left(53)
+                .top(35).left(50)
                 .overlay(checkmark)
                 .addTooltipLine("Passive Spawning").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -161,19 +159,7 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(53).left(73)
-                .overlay(checkmark)
-                .addTooltipLine("Clouds").tooltipScale(0.6F)
-                .onMousePressed(i -> {
-                    dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled());
-                    return true;
-                })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark);
-                }));
-        panel.child(new ButtonWidget<>()
-                .size(15, 15)
-                .top(53).left(93)
+                .top(35).left(70)
                 .overlay(checkmark)
                 .addTooltipLine("Weather").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -183,20 +169,21 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     widget.overlay(dimensionConfig.weatherEnabled() ? checkmark : crossmark);
                 }));
+        panel.child(new ButtonWidget<>()
+                .size(15, 15)
+                .top(35).left(90)
+                .overlay(checkmark)
+                .addTooltipLine("Clouds").tooltipScale(0.6F)
+                .onMousePressed(i -> {
+                    dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled());
+                    return true;
+                })
+                .onUpdateListener(widget -> {
+                    widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark);
+                }));
         panel.child(new ListWidget<>(blockList)
                 .top(20).right(60)
                 .size(15, 115));
-        panel.child(new ButtonWidget<>()
-                .size(15, 15)
-                .bottom(65).left(20)
-                .onMousePressed(mouse -> {
-                    ColorPickerDialog colorPickerDialog = new ColorPickerDialog("Sky Color", skyColor,
-                            dimensionConfig.getSkyColor(), false);
-                    colorPickerDialog.updateColor(dimensionConfig.getSkyColor());
-                    colorPickerDialog.setDraggable(true);
-                    colorPickerDialog.openIn(panel.getScreen());
-                    return true;
-                }));
         redrawBiomeList();
         redrawPresets();
         this.firstDraw = false;
