@@ -102,16 +102,6 @@ public class CommonProxy {
     }
 
     @SubscribeEvent
-    public void netEventHandler(FMLNetworkEvent.CustomNetworkEvent event) {
-        if (event.getWrappedEvent() instanceof NetworkHandshakeEstablished hs) {
-            if (hs.netHandler instanceof NetHandlerPlayServer netHandler) {
-                PacketCustom pkt = Packets.INSTANCE.sendWorldList();
-                netHandler.sendPacket(pkt.toPacket());
-            }
-        }
-    }
-
-    @SubscribeEvent
     public void worldSave(WorldEvent.Save event) {
         if (!(event.getWorld().provider instanceof PWWorldProvider PWWP)) {
             return;
@@ -121,6 +111,11 @@ public class CommonProxy {
             return;
         }
         cfg.update();
+    }
+
+    @SubscribeEvent
+    public void netEventHandler(FMLNetworkEvent.ServerConnectionFromClientEvent event) {
+        event.getManager().sendPacket(Packets.INSTANCE.sendWorldList().toPacket());
     }
 
     private void loadDimensionConfigs(File path) {
