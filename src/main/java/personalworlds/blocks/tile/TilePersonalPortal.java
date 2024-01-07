@@ -169,7 +169,6 @@ public class TilePersonalPortal extends TileEntity {
             player.sendMessage(new TextComponentTranslation("chat.personalWorld.created"));
         } else if (changed) {
             player.sendMessage(new TextComponentTranslation("chat.personalWorld.updated"));
-
         }
     }
 
@@ -189,7 +188,6 @@ public class TilePersonalPortal extends TileEntity {
         compound.setIntArray("target",
                 new int[] { this.targetID, this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ() });
         compound.setInteger("facing", this.facing.ordinal());
-        // compound.setInteger("targetFacing", this.facing.ordinal());
         return compound;
     }
 
@@ -208,14 +206,5 @@ public class TilePersonalPortal extends TileEntity {
         }
 
         super.readFromNBT(compound);
-    }
-
-
-
-    @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        if (world.isRemote) {
-            readFromNBT(pkt.getNbtCompound());
-        }
     }
 }

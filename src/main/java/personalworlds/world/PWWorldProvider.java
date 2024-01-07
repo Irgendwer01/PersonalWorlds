@@ -22,7 +22,8 @@ public class PWWorldProvider extends WorldProvider {
 
     private DimensionConfig dimensionConfig;
 
-    public PWWorldProvider() {}
+    public PWWorldProvider() {
+    }
 
     public DimensionConfig getConfig() {
         if (this.dimensionConfig == null) {

@@ -37,7 +37,7 @@ public class DimensionConfig {
     private boolean generateTrees = false;
     private boolean clouds = true;
     private boolean weather = false;
-    private int skyColor = 0xc0d8ff;
+    private int  skyColor = 0xc0d8ff;
     private float starsVisibility = 1F;
     private List<FlatLayerInfo> layers = new ArrayList<>();
     private boolean needsSaving = true;
@@ -146,31 +146,37 @@ public class DimensionConfig {
     }
 
     public void registerWithDimManager(int dimID, boolean isClient) {
-        this.config = new File(
-                DimensionManager.getCurrentSaveRootDirectory() + "/" +
-                        "personal_world_" + dimID + "/PWConfig.dat");
-        if (!DimensionManager.isDimensionRegistered(dimID)) {
-            if (!isClient) {
-                if (!registerDimension(dimID)) {
-                    log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
-                    return;
+        if (!isClient) {
+            this.config = new File(
+                    DimensionManager.getCurrentSaveRootDirectory() + "/" +
+                            "personal_world_" + dimID + "/PWConfig.dat");
+            if (!DimensionManager.isDimensionRegistered(dimID)) {
+                    if (!registerDimension(dimID)) {
+                        log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
+                        return;
+                    }
+                DimensionManager.registerDimension(dimID, dimType);
+                PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
+                this.needsSaving = false;
+                this.allowGenerationChanges = false;
+            }
+            this.update();
+            synchronized (CommonProxy.getDimensionConfigs(isClient)) {
+                if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
+                    CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
+                } else {
+                    CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
                 }
             }
-            DimensionType dimType = DimensionType.register(String.format("personal_world_%s", dimID),
-                    String.format("pw_%s", dimID), DimensionType.values().length, PWWorldProvider.class, false);
+        } else {
             DimensionManager.registerDimension(dimID, dimType);
             PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
-            this.needsSaving = false;
-            this.allowGenerationChanges = false;
-        }
-        if (!isClient) {
-            this.update();
-        }
-        synchronized (CommonProxy.getDimensionConfigs(isClient)) {
-            if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
-                CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
-            } else {
-                CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
+            synchronized (CommonProxy.getDimensionConfigs(isClient)) {
+                if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
+                    CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
+                } else {
+                    CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
+                }
             }
         }
     }

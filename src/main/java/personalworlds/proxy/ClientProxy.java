@@ -4,6 +4,7 @@ import codechicken.lib.packet.ICustomPacketHandler;
 import codechicken.lib.packet.PacketCustom;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -27,4 +28,5 @@ public class ClientProxy extends CommonProxy {
         ConfigManager.sync(PWValues.modID, Config.Type.INSTANCE);
         unregisterDims(true);
     }
+
 }

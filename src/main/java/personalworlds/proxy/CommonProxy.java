@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.RegistryEvent;
@@ -26,6 +27,8 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import net.minecraftforge.fml.common.network.NetworkHandshakeEstablished;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import personalworlds.PWValues;
@@ -42,7 +45,6 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 
-@Mod.EventBusSubscriber(modid = PWValues.modID)
 public class CommonProxy {
 
     public static final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
@@ -78,28 +80,39 @@ public class CommonProxy {
 
     public void serverStopped(FMLServerStoppedEvent event) {
         unregisterDims(false);
+        if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            unregisterDims(true);
+            synchronized (CommonProxy.getDimensionConfigs(true)) {
+                CommonProxy.getDimensionConfigs(true).clear();
+            }
+        }
     }
 
     @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> e) {
+    public void registerItems(RegistryEvent.Register<Item> e) {
         e.getRegistry()
                 .register(new ItemBlock(blockPersonalPortal).setRegistryName(blockPersonalPortal.getRegistryName()));
     }
 
     @SubscribeEvent
-    public static void registerBlocks(RegistryEvent.Register<Block> e) {
+    public void registerBlocks(RegistryEvent.Register<Block> e) {
         e.getRegistry().register(blockPersonalPortal);
         GameRegistry.registerTileEntity(TilePersonalPortal.class,
                 new ResourceLocation("personalworlds:tile_personal_portal"));
     }
 
     @SubscribeEvent
-    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        Packets.INSTANCE.sendWorldList().sendToPlayer(event.player);
+    public void netEventHandler(FMLNetworkEvent.CustomNetworkEvent event) {
+        if (event.getWrappedEvent() instanceof NetworkHandshakeEstablished hs) {
+            if (hs.netHandler instanceof NetHandlerPlayServer netHandler) {
+                PacketCustom pkt = Packets.INSTANCE.sendWorldList();
+                netHandler.sendPacket(pkt.toPacket());
+            }
+        }
     }
 
     @SubscribeEvent
-    public static void worldSave(WorldEvent.Save event) {
+    public void worldSave(WorldEvent.Save event) {
         if (!(event.getWorld().provider instanceof PWWorldProvider PWWP)) {
             return;
         }
@@ -127,7 +140,7 @@ public class CommonProxy {
                         DimensionConfig dimCFG = new DimensionConfig(dimID);
                         dimCFG.registerWithDimManager(dimID, false);
                     } catch (Exception e) {
-                        PersonalWorlds.log.error("Couldn't load personal dimension data from ", e);
+                        PersonalWorlds.log.error("Couldn't load personal dimension data!", e);
                     }
                 });
             }
@@ -150,18 +163,22 @@ public class CommonProxy {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public void onOreGenerate(OreGenEvent.GenerateMinable event) {
-        if (event.getWorld().provider instanceof PWWorldProvider) {
-            event.setResult(Event.Result.DENY);
+    public static class oreGenBusListener {
+        @SubscribeEvent(priority = EventPriority.HIGH)
+        public void onOreGenerate(OreGenEvent.GenerateMinable event) {
+            if (event.getWorld().provider instanceof PWWorldProvider) {
+                event.setResult(Event.Result.DENY);
+            }
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
-        if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
-            if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE) && !PWWP.getConfig().generateTrees()) {
-                event.setResult(Event.Result.DENY);
+    public static class BiomeBusListener {
+        @SubscribeEvent(priority = EventPriority.HIGH)
+        public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
+            if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
+                if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE) && !PWWP.getConfig().generateTrees()) {
+                    event.setResult(Event.Result.DENY);
+                }
             }
         }
     }

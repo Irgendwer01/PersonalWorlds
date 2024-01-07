@@ -18,6 +18,7 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
@@ -59,10 +60,20 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public void populate(int x, int z) {
+        int i = x * 16;
+        int j = z * 16;
+        BlockPos blockpos = new BlockPos(i, 0, j);
+        this.random.setSeed(this.world.getSeed());
+        long k = this.random.nextLong() / 2L * 2L + 1L;
+        long l = this.random.nextLong() / 2L * 2L + 1L;
+        this.random.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
+
+        ForgeEventFactory.onChunkPopulate(true, this, this.world, this.random, x, z, false);
         if (dimensionConfig.generateVegetation()) {
-            world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).decorate(world, random,
-                    new BlockPos(x * 16, 0, z * 16));
+            world.provider.getBiomeProvider().getBiome(new BlockPos(i+16, 0, j+16)).decorate(world, random,
+                    blockpos);
         }
+        ForgeEventFactory.onChunkPopulate(false, this, this.world, this.random, x, z, false);
     }
 
     @Override
