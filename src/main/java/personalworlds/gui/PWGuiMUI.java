@@ -4,10 +4,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import com.cleanroommc.modularui.drawable.Rectangle;
+import com.cleanroommc.modularui.utils.Color;
+import com.cleanroommc.modularui.widget.Widget;
 import com.cleanroommc.modularui.widgets.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
@@ -29,6 +33,9 @@ import com.cleanroommc.modularui.widget.WidgetTree;
 import personalworlds.PWConfig;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
+import personalworlds.world.Enums;
+
+import static personalworlds.world.Enums.DaylightCycle.*;
 
 public class PWGuiMUI {
 
@@ -39,10 +46,21 @@ public class PWGuiMUI {
             .build();
     private final IDrawable crossmark = UITexture.builder().imageSize(16, 16).location("personalworlds", "crossmark")
             .build();
+    private final IDrawable star = UITexture.builder().imageSize(16, 16).uv(32/256, 32/256, (32+16)/256, (32+16)/256).location("personalworlds", "widgets")
+            .build();
+    private final IDrawable moon = UITexture.builder().imageSize(16, 16).uv(80/256, 32/256, (80+16)/256, (32+16)/256).location("personalworlds", "widgets")
+            .build();
+    private final IDrawable sun = UITexture.builder().imageSize(16, 16).uv(96/256, 32/256, (96+16)/256, (32+16)/256).location("personalworlds", "widgets")
+            .build();
+    private final IDrawable sun_moon = UITexture.builder().imageSize( 16, 16).uv(112/256, 32/256, (112+16)/256, (32+16)/256).location("personalworlds", "widgets")
+            .build();
     private List<String> layers = new ArrayList<>();
     private ModularPanel panel;
     private DimensionConfig dimensionConfig;
     private ListWidget layersWidget;
+    private double skyR;
+    private double skyG;
+    private double skyB;
     private final CategoryList biomesWidget = new CategoryList()
             .bottom(40).left(9)
             .size(100, 15);
@@ -63,6 +81,9 @@ public class PWGuiMUI {
         } else {
             dimensionConfig = DimensionConfig.getForDimension(targetDim, true);
         }
+        skyR = ((dimensionConfig.getSkyColor() >> 16) & 0xFF);
+        skyG = ((dimensionConfig.getSkyColor() >> 8) & 0xFF);
+        skyB = ((dimensionConfig.getSkyColor()) & 0xFF);
         final ArrayList<IWidget> blockList = new ArrayList<>();
         for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
             Block block = blockState.getBlock();
@@ -123,7 +144,7 @@ public class PWGuiMUI {
                 .background(GuiTextures.MC_BUTTON_DISABLED));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(35).left(10)
+                .top(35).left(7)
                 .overlay(checkmark)
                 .addTooltipLine("Trees").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -135,7 +156,7 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(35).left(30)
+                .top(35).left(21)
                 .overlay(checkmark)
                 .addTooltipLine("Vegetation").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -147,7 +168,7 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(35).left(50)
+                .top(35).left(35)
                 .overlay(checkmark)
                 .addTooltipLine("Passive Spawning").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -159,7 +180,7 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(35).left(70)
+                .top(35).left(49)
                 .overlay(checkmark)
                 .addTooltipLine("Weather").tooltipScale(0.6F)
                 .onMousePressed(i -> {
@@ -171,19 +192,68 @@ public class PWGuiMUI {
                 }));
         panel.child(new ButtonWidget<>()
                 .size(15, 15)
-                .top(35).left(90)
-                .overlay(checkmark)
-                .addTooltipLine("Clouds").tooltipScale(0.6F)
+                .top(35).left(63)
+                .overlay(sun)
                 .onMousePressed(i -> {
-                    dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled());
+                    switch (dimensionConfig.getDaylightCycle()) {
+                        case SUN -> dimensionConfig.setDaylightCycle(MOON);
+                        case MOON -> dimensionConfig.setDaylightCycle(CYCLE);
+                        case CYCLE -> dimensionConfig.setDaylightCycle(SUN);
+                    }
                     return true;
                 })
                 .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark);
+                    switch (dimensionConfig.getDaylightCycle()) {
+                        case SUN -> widget.overlay(sun);
+                        case MOON -> widget.overlay(moon);
+                        case CYCLE -> widget.overlay(sun_moon);
+                    }
+                }));
+
+        panel.child(new SliderWidget()
+                .size(55, 10)
+                .top(73).left(10)
+                .background(GuiTextures.MC_BUTTON_DISABLED)
+                .value(new DoubleValue(skyR))
+                .bounds(0, 255)
+                .onUpdateListener(widget -> {
+                    skyR = widget.getSliderValue();
+                    widget.overlay(IKey.str(
+                                    String.format("Red: %.0f", skyR))
+                            .color(0xFFFFFF).scale(0.7F));
+                }));
+        panel.child(new SliderWidget()
+                .size(55, 10)
+                .top(93).left(10)
+                .background(GuiTextures.MC_BUTTON_DISABLED)
+                .value(new DoubleValue(skyG))
+                .bounds(0, 255)
+                .onUpdateListener(widget -> {
+                    skyG = widget.getSliderValue();
+                    widget.overlay(IKey.str(
+                                    String.format("Green: %.0f", skyG))
+                            .color(0xFFFFFF).scale(0.7F));
+                }));
+        panel.child(new SliderWidget()
+                .size(55, 10)
+                .top(113).left(10)
+                .background(GuiTextures.MC_BUTTON_DISABLED)
+                .value(new DoubleValue(skyB))
+                .bounds(0, 255)
+                .onUpdateListener(widget -> {
+                    skyB = widget.getSliderValue();
+                    widget.overlay(IKey.str(
+                                    String.format("Blue: %.0f", skyB))
+                            .color(0xFFFFFF).scale(0.7F));
                 }));
         panel.child(new ListWidget<>(blockList)
                 .top(20).right(60)
                 .size(15, 115));
+        panel.child(new Rectangle().setCanApplyTheme(true)
+                .setColor(0xe61e39)
+                .asWidget()
+                .size(50, 60)
+                .top(73).left(70));
         redrawBiomeList();
         redrawPresets();
         this.firstDraw = false;
@@ -224,7 +294,7 @@ public class PWGuiMUI {
         presetsWidget.getChildren().clear();
         for (Map.Entry<String, String> entry : PWConfig.getPresets().entrySet()) {
             if (isPreset(entry.getValue())) {
-                presetsWidget.overlay(IKey.str(entry.getKey()));
+                presetsWidget.overlay(IKey.str(entry.getKey()).color(0xFFFFFF));
                 presetActive = true;
             } else {
                 presetsWidget.child(new ButtonWidget<>()
