@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,7 +25,6 @@ import net.minecraftforge.common.DimensionManager;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.packet.PacketCustom;
-import personalworlds.PWConfig;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
 
@@ -37,7 +35,6 @@ public class DimensionConfig {
     private boolean allowGenerationChanges = true;
     private boolean passiveSpawn = false;
     private boolean generateTrees = false;
-    private boolean vegetation = false;
     private boolean clouds = true;
     private boolean weather = false;
     private int skyColor = 0xc0d8ff;
@@ -46,15 +43,13 @@ public class DimensionConfig {
     private boolean needsSaving = true;
     private Biome biome = Biomes.PLAINS;
     private Enums.DaylightCycle daylightCycle = Enums.DaylightCycle.CYCLE;
+    private boolean vegetation = false;
 
-    public static final String PRESET_VOID = "";
-    public static final String PRESET_FLAT = "minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
-    public static final String PRESET_MINING = "4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
+    public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
+    public static final String PRESET_MINING = "Mining;4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
     public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
             .compile(
                     "^(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?(?:,(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?+)*$");
-
-    public DimensionConfig() {}
 
     public DimensionConfig(int dimID) {
         this.config = new File(
@@ -63,7 +58,6 @@ public class DimensionConfig {
         if (config.exists()) {
             try {
                 NBTTagCompound configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(config.toPath()));
-                this.vegetation = configNBT.getBoolean("vegetation");
                 this.skyColor = configNBT.getInteger("sky_color");
                 this.starsVisibility = configNBT.getInteger("stars_visibility");
                 this.passiveSpawn = configNBT.getBoolean("passive_spawn");
@@ -72,6 +66,7 @@ public class DimensionConfig {
                 this.clouds = configNBT.getBoolean("clouds");
                 this.weather = configNBT.getBoolean("weather");
                 this.biome = Biome.REGISTRY.getObject(new ResourceLocation(configNBT.getString("biome")));
+                this.vegetation = configNBT.getBoolean("vegetation");
                 this.allowGenerationChanges = configNBT.getBoolean("allow_generation_changes");
                 if (configNBT.hasKey("blocks")) {
                     this.layers = LayersFromString(configNBT.getString("blocks"));
@@ -99,7 +94,6 @@ public class DimensionConfig {
         }
         if (copyGenerationInfo) {
             this.setGeneratingTrees(source.generateTrees());
-            this.setGeneratingVegetation(source.generateVegetation());
             this.layers = source.layers;
             this.needsSaving = true;
         }
@@ -124,7 +118,6 @@ public class DimensionConfig {
         }
         NBTTagCompound configNBT = new NBTTagCompound();
         configNBT.setInteger("sky_color", this.skyColor);
-        configNBT.setBoolean("vegetation", this.vegetation);
         configNBT.setFloat("stars_visibility", this.starsVisibility);
         configNBT.setBoolean("passive_spawn", this.passiveSpawn);
         configNBT.setBoolean("clouds", this.clouds);
@@ -261,7 +254,8 @@ public class DimensionConfig {
         int currY = 0;
         ArrayList<FlatLayerInfo> flatLayerInfos = new ArrayList<>();
         String[] stringArray = string.split(",");
-        for (String string1 : stringArray) {
+        for (int i = stringArray.length-1; i > -1; i--) {
+            String string1 = stringArray[i];
             FlatLayerInfo flatLayerInfo = LayerFromString(string1);
             flatLayerInfo.setMinY(currY);
             flatLayerInfos.add(flatLayerInfo);
@@ -300,27 +294,6 @@ public class DimensionConfig {
         return LayersToString(this.layers);
     }
 
-    public static boolean canUseLayers(String preset) {
-        if (preset == null) {
-            preset = "";
-        }
-        if (preset.equals(PRESET_FLAT) || preset.equals(PRESET_VOID) || preset.equals(PRESET_MINING)) {
-            return true;
-        }
-        List<FlatLayerInfo> infos = LayersFromString(preset);
-        if (infos.isEmpty() && !preset.trim().isEmpty()) {
-            return false;
-        }
-        for (FlatLayerInfo info : infos) {
-
-            IBlockState blockState = info.getLayerMaterial();
-            if (!PWConfig.getAllowedBlocks().contains(blockState)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public void setLayers(String preset) {
         this.layers = LayersFromString(preset);
     }
@@ -342,6 +315,17 @@ public class DimensionConfig {
 
     public boolean allowGenerationChanges() {
         return allowGenerationChanges;
+    }
+
+    public boolean generateVegetation() {
+        return this.vegetation;
+    }
+
+    public void setGeneratingVegetation(boolean generateVegetation) {
+        if (this.vegetation != generateVegetation) {
+            this.needsSaving = true;
+            this.vegetation = generateVegetation;
+        }
     }
 
     public void setBiome(Biome biome) {
@@ -421,17 +405,6 @@ public class DimensionConfig {
         }
     }
 
-    public boolean generateVegetation() {
-        return this.vegetation;
-    }
-
-    public void setGeneratingVegetation(boolean generateVegetation) {
-        if (this.vegetation != generateVegetation) {
-            this.needsSaving = true;
-            this.vegetation = generateVegetation;
-        }
-    }
-
     public boolean generateTrees() {
         return this.generateTrees;
     }
@@ -444,7 +417,7 @@ public class DimensionConfig {
     }
 
     public static DimensionConfig fromPacket(PacketCustom packet) {
-        DimensionConfig cfg = new DimensionConfig();
+        DimensionConfig cfg = new DimensionConfig(0);
         cfg.readFromPacket(packet);
         return cfg;
     }
@@ -455,8 +428,8 @@ public class DimensionConfig {
         this.setDaylightCycle(Enums.DaylightCycle.fromOrdinal(packet.readInt()));
         this.enableClouds(packet.readBoolean());
         this.enableWeather(packet.readBoolean());
-        this.setGeneratingVegetation(packet.readBoolean());
         this.setGeneratingTrees(packet.readBoolean());
+        this.setGeneratingVegetation(packet.readBoolean());
         int layers = packet.readVarInt();
         for (int i = 0; i < layers; i++) {
             int minY = packet.readInt();
@@ -479,8 +452,8 @@ public class DimensionConfig {
         packet.writeInt(daylightCycle.ordinal());
         packet.writeBoolean(clouds);
         packet.writeBoolean(weather);
-        packet.writeBoolean(vegetation);
         packet.writeBoolean(generateTrees);
+        packet.writeBoolean(vegetation);
         packet.writeVarInt(layers.size());
         for (FlatLayerInfo fli : layers) {
             packet.writeInt(fli.getMinY());

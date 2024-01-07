@@ -3,6 +3,8 @@ package personalworlds;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
@@ -66,9 +68,28 @@ public class PWConfig {
     };
 
     @Config.Comment("Default Presets used for generating a world")
-    public static String[] defaultPresets = new String[] {
-            DimensionConfig.PRESET_VOID, DimensionConfig.PRESET_FLAT, DimensionConfig.PRESET_MINING
+    public static String[] presets = new String[] {
+            DimensionConfig.PRESET_FLAT, DimensionConfig.PRESET_MINING
     };
+
+    public static Object2ObjectOpenHashMap<String, String> getPresets() {
+        Object2ObjectOpenHashMap<String, String> map = new Object2ObjectOpenHashMap<>();
+        for (String string : presets) {
+            String[] stringArray = string.split(";");
+            if (stringArray.length != 2) {
+                PersonalWorlds.log.error("Preset {} is invalid!", string);
+                continue;
+            }
+            String presetName = stringArray[0];
+            String preset = stringArray[1];
+            if (!DimensionConfig.PRESET_VALIDATION_PATTERN.matcher(preset).matches()) {
+                PersonalWorlds.log.error("Preset {} is invalid!", string);
+                continue;
+            }
+            map.put(presetName, preset);
+        }
+        return map;
+    }
 
     public static List<IBlockState> getAllowedBlocks() {
         int metaData = 0;

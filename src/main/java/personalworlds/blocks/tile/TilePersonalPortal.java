@@ -16,7 +16,7 @@ import lombok.Setter;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.packet.Packets;
-import personalworlds.proxy.ClientProxy;
+import personalworlds.proxy.CommonProxy;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
@@ -27,7 +27,7 @@ public class TilePersonalPortal extends TileEntity {
     private boolean isActive = false;
 
     @Getter
-    private int targetID;
+    private int targetID = 0;
 
     @Getter
     private BlockPos targetPos = new BlockPos(8, 8, 8);
@@ -91,7 +91,7 @@ public class TilePersonalPortal extends TileEntity {
             otherY = targetPos.getY();
             otherZ = targetPos.getZ();
             BlockPos newPos = new BlockPos(otherX, otherY, otherZ);
-            otherWorld.setBlockState(newPos, PersonalWorlds.blockPersonalPortal.getDefaultState(), 3);
+            otherWorld.setBlockState(newPos, CommonProxy.blockPersonalPortal.getDefaultState(), 3);
             otherPortal = (TilePersonalPortal) otherWorld.getTileEntity(newPos);
         }
         if (otherPortal != null) {
@@ -133,7 +133,7 @@ public class TilePersonalPortal extends TileEntity {
             return;
         }
 
-        DimensionConfig sanitized = new DimensionConfig();
+        DimensionConfig sanitized = new DimensionConfig(0);
         sanitized.copyFrom(conf, false, true, true);
         boolean createNewDim = false;
         int targetID = 0;
@@ -210,11 +210,12 @@ public class TilePersonalPortal extends TileEntity {
         super.readFromNBT(compound);
     }
 
+
+
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         if (world.isRemote) {
             readFromNBT(pkt.getNbtCompound());
-            ((ClientProxy) PersonalWorlds.proxy).closeGUI(this);
         }
     }
 }
