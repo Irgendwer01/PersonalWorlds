@@ -146,7 +146,6 @@ public class DimensionConfig {
     }
 
     public void registerWithDimManager(int dimID, boolean isClient) {
-        if (!isClient) {
             this.config = new File(
                     DimensionManager.getCurrentSaveRootDirectory() + "/" +
                             "personal_world_" + dimID + "/PWConfig.dat");
@@ -168,17 +167,6 @@ public class DimensionConfig {
                     CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
                 }
             }
-        } else {
-            DimensionManager.registerDimension(dimID, dimType);
-            PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
-            synchronized (CommonProxy.getDimensionConfigs(isClient)) {
-                if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
-                    CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
-                } else {
-                    CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
-                }
-            }
-        }
     }
 
     private boolean registerDimension(int dimID) {
