@@ -27,7 +27,7 @@ public class TilePersonalPortal extends TileEntity {
     private boolean isActive = false;
 
     @Getter
-    private int targetID;
+    private int targetID = 0;
 
     @Getter
     private BlockPos targetPos = new BlockPos(8, 8, 8);
@@ -209,6 +209,8 @@ public class TilePersonalPortal extends TileEntity {
 
         super.readFromNBT(compound);
     }
+
+
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {

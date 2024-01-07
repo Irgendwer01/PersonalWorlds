@@ -1,14 +1,15 @@
 package personalworlds.gui;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import com.cleanroommc.modularui.widgets.*;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.FlatLayerInfo;
 
@@ -24,10 +25,6 @@ import com.cleanroommc.modularui.utils.Alignment;
 import com.cleanroommc.modularui.value.DoubleValue;
 import com.cleanroommc.modularui.widget.ParentWidget;
 import com.cleanroommc.modularui.widget.WidgetTree;
-import com.cleanroommc.modularui.widgets.ButtonWidget;
-import com.cleanroommc.modularui.widgets.ColorPickerDialog;
-import com.cleanroommc.modularui.widgets.ListWidget;
-import com.cleanroommc.modularui.widgets.SliderWidget;
 
 import personalworlds.PWConfig;
 import personalworlds.blocks.tile.TilePersonalPortal;
@@ -36,29 +33,39 @@ import personalworlds.world.DimensionConfig;
 
 public class PWGuiMUI {
 
-    private final TilePersonalPortal tpp;
-
+    private int targetDim;
+    private int dimID;
+    private BlockPos blockPos;
     private final IDrawable checkmark = UITexture.builder().imageSize(16, 16).location("personalworlds", "checkmark")
             .build();
     private final IDrawable crossmark = UITexture.builder().imageSize(16, 16).location("personalworlds", "crossmark")
             .build();
-
-    private final ArrayList<String> layers = new ArrayList<>();
-    private final ArrayList<IWidget> blockList = new ArrayList<>();
+    private List<String> layers = new ArrayList<>();
     private ModularPanel panel;
-    private final DimensionConfig dimensionConfig = new DimensionConfig(0);
+    private DimensionConfig dimensionConfig;
     private ListWidget layersWidget;
-    private ListWidget biomesWidget;
+    private final CategoryList biomesWidget = new CategoryList()
+            .bottom(40).left(9)
+            .size(100, 15);
+    private final CategoryList presetsWidget = new CategoryList().background(GuiTextures.MC_BUTTON)
+                .bottom(40).right(11)
+                .size(70, 15);
     private boolean firstDraw = true;
 
-    public PWGuiMUI(TilePersonalPortal tpp) {
-        this.tpp = tpp;
+    public PWGuiMUI(int targetDim, int dimID, int x, int y, int z) {
+        this.targetDim = targetDim;
+        this.dimID = dimID;
+        this.blockPos = new BlockPos(x, y, z);
     }
 
     public ModularScreen createGUI() {
-        Consumer<Integer> skyColor = color -> {
-            dimensionConfig.setSkyColor(color);
-        };
+        if (targetDim == 0) {
+            dimensionConfig = new DimensionConfig(0);
+        } else {
+            dimensionConfig = DimensionConfig.getForDimension(targetDim, true);
+        }
+        final ArrayList<IWidget> blockList = new ArrayList<>();
+        Consumer<Integer> skyColor = dimensionConfig::setSkyColor;
         for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
             Block block = blockState.getBlock();
             int itemMeta = block.damageDropped(blockState);
@@ -84,7 +91,7 @@ public class PWGuiMUI {
                 .size(60, 20)
                 .bottom(9).right(9)
                 .onMousePressed(i -> {
-                    Packets.INSTANCE.sendChangeWorldSettings(tpp, dimensionConfig).sendToServer();
+                    Packets.INSTANCE.sendChangeWorldSettings(dimID, blockPos, dimensionConfig).sendToServer();
                     panel.closeIfOpen();
                     return true;
                 }));
@@ -152,6 +159,30 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     widget.overlay(dimensionConfig.passiveSpawn() ? checkmark : crossmark);
                 }));
+        panel.child(new ButtonWidget<>()
+                .size(15, 15)
+                .top(53).left(73)
+                .overlay(checkmark)
+                .addTooltipLine("Clouds").tooltipScale(0.6F)
+                .onMousePressed(i -> {
+                    dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled());
+                    return true;
+                })
+                .onUpdateListener(widget -> {
+                    widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark);
+                }));
+        panel.child(new ButtonWidget<>()
+                .size(15, 15)
+                .top(53).left(93)
+                .overlay(checkmark)
+                .addTooltipLine("Weather").tooltipScale(0.6F)
+                .onMousePressed(i -> {
+                    dimensionConfig.enableWeather(!dimensionConfig.weatherEnabled());
+                    return true;
+                })
+                .onUpdateListener(widget -> {
+                    widget.overlay(dimensionConfig.weatherEnabled() ? checkmark : crossmark);
+                }));
         panel.child(new ListWidget<>(blockList)
                 .top(20).right(60)
                 .size(15, 115));
@@ -167,34 +198,30 @@ public class PWGuiMUI {
                     return true;
                 }));
         redrawBiomeList();
+        redrawPresets();
         this.firstDraw = false;
         return new ModularScreen(panel);
     }
 
     private void redrawBiomeList() {
-        if (biomesWidget != null) {
+        if (!firstDraw) {
             panel.getChildren().removeIf(widget -> widget.equals(biomesWidget));
         }
-        ArrayList<IWidget> biomeList = new ArrayList<>();
+        biomesWidget.getChildren().clear();
         for (Biome biome : PWConfig.getAllowedBiomes()) {
-            biomeList.add(new ButtonWidget<>().size(100, 15)
-                    .overlay(IKey.str(biome.getBiomeName()))
-                    .onMousePressed(mouse -> {
-                        if (dimensionConfig.getBiome() != biome) {
+            if (biome == dimensionConfig.getBiome()) {
+                biomesWidget.background(GuiTextures.MC_BUTTON)
+                        .overlay(IKey.str(biome.getBiomeName()).color(0xFFFFFF));
+            } else {
+                biomesWidget.child(new ButtonWidget<>().size(100, 15)
+                        .overlay(IKey.str(biome.getBiomeName()))
+                        .onMousePressed(mouse -> {
                             dimensionConfig.setBiome(biome);
                             redrawBiomeList();
                             return true;
-                        }
-                        return false;
-                    })
-                    .background(dimensionConfig.getBiome() == biome ? GuiTextures.MC_BUTTON_DISABLED :
-                            GuiTextures.MC_BUTTON)
-                    .hoverBackground(dimensionConfig.getBiome() == biome ? GuiTextures.MC_BUTTON_DISABLED :
-                            GuiTextures.MC_BUTTON_HOVERED));
+                        }));
+            }
         }
-        biomesWidget = new ListWidget<>(biomeList)
-                .bottom(40).left(9)
-                .size(100, 15);
         panel.child(biomesWidget);
         if (!firstDraw) {
             WidgetTree.resize(panel);
@@ -202,11 +229,41 @@ public class PWGuiMUI {
         }
     }
 
+    private void redrawPresets() {
+        boolean presetActive = false;
+        if (!firstDraw) {
+            panel.getChildren().removeIf(widget -> widget.equals(presetsWidget));
+        }
+        presetsWidget.getChildren().clear();
+        for (Map.Entry<String, String> entry : PWConfig.getPresets().entrySet()) {
+            if (isPreset(entry.getValue())) {
+                presetsWidget.overlay(IKey.str(entry.getKey()));
+                presetActive = true;
+            } else {
+                presetsWidget.child(new ButtonWidget<>()
+                        .size(70, 15)
+                        .overlay(IKey.str(entry.getKey()))
+                        .onMousePressed(mouse -> {
+                            this.layers = fromPreset(entry.getValue());
+                            redrawLayers();
+                            return true;
+                        }));
+            }
+        }
+        if (!presetActive) {
+            presetsWidget.overlay(IKey.str("Custom"));
+        }
+        panel.child(presetsWidget);
+        if (!firstDraw) {
+            WidgetTree.resize(panel);
+            WidgetTree.resize(presetsWidget);
+        }
+    }
+
     private void redrawLayers() {
         if (layersWidget != null) {
             panel.getChildren().removeIf(widget -> widget.equals(layersWidget));
         }
-        int currY = 0;
         ArrayList<IWidget> layerWidget = new ArrayList<>();
         for (int i = 0; i < layers.size(); i++) {
             FlatLayerInfo layerInfo = DimensionConfig.LayerFromString(layers.get(i));
@@ -293,14 +350,31 @@ public class PWGuiMUI {
         WidgetTree.resize(layersWidget);
     }
 
+    private boolean isPreset(String preset) {
+        return toPreset(layers).equals(preset);
+    }
+
     private String toPreset(List<String> layerList) {
         StringBuilder sb = new StringBuilder();
-        for (int i = layerList.size()-1; i > -1; i--) {
+        for (int i = 0; i < layerList.size(); i++) {
             sb.append(layerList.get(i));
-            if (i != 0) {
+            if (i != layerList.size()-1) {
                 sb.append(",");
             }
         }
         return sb.toString();
+    }
+
+    private List<String> fromPreset(String preset) {
+        ArrayList<String> layers = new ArrayList<>();
+        if (preset.contains(",")) {
+            String[] stringArray = preset.split(",");
+            for (int i = stringArray.length-1; i > -1; --i) {
+                layers.add(stringArray[i]);
+            }
+        } else {
+            layers.add(preset);
+        }
+        return layers;
     }
 }

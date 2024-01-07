@@ -45,9 +45,8 @@ public class DimensionConfig {
     private Enums.DaylightCycle daylightCycle = Enums.DaylightCycle.CYCLE;
     private boolean vegetation = false;
 
-    public static final String PRESET_VOID = "";
-    public static final String PRESET_FLAT = "minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
-    public static final String PRESET_MINING = "4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
+    public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
+    public static final String PRESET_MINING = "Mining;4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
     public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
             .compile(
                     "^(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?(?:,(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?+)*$");
@@ -255,7 +254,8 @@ public class DimensionConfig {
         int currY = 0;
         ArrayList<FlatLayerInfo> flatLayerInfos = new ArrayList<>();
         String[] stringArray = string.split(",");
-        for (String string1 : stringArray) {
+        for (int i = stringArray.length-1; i > -1; i--) {
+            String string1 = stringArray[i];
             FlatLayerInfo flatLayerInfo = LayerFromString(string1);
             flatLayerInfo.setMinY(currY);
             flatLayerInfos.add(flatLayerInfo);

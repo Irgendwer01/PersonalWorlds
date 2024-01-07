@@ -3,7 +3,9 @@ package personalworlds.packet;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.cleanroommc.modularui.factory.ClientGUI;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.INetHandlerPlayServer;
@@ -14,6 +16,7 @@ import codechicken.lib.packet.PacketCustom;
 import personalworlds.PWConfig;
 import personalworlds.PWValues;
 import personalworlds.blocks.tile.TilePersonalPortal;
+import personalworlds.gui.PWGuiMUI;
 import personalworlds.proxy.CommonProxy;
 import personalworlds.world.DimensionConfig;
 
@@ -26,14 +29,25 @@ public enum Packets {
         DUMMY,
         UPDATE_WORLDLIST,
         CHANGE_WORLD_SETTINGS,
+        OPEN_GUI,
     }
 
-    public PacketCustom sendChangeWorldSettings(TilePersonalPortal tile, DimensionConfig dimensionConfig) {
+    public PacketCustom sendOpenGui(TilePersonalPortal tpp) {
+        PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.OPEN_GUI.ordinal());
+        pkt.writeVarInt(tpp.getTargetID());
+        pkt.writeVarInt(tpp.getWorld().provider.getDimension());
+        pkt.writeVarInt(tpp.getPos().getX());
+        pkt.writeVarInt(tpp.getPos().getY());
+        pkt.writeVarInt(tpp.getPos().getZ());
+        return pkt;
+    }
+
+    public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, DimensionConfig dimensionConfig) {
         PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
-        pkt.writeVarInt(tile.getWorld().provider.getDimension());
-        pkt.writeVarInt(tile.getPos().getX());
-        pkt.writeVarInt(tile.getPos().getY());
-        pkt.writeVarInt(tile.getPos().getZ());
+        pkt.writeVarInt(dimID);
+        pkt.writeVarInt(blockPos.getX());
+        pkt.writeVarInt(blockPos.getY());
+        pkt.writeVarInt(blockPos.getZ());
         dimensionConfig.writeToPacket(pkt);
         return pkt;
     }
@@ -48,6 +62,7 @@ public enum Packets {
                 handleWorldList(packet);
             }
             case CHANGE_WORLD_SETTINGS -> {}
+            case OPEN_GUI -> handleOpenGUI(packet);
         }
     }
 
@@ -75,6 +90,15 @@ public enum Packets {
         }
     }
 
+    public void handleOpenGUI(PacketCustom pkt) {
+        int targetDim = pkt.readVarInt();
+        int dimID = pkt.readVarInt();
+        int x = pkt.readVarInt();
+        int y = pkt.readVarInt();
+        int z = pkt.readVarInt();
+        ClientGUI.open(new PWGuiMUI(targetDim, dimID, x, y, z).createGUI());
+    }
+
     public PacketCustom sendWorldList() {
         PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.UPDATE_WORLDLIST.ordinal());
         synchronized (CommonProxy.getDimensionConfigs(false)) {
@@ -89,6 +113,8 @@ public enum Packets {
         Arrays.stream(PWConfig.allowedBlocks).forEach(pkt::writeString);
         pkt.writeVarInt(PWConfig.allowedBiomes.length);
         Arrays.stream(PWConfig.allowedBiomes).forEach(pkt::writeString);
+        pkt.writeVarInt(PWConfig.presets.length);
+        Arrays.stream(PWConfig.presets).forEach(pkt::writeString);
         return pkt;
     }
 
@@ -101,17 +127,21 @@ public enum Packets {
 
         }
 
-        int allowedBlocks = pkt.readVarInt();
-        ArrayList<String> tmpList = new ArrayList<>(allowedBlocks);
-        for (int i = 0; i < allowedBlocks; ++i) {
+        int amount = pkt.readVarInt();
+        ArrayList<String> tmpList = new ArrayList<>(amount);
+        for (int i = 0; i < amount; ++i) {
             tmpList.add(pkt.readString());
         }
         PWConfig.allowedBlocks = tmpList.toArray(new String[0]);
-        int allowedBiomes = pkt.readVarInt();
-        tmpList = new ArrayList<>(allowedBiomes);
-        for (int i = 0; i < allowedBiomes; ++i) {
+        amount = pkt.readVarInt();
+        tmpList = new ArrayList<>(amount);
+        for (int i = 0; i < amount; ++i) {
             tmpList.add(pkt.readString());
         }
         PWConfig.allowedBiomes = tmpList.toArray(new String[0]);
+        amount = pkt.readVarInt();
+        for (int i = 0; i < amount; ++i) {
+
+        }
     }
 }

@@ -87,10 +87,12 @@ public class PWChunkGenerator implements IChunkGenerator {
     @Override
     public List<Biome.SpawnListEntry> getPossibleCreatures(EnumCreatureType creatureType, BlockPos pos) {
         if (dimensionConfig.passiveSpawn()) {
-            return world.provider.getBiomeProvider().getBiome(new BlockPos(0, 0, 0)).getSpawnableList(creatureType);
+            return world.provider.getBiomeProvider().getBiome(pos).getSpawnableList(creatureType);
         }
         return null;
     }
+
+
 
     @Nullable
     @Override

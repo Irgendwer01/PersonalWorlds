@@ -178,4 +178,9 @@ public class PWWorldProvider extends WorldProvider {
     public BiomeProvider getBiomeProvider() {
         return new BiomeProviderSingle(this.dimensionConfig.getBiome());
     }
+
+    @Override
+    public void setAllowedSpawnTypes(boolean allowHostile, boolean allowPeaceful) {
+        super.setAllowedSpawnTypes(true, true);
+    }
 }

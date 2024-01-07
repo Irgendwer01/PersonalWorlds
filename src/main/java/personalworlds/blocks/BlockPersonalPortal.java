@@ -25,6 +25,7 @@ import com.cleanroommc.modularui.factory.ClientGUI;
 
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGuiMUI;
+import personalworlds.packet.Packets;
 
 public class BlockPersonalPortal extends Block implements ITileEntityProvider {
 
@@ -44,26 +45,25 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
                                     EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (worldIn.isRemote) {
+            return true;
+        }
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {
-            if (worldIn.isRemote) {
-                OpenGUI(worldIn, playerIn, tpp);
+            if (tpp.isActive() && !playerIn.isSneaking()) {
+                tpp.transport((EntityPlayerMP) playerIn);
+                return true;
             } else {
-                if (tpp.isActive() && !playerIn.isSneaking()) {
-                    tpp.transport((EntityPlayerMP) playerIn);
-                    return true;
-                }
+                OpenGUI(worldIn, playerIn, tpp);
             }
         }
-
         return true;
     }
 
-    @SideOnly(Side.CLIENT)
     public boolean OpenGUI(World world, EntityPlayer player, TilePersonalPortal portal) {
         if (portal.isActive()) {
             if (player.isSneaking()) {
-                ClientGUI.open(new PWGuiMUI(portal).createGUI());
+                Packets.INSTANCE.sendOpenGui(portal).sendToPlayer(player);
                 return true;
             }
         } else {
@@ -71,7 +71,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
                 player.sendMessage(new TextComponentTranslation("chat.overworldPersonalDimension"));
                 return false;
             }
-            ClientGUI.open(new PWGuiMUI(portal).createGUI());
+            Packets.INSTANCE.sendOpenGui(portal).sendToPlayer(player);
             return true;
         }
         return false;
