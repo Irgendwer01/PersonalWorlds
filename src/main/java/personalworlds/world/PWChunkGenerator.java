@@ -18,7 +18,9 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
+import net.minecraft.world.gen.feature.WorldGenTrees;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.terraingen.BiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
@@ -60,6 +62,7 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public void populate(int x, int z) {
+        net.minecraft.block.BlockFalling.fallInstantly = true;
         int i = x * 16;
         int j = z * 16;
         BlockPos blockpos = new BlockPos(i, 0, j);
@@ -69,11 +72,10 @@ public class PWChunkGenerator implements IChunkGenerator {
         this.random.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
 
         ForgeEventFactory.onChunkPopulate(true, this, this.world, this.random, x, z, false);
-        if (dimensionConfig.generateVegetation()) {
-            world.provider.getBiomeProvider().getBiome(new BlockPos(i+16, 0, j+16)).decorate(world, random,
-                    blockpos);
-        }
+        world.provider.getBiomeProvider().getBiome(new BlockPos(i+16, 0, j+16)).decorate(world, random,
+                blockpos);
         ForgeEventFactory.onChunkPopulate(false, this, this.world, this.random, x, z, false);
+        net.minecraft.block.BlockFalling.fallInstantly = false;
     }
 
     @Override

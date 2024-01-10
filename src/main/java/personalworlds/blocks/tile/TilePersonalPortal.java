@@ -1,6 +1,7 @@
 package personalworlds.blocks.tile;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -80,7 +81,7 @@ public class TilePersonalPortal extends TileEntity {
                 }
             }
         }
-
+        DimensionConfig cfg = DimensionConfig.getForDimension(this.targetID, false);
         TilePersonalPortal otherPortal = null;
         if (otherWorld.getBlockState(blockPos).getBlock() instanceof BlockPersonalPortal) {
             TileEntity te = otherWorld.getTileEntity(blockPos.toImmutable());
@@ -93,6 +94,13 @@ public class TilePersonalPortal extends TileEntity {
             BlockPos newPos = new BlockPos(otherX, otherY, otherZ);
             otherWorld.setBlockState(newPos, CommonProxy.blockPersonalPortal.getDefaultState(), 3);
             otherPortal = (TilePersonalPortal) otherWorld.getTileEntity(newPos);
+            if (cfg.getLayers().isEmpty()) {
+                for (int x = 5; x < 12; x++) {
+                    for (int z = 5; z < 12; z++) {
+                        otherWorld.setBlockState(new BlockPos(x, newPos.getY()-1, z), Blocks.STONE.getDefaultState());
+                    }
+                }
+            }
         }
         if (otherPortal != null) {
             otherPortal.isActive = true;

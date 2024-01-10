@@ -171,8 +171,14 @@ public class CommonProxy {
         @SubscribeEvent(priority = EventPriority.HIGH)
         public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
             if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
-                if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE) && !PWWP.getConfig().generateTrees()) {
-                    event.setResult(Event.Result.DENY);
+                if (!event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE)) {
+                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) || !PWWP.getConfig().generateVegetation()) {
+                        event.setResult(Event.Result.DENY);
+                    }
+                } else {
+                    if (!PWWP.getConfig().generateTrees()) {
+                        event.setResult(Event.Result.DENY);
+                    }
                 }
             }
         }

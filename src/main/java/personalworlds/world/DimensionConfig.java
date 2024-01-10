@@ -44,6 +44,7 @@ public class DimensionConfig {
     private Biome biome = Biomes.PLAINS;
     private Enums.DaylightCycle daylightCycle = Enums.DaylightCycle.CYCLE;
     private boolean vegetation = false;
+    private boolean generateLakes = false;
 
     public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
     public static final String PRESET_MINING = "Mining;4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
@@ -68,6 +69,7 @@ public class DimensionConfig {
                 this.biome = Biome.REGISTRY.getObject(new ResourceLocation(configNBT.getString("biome")));
                 this.vegetation = configNBT.getBoolean("vegetation");
                 this.allowGenerationChanges = configNBT.getBoolean("allow_generation_changes");
+                this.generateLakes = configNBT.getBoolean("generate_lakes");
                 if (configNBT.hasKey("blocks")) {
                     this.layers = LayersFromString(configNBT.getString("blocks"));
                 }
@@ -424,6 +426,9 @@ public class DimensionConfig {
         this.enableWeather(packet.readBoolean());
         this.setGeneratingTrees(packet.readBoolean());
         this.setGeneratingVegetation(packet.readBoolean());
+        this.setBiome(Biome.REGISTRY.getObject(new ResourceLocation(packet.readString())));
+        this.allowGenerationChanges = packet.readBoolean();
+        this.setPassiveSpawn(packet.readBoolean());
         int layers = packet.readVarInt();
         for (int i = 0; i < layers; i++) {
             int minY = packet.readInt();
@@ -448,6 +453,9 @@ public class DimensionConfig {
         packet.writeBoolean(weather);
         packet.writeBoolean(generateTrees);
         packet.writeBoolean(vegetation);
+        packet.writeString(biome.getRegistryName().toString());
+        packet.writeBoolean(allowGenerationChanges);
+        packet.writeBoolean(passiveSpawn);
         packet.writeVarInt(layers.size());
         for (FlatLayerInfo fli : layers) {
             packet.writeInt(fli.getMinY());
