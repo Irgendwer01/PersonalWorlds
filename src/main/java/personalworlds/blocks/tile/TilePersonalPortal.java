@@ -1,5 +1,7 @@
 package personalworlds.blocks.tile;
 
+import com.cleanroommc.modularui.api.value.IStringValue;
+import com.cleanroommc.modularui.value.StringValue;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,12 +10,16 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.IWorldNameable;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.packet.Packets;
@@ -22,7 +28,7 @@ import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
 
-public class TilePersonalPortal extends TileEntity {
+public class TilePersonalPortal extends TileEntity implements IWorldNameable {
 
     @Getter
     private boolean isActive = false;
@@ -36,6 +42,8 @@ public class TilePersonalPortal extends TileEntity {
     @Getter
     @Setter
     private EnumFacing facing;
+
+    public String customName = "";
 
     public void transport(EntityPlayerMP player) {
         if (world.isRemote || !this.isActive || player == null) {
@@ -180,12 +188,11 @@ public class TilePersonalPortal extends TileEntity {
         }
     }
 
-    @Override
-    public void markDirty() {
-        super.markDirty();
+    public void sendToClient() {
         if (world != null) {
-            world.markBlockRangeForRenderUpdate(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1,
-                    pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+            world.markBlockRangeForRenderUpdate(pos, pos);
+            world.notifyBlockUpdate(pos, this.getBlockType().getStateFromMeta(this.getBlockMetadata()), this.getBlockType().getStateFromMeta(this.getBlockMetadata()), 3);
+            world.scheduleBlockUpdate(pos,this.getBlockType(),0,0);
         }
     }
 
@@ -196,6 +203,7 @@ public class TilePersonalPortal extends TileEntity {
         compound.setIntArray("target",
                 new int[] { this.targetID, this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ() });
         compound.setInteger("facing", this.facing.ordinal());
+        compound.setString("name", this.customName);
         return compound;
     }
 
@@ -212,7 +220,45 @@ public class TilePersonalPortal extends TileEntity {
         if (compound.hasKey("facing")) {
             this.facing = EnumFacing.VALUES[compound.getInteger("facing")];
         }
-
+        if (compound.hasKey("name")) {
+            this.customName = compound.getString("name");
+        }
         super.readFromNBT(compound);
     }
+
+    @Override
+    public String getName() {
+        return customName.isEmpty() ? null : customName;
+    }
+
+    @Nullable
+    @Override
+    public ITextComponent getDisplayName() {
+        return customName.isEmpty() ? null : new TextComponentString(customName);
+    }
+
+    @Override
+    public boolean hasCustomName() {
+        return !customName.isEmpty();
+    }
+
+
+    @Override
+    @Nullable
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 3, this.getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        super.onDataPacket(net, pkt);
+        handleUpdateTag(pkt.getNbtCompound());
+    }
+
+
 }

@@ -6,14 +6,19 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 import com.cleanroommc.modularui.api.ITheme;
+import com.cleanroommc.modularui.api.value.IStringValue;
 import com.cleanroommc.modularui.drawable.*;
 import com.cleanroommc.modularui.screen.viewport.GuiContext;
 import com.cleanroommc.modularui.theme.WidgetTheme;
 import com.cleanroommc.modularui.utils.Color;
 import com.cleanroommc.modularui.utils.JsonHelper;
+import com.cleanroommc.modularui.value.StringValue;
+import com.cleanroommc.modularui.value.sync.StringSyncValue;
 import com.cleanroommc.modularui.widget.Widget;
 import com.cleanroommc.modularui.widget.sizer.Area;
 import com.cleanroommc.modularui.widgets.*;
+import com.cleanroommc.modularui.widgets.textfield.TextEditorWidget;
+import com.cleanroommc.modularui.widgets.textfield.TextFieldWidget;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -42,7 +47,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import personalworlds.PWConfig;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
-import personalworlds.world.Enums;
 
 import static personalworlds.world.Enums.DaylightCycle.*;
 
@@ -78,11 +82,13 @@ public class PWGuiMUI {
                 .bottom(35).right(15)
                 .size(90, 20);
     private boolean firstDraw = true;
+    private final IStringValue<String> name;
 
-    public PWGuiMUI(int targetDim, int dimID, int x, int y, int z) {
+    public PWGuiMUI(int targetDim, int dimID, int x, int y, int z, String name) {
         this.targetDim = targetDim;
         this.dimID = dimID;
         this.blockPos = new BlockPos(x, y, z);
+        this.name = new StringValue(name);
     }
 
     public ModularScreen createGUI() {
@@ -91,6 +97,9 @@ public class PWGuiMUI {
         } else {
             dimensionConfig = DimensionConfig.getForDimension(targetDim, true);
         }
+        TextFieldWidget nameWidget = new TextFieldWidget()
+                .top(17).left(7)
+                .size(100, 20);
         skyR = ((dimensionConfig.getSkyColor() >> 16) & 0xFF);
         skyG = ((dimensionConfig.getSkyColor() >> 8) & 0xFF);
         skyB = ((dimensionConfig.getSkyColor()) & 0xFF);
@@ -115,14 +124,16 @@ public class PWGuiMUI {
         ModularPanel panel = ModularPanel.defaultPanel("PWGUI");
         this.panel = panel;
         panel.size(350, 250);
-        panel.child(IKey.str("Personal Portal").asWidget()
+        panel.child(IKey.str("Portal Name").asWidget()
                 .top(7).left(7));
+        panel.child(nameWidget
+                .value(name));
         panel.child(new ButtonWidget<>()
                 .overlay(IKey.str("Done"))
                 .size(60, 20)
                 .bottom(9).right(9)
                 .onMousePressed(i -> {
-                    Packets.INSTANCE.sendChangeWorldSettings(dimID, blockPos, dimensionConfig).sendToServer();
+                    Packets.INSTANCE.sendChangeWorldSettings(dimID, blockPos, name.getStringValue(), dimensionConfig).sendToServer();
                     panel.closeIfOpen();
                     return true;
                 }));

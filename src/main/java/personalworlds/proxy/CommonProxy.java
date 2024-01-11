@@ -19,10 +19,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -60,6 +57,9 @@ public class CommonProxy {
 
     public void onPreInit(FMLPreInitializationEvent e) {
         PacketCustom.assignHandler(PWValues.modID, (ICustomPacketHandler.IServerPacketHandler) Packets.INSTANCE::handleServerPacket);
+    }
+
+    public void onInit(FMLInitializationEvent e) {
     }
 
     public void onServerStarting(FMLServerStartingEvent e) {

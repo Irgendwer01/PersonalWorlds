@@ -11,12 +11,15 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -27,6 +30,8 @@ import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGuiMUI;
 import personalworlds.packet.Packets;
 
+import java.util.Random;
+
 public class BlockPersonalPortal extends Block implements ITileEntityProvider {
 
     public BlockPersonalPortal() {
@@ -34,6 +39,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         this.setRegistryName("personal_portal");
         this.setCreativeTab(CreativeTabs.MISC);
         this.setTranslationKey("personal_portal");
+        this.blockHardness = 0.4F;
     }
 
     @Nullable
@@ -45,36 +51,42 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
                                     EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (worldIn.isRemote) {
-            return true;
-        }
-        TileEntity te = worldIn.getTileEntity(pos);
-        if (te instanceof TilePersonalPortal tpp) {
-            if (tpp.isActive() && !playerIn.isSneaking()) {
-                tpp.transport((EntityPlayerMP) playerIn);
-                return true;
-            } else {
-                OpenGUI(worldIn, playerIn, tpp);
+        if (!worldIn.isRemote) {
+            TileEntity te = worldIn.getTileEntity(pos);
+            if (te instanceof TilePersonalPortal tpp) {
+                if (tpp.isActive() && !playerIn.isSneaking()) {
+                    tpp.transport((EntityPlayerMP) playerIn);
+                    return true;
+                } else {
+                    OpenGUI(worldIn, playerIn, tpp);
+                }
             }
         }
         return true;
     }
 
-    public boolean OpenGUI(World world, EntityPlayer player, TilePersonalPortal portal) {
+    public void OpenGUI(World world, EntityPlayer player, TilePersonalPortal portal) {
         if (portal.isActive()) {
             if (player.isSneaking()) {
                 Packets.INSTANCE.sendOpenGui(portal).sendToPlayer(player);
-                return true;
             }
         } else {
             if (world.provider.getDimension() != 0) {
                 player.sendMessage(new TextComponentTranslation("chat.overworldPersonalDimension"));
-                return false;
+                return;
             }
             Packets.INSTANCE.sendOpenGui(portal).sendToPlayer(player);
-            return true;
         }
-        return false;
+    }
+
+    @Override
+    public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TilePersonalPortal tpp) {
+            ItemStack itemStack = new ItemStack(state.getBlock());
+            itemStack.deserializeNBT(tpp.getTileData());
+            drops.add(itemStack);
+        }
     }
 
     @Override
@@ -105,4 +117,5 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         }
         tpp.markDirty();
     }
+
 }

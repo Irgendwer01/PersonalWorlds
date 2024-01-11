@@ -152,16 +152,21 @@ public class DimensionConfig {
                     DimensionManager.getCurrentSaveRootDirectory() + "/" +
                             "personal_world_" + dimID + "/PWConfig.dat");
             if (!DimensionManager.isDimensionRegistered(dimID)) {
+                if (!isClient) {
                     if (!registerDimension(dimID)) {
                         log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
                         return;
                     }
+                }
                 DimensionManager.registerDimension(dimID, dimType);
                 PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
+            }
+            if (!isClient) {
                 this.needsSaving = false;
                 this.allowGenerationChanges = false;
+                this.update();
             }
-            this.update();
+
             synchronized (CommonProxy.getDimensionConfigs(isClient)) {
                 if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
                     CommonProxy.getDimensionConfigs(isClient).put(dimID, this);

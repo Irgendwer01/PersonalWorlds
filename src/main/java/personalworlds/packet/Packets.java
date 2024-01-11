@@ -39,15 +39,17 @@ public enum Packets {
         pkt.writeVarInt(tpp.getPos().getX());
         pkt.writeVarInt(tpp.getPos().getY());
         pkt.writeVarInt(tpp.getPos().getZ());
+        pkt.writeString(tpp.customName);
         return pkt;
     }
 
-    public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, DimensionConfig dimensionConfig) {
+    public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, String name, DimensionConfig dimensionConfig) {
         PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
         pkt.writeVarInt(dimID);
         pkt.writeVarInt(blockPos.getX());
         pkt.writeVarInt(blockPos.getY());
         pkt.writeVarInt(blockPos.getZ());
+        pkt.writeString(name);
         dimensionConfig.writeToPacket(pkt);
         return pkt;
     }
@@ -78,12 +80,15 @@ public enum Packets {
                 int x = packet.readVarInt();
                 int y = packet.readVarInt();
                 int z = packet.readVarInt();
+                String name = packet.readString();
                 DimensionConfig conf = DimensionConfig.fromPacket(packet);
                 if (player != null && player.getServerWorld() != null &&
                         player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
                     if (te instanceof TilePersonalPortal tpp) {
+                        tpp.customName = name;
                         tpp.updateSettings(player, conf);
+                        tpp.sendToClient();
                     }
                 }
             }
@@ -96,7 +101,8 @@ public enum Packets {
         int x = pkt.readVarInt();
         int y = pkt.readVarInt();
         int z = pkt.readVarInt();
-        ClientGUI.open(new PWGuiMUI(targetDim, dimID, x, y, z).createGUI());
+        String name = pkt.readString();
+        ClientGUI.open(new PWGuiMUI(targetDim, dimID, x, y, z, name).createGUI());
     }
 
     public PacketCustom sendWorldList() {
