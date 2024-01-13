@@ -45,6 +45,7 @@ import com.cleanroommc.modularui.widget.WidgetTree;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import personalworlds.PWConfig;
+import personalworlds.PersonalWorlds;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
 
@@ -83,6 +84,8 @@ public class PWGuiMUI {
                 .size(90, 20);
     private boolean firstDraw = true;
     private final IStringValue<String> name;
+
+    private boolean hasPresetSet = false;
 
     public PWGuiMUI(int targetDim, int dimID, int x, int y, int z, String name) {
         this.targetDim = targetDim;
@@ -151,8 +154,10 @@ public class PWGuiMUI {
                 .bottom(145).left(40));
         panel.child(IKey.str("Clouds").asWidget()
                 .bottom(170).left(120));
-        panel.child(IKey.str("Passive Spawn").asWidget()
+        panel.child(IKey.str("Spawn peaceful").asWidget()
                 .bottom(170).left(200));
+        panel.child(IKey.str("Spawn hostile").asWidget()
+                .bottom(145).left(200));
         panel.child(IKey.str("Weather").asWidget()
                 .bottom(145).left(120));
         panel.child(new SliderWidget()
@@ -205,13 +210,28 @@ public class PWGuiMUI {
              .hoverBackground(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED : GuiTextures.MC_BUTTON_DISABLED)
              .onMousePressed(i -> {
                  if (dimensionConfig.allowGenerationChanges()) {
-                     dimensionConfig.setPassiveSpawn(!dimensionConfig.passiveSpawn());
+                     dimensionConfig.setSpawnPassiveMobs(!dimensionConfig.spawnPassiveMobs());
                  }
                  return true;
              })
              .onUpdateListener(widget -> {
-                     widget.overlay(dimensionConfig.passiveSpawn() ? checkmark : crossmark);
+                     widget.overlay(dimensionConfig.spawnPassiveMobs() ? checkmark : crossmark);
              }));
+        panel.child(new ButtonWidget<>()
+                .size(18, 18)
+                .bottom(100).left(176)
+                .overlay(crossmark)
+                .background(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON : GuiTextures.MC_BUTTON_DISABLED)
+                .hoverBackground(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED : GuiTextures.MC_BUTTON_DISABLED)
+                .onMousePressed(i -> {
+                    if (dimensionConfig.allowGenerationChanges()) {
+                        dimensionConfig.setSpawnMonsters(!dimensionConfig.spawnMonsters());
+                    }
+                    return true;
+                })
+                .onUpdateListener(widget -> {
+                    widget.overlay(dimensionConfig.spawnMonsters() ? checkmark : crossmark);
+                }));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(95)
@@ -248,21 +268,9 @@ public class PWGuiMUI {
                 })
                 .onUpdateListener(widget -> {
                     switch (dimensionConfig.getDaylightCycle()) {
-                        case SUN ->  {
-                            widget.overlay(sun);
-                            widget.addTooltipLine("Always Day");
-                        }
-                        case MOON -> {
-                            widget.overlay(moon);
-                            widget.addTooltipLine("Always Night");
-                            widget.tooltipScale(0.8F);
-                        }
-
-                        case CYCLE -> {
-                            widget.overlay(sun_moon);
-                            widget.addTooltipLine("Normal Day and Night cycle");
-                            widget.tooltipScale(0.8F);
-                        }
+                        case SUN ->  widget.overlay(sun);
+                        case MOON -> widget.overlay(moon);
+                        case CYCLE -> widget.overlay(sun_moon);
                     }
                 }));
 
@@ -369,29 +377,31 @@ public class PWGuiMUI {
     }
 
     private void redrawPresets() {
-        boolean presetActive = false;
+        boolean preset = false;
         if (!firstDraw) {
             panel.getChildren().removeIf(widget -> widget.equals(presetsWidget));
         }
         presetsWidget.getChildren().clear();
         for (Map.Entry<String, String> entry : PWConfig.getPresets().entrySet()) {
-            if (isPreset(entry.getValue())) {
+            if (layers.equals(fromPreset(entry.getValue()))) {
                 presetsWidget.overlay(IKey.str(entry.getKey()).color(0xFFFFFF));
-                presetActive = true;
+                preset = true;
             } else {
                 presetsWidget.child(new ButtonWidget<>()
                         .size(90, 20)
                         .overlay(IKey.str(entry.getKey()))
                         .onMousePressed(mouse -> {
                             this.layers = fromPreset(entry.getValue());
+                            redrawPresets();
                             redrawLayers();
                             return true;
                         }));
             }
         }
-        if (!presetActive) {
-            presetsWidget.overlay(IKey.str("Custom"));
+        if (!preset) {
+            presetsWidget.overlay(IKey.str("Custom").color(0xFFFFFF));
         }
+        hasPresetSet = preset;
         panel.child(presetsWidget);
         if (!firstDraw) {
             WidgetTree.resize(panel);
@@ -400,6 +410,9 @@ public class PWGuiMUI {
     }
 
     private void redrawLayers() {
+        if (hasPresetSet) {
+            redrawPresets();
+        }
         if (layersWidget != null) {
             panel.getChildren().removeIf(widget -> widget.equals(layersWidget));
         }
@@ -489,13 +502,10 @@ public class PWGuiMUI {
         WidgetTree.resize(layersWidget);
     }
 
-    private boolean isPreset(String preset) {
-        return toPreset(layers).equals(preset);
-    }
 
     private String toPreset(List<String> layerList) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < layerList.size(); i++) {
+        for (int i = 0; i != layerList.size(); i++) {
             sb.append(layerList.get(i));
             if (i != layerList.size()-1) {
                 sb.append(",");

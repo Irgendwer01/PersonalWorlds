@@ -33,7 +33,6 @@ public class DimensionConfig {
     private File config;
 
     private boolean allowGenerationChanges = true;
-    private boolean passiveSpawn = false;
     private boolean generateTrees = false;
     private boolean clouds = true;
     private boolean weather = false;
@@ -44,8 +43,8 @@ public class DimensionConfig {
     private Biome biome = Biomes.PLAINS;
     private Enums.DaylightCycle daylightCycle = Enums.DaylightCycle.CYCLE;
     private boolean vegetation = false;
-    private boolean generateLakes = false;
-
+    private boolean spawnPassiveMobs = false;
+    private boolean spawnMonsters = false;
     public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
     public static final String PRESET_MINING = "Mining;4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
     public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
@@ -61,7 +60,8 @@ public class DimensionConfig {
                 NBTTagCompound configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(config.toPath()));
                 this.skyColor = configNBT.getInteger("sky_color");
                 this.starsVisibility = configNBT.getInteger("stars_visibility");
-                this.passiveSpawn = configNBT.getBoolean("passive_spawn");
+                this.spawnMonsters = configNBT.getBoolean("spawn_monsters");
+                this.spawnPassiveMobs = configNBT.getBoolean("spawn_passive_mobs");
                 this.generateTrees = configNBT.getBoolean("generate_trees");
                 this.daylightCycle = Enums.DaylightCycle.fromOrdinal(configNBT.getInteger("daylightcycle"));
                 this.clouds = configNBT.getBoolean("clouds");
@@ -69,7 +69,6 @@ public class DimensionConfig {
                 this.biome = Biome.REGISTRY.getObject(new ResourceLocation(configNBT.getString("biome")));
                 this.vegetation = configNBT.getBoolean("vegetation");
                 this.allowGenerationChanges = configNBT.getBoolean("allow_generation_changes");
-                this.generateLakes = configNBT.getBoolean("generate_lakes");
                 if (configNBT.hasKey("blocks")) {
                     this.layers = LayersFromString(configNBT.getString("blocks"));
                 }
@@ -121,7 +120,9 @@ public class DimensionConfig {
         NBTTagCompound configNBT = new NBTTagCompound();
         configNBT.setInteger("sky_color", this.skyColor);
         configNBT.setFloat("stars_visibility", this.starsVisibility);
-        configNBT.setBoolean("passive_spawn", this.passiveSpawn);
+        configNBT.setBoolean("spawn_monsters", this.spawnMonsters);
+        configNBT.setBoolean("spawn_passive_mobs", this.spawnPassiveMobs);
+        configNBT.setBoolean("vegetation", this.vegetation);
         configNBT.setBoolean("clouds", this.clouds);
         configNBT.setBoolean("generate_trees", this.generateTrees);
         configNBT.setInteger("daylightcycle", this.daylightCycle.ordinal());
@@ -242,9 +243,9 @@ public class DimensionConfig {
 
     public String LayersToString(List<FlatLayerInfo> flatLayerInfos) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < flatLayerInfos.size(); i++) {
+        for (int i = flatLayerInfos.size()-1; i != -1; i--) {
             sb.append(flatLayerInfos.get(i).toString());
-            if (i != flatLayerInfos.size() - 1) {
+            if (i != 0) {
                 sb.append(",");
             }
         }
@@ -314,8 +315,31 @@ public class DimensionConfig {
         return MathHelper.clamp(y, 0, 255);
     }
 
+
     public boolean allowGenerationChanges() {
         return allowGenerationChanges;
+    }
+
+    public boolean spawnPassiveMobs() {
+        return this.spawnPassiveMobs;
+    }
+
+    public void setSpawnPassiveMobs(boolean spawnPassiveMobs) {
+        if (this.spawnPassiveMobs != spawnPassiveMobs) {
+            this.needsSaving = true;
+            this.spawnPassiveMobs = spawnPassiveMobs;
+        }
+    }
+
+    public boolean spawnMonsters() {
+        return this.spawnMonsters;
+    }
+
+    public void setSpawnMonsters(boolean spawnMonsters) {
+        if (this.spawnMonsters != spawnMonsters) {
+            this.needsSaving = true;
+            this.spawnMonsters = spawnMonsters;
+        }
     }
 
     public boolean generateVegetation() {
@@ -351,15 +375,6 @@ public class DimensionConfig {
             this.needsSaving = true;
             this.starsVisibility = MathHelper.clamp(starVisibility, 0.0f, 1.0f);
         }
-    }
-
-    public boolean passiveSpawn() {
-        return this.passiveSpawn;
-    }
-
-    public void setPassiveSpawn(boolean passiveSpawn) {
-        this.needsSaving = true;
-        this.passiveSpawn = passiveSpawn;
     }
 
     public int getSkyColor() {
@@ -433,7 +448,8 @@ public class DimensionConfig {
         this.setGeneratingVegetation(packet.readBoolean());
         this.setBiome(Biome.REGISTRY.getObject(new ResourceLocation(packet.readString())));
         this.allowGenerationChanges = packet.readBoolean();
-        this.setPassiveSpawn(packet.readBoolean());
+        this.setSpawnMonsters(packet.readBoolean());
+        this.setSpawnPassiveMobs(packet.readBoolean());
         int layers = packet.readVarInt();
         for (int i = 0; i < layers; i++) {
             int minY = packet.readInt();
@@ -460,7 +476,8 @@ public class DimensionConfig {
         packet.writeBoolean(vegetation);
         packet.writeString(biome.getRegistryName().toString());
         packet.writeBoolean(allowGenerationChanges);
-        packet.writeBoolean(passiveSpawn);
+        packet.writeBoolean(spawnMonsters);
+        packet.writeBoolean(spawnPassiveMobs);
         packet.writeVarInt(layers.size());
         for (FlatLayerInfo fli : layers) {
             packet.writeInt(fli.getMinY());

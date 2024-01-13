@@ -2,6 +2,7 @@ package personalworlds.blocks;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
@@ -9,10 +10,13 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -80,12 +84,15 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TilePersonalPortal tpp) {
-            ItemStack itemStack = new ItemStack(state.getBlock());
-            itemStack.deserializeNBT(tpp.getTileData());
-            drops.add(itemStack);
+    public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @org.jetbrains.annotations.Nullable TileEntity te, ItemStack stack) {
+        player.addStat(StatList.getBlockStats(this));
+        player.addExhaustion(0.005F);
+        if (te != null) {
+            if (te instanceof TilePersonalPortal tpp) {
+                ItemStack stack1 = new ItemStack(state.getBlock());
+                stack1.setTagCompound(tpp.writeToNBT(new NBTTagCompound()));
+                worldIn.spawnEntity(new EntityItem(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack1));
+            }
         }
     }
 
@@ -97,24 +104,22 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
             return;
         }
 
-        double dx = placer.posX - pos.getX();
-        double dz = placer.posZ - pos.getZ();
-        if (Math.abs(dx) > Math.abs(dz)) {
-            tpp.setFacing((dx > 0) ? EnumFacing.EAST : EnumFacing.WEST);
-        } else {
-            tpp.setFacing((dz > 0) ? EnumFacing.SOUTH : EnumFacing.NORTH);
-        }
         if (world.isRemote)
             return;
 
         if (stack.hasTagCompound()) {
-            tpp.readFromNBT(stack.getTagCompound());
+            NBTTagCompound nbtTagCompound = stack.getTagCompound();
+            nbtTagCompound.setInteger("x", tpp.getPos().getX());
+            nbtTagCompound.setInteger("y", tpp.getPos().getY());
+            nbtTagCompound.setInteger("z", tpp.getPos().getZ());
+            tpp.deserializeNBT(nbtTagCompound);
             EntityPlayerMP player = null;
             if (placer instanceof EntityPlayerMP) {
                 player = (EntityPlayerMP) placer;
             }
             tpp.linkOtherPortal(false, player);
         }
+        tpp.sendToClient();
         tpp.markDirty();
     }
 

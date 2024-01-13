@@ -21,6 +21,8 @@ import personalworlds.proxy.CommonProxy;
 public class PWWorldProvider extends WorldProvider {
 
     private DimensionConfig dimensionConfig;
+    private BiomeProviderSingle biomeProviderSingle;
+    private PWChunkGenerator pwChunkGenerator;
 
     public PWWorldProvider() {
     }
@@ -49,7 +51,10 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public IChunkGenerator createChunkGenerator() {
-        return new PWChunkGenerator(this.world);
+        if (pwChunkGenerator == null) {
+            pwChunkGenerator = new PWChunkGenerator(this.world);
+        }
+        return pwChunkGenerator;
     }
 
     @Override
@@ -177,11 +182,14 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public BiomeProvider getBiomeProvider() {
-        return new BiomeProviderSingle(this.dimensionConfig.getBiome());
+        if (biomeProviderSingle == null) {
+            biomeProviderSingle = new BiomeProviderSingle(this.getConfig().getBiome());
+        }
+        return biomeProviderSingle;
     }
 
     @Override
     public void setAllowedSpawnTypes(boolean allowHostile, boolean allowPeaceful) {
-        super.setAllowedSpawnTypes(true, true);
+        super.setAllowedSpawnTypes(getConfig().spawnMonsters(), getConfig().spawnPassiveMobs());
     }
 }

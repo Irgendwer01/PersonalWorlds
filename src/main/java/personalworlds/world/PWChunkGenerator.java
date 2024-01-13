@@ -70,10 +70,10 @@ public class PWChunkGenerator implements IChunkGenerator {
         long k = this.random.nextLong() / 2L * 2L + 1L;
         long l = this.random.nextLong() / 2L * 2L + 1L;
         this.random.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
+        Biome biome = world.provider.getBiomeProvider().getBiome(new BlockPos(i+16, 0, j+16));
 
         ForgeEventFactory.onChunkPopulate(true, this, this.world, this.random, x, z, false);
-        world.provider.getBiomeProvider().getBiome(new BlockPos(i+16, 0, j+16)).decorate(world, random,
-                blockpos);
+        biome.decorate(world, random, blockpos);
         ForgeEventFactory.onChunkPopulate(false, this, this.world, this.random, x, z, false);
         net.minecraft.block.BlockFalling.fallInstantly = false;
     }
@@ -85,13 +85,8 @@ public class PWChunkGenerator implements IChunkGenerator {
 
     @Override
     public List<Biome.SpawnListEntry> getPossibleCreatures(EnumCreatureType creatureType, BlockPos pos) {
-        if (dimensionConfig.passiveSpawn()) {
-            return world.getBiome(pos).getSpawnableList(creatureType);
-        }
-        return null;
+        return world.getBiome(pos).getSpawnableList(creatureType);
     }
-
-
 
     @Nullable
     @Override

@@ -39,10 +39,6 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable {
     @Getter
     private BlockPos targetPos = new BlockPos(8, 8, 8);
 
-    @Getter
-    @Setter
-    private EnumFacing facing;
-
     public String customName = "";
 
     public void transport(EntityPlayerMP player) {
@@ -121,7 +117,6 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable {
             }
             otherPortal.targetID = world.provider.getDimension();
             otherPortal.targetPos = pos;
-            otherPortal.facing = facing;
             otherPortal.markDirty();
             if (player != null) {
                 player.sendMessage(new TextComponentTranslation("chat.personalWorld.relinked", targetID));
@@ -198,17 +193,17 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable {
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
         compound.setBoolean("active", this.isActive);
         compound.setIntArray("target",
                 new int[] { this.targetID, this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ() });
-        compound.setInteger("facing", this.facing.ordinal());
         compound.setString("name", this.customName);
+        super.writeToNBT(compound);
         return compound;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
         if (compound.hasKey("active")) {
             this.isActive = compound.getBoolean("active");
         }
@@ -217,13 +212,11 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable {
             this.targetID = array[0];
             this.targetPos = new BlockPos(array[1], array[2], array[3]);
         }
-        if (compound.hasKey("facing")) {
-            this.facing = EnumFacing.VALUES[compound.getInteger("facing")];
-        }
         if (compound.hasKey("name")) {
             this.customName = compound.getString("name");
         }
-        super.readFromNBT(compound);
+        this.markDirty();
+        this.sendToClient();
     }
 
     @Override
