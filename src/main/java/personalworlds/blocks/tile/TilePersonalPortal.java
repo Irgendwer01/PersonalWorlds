@@ -2,6 +2,7 @@ package personalworlds.blocks.tile;
 
 import com.cleanroommc.modularui.api.value.IStringValue;
 import com.cleanroommc.modularui.value.StringValue;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,7 +10,9 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -28,7 +31,7 @@ import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
 
-public class TilePersonalPortal extends TileEntity implements IWorldNameable {
+public class TilePersonalPortal extends TileEntity implements IWorldNameable, ITickable {
 
     @Getter
     private boolean isActive = false;
@@ -41,6 +44,9 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable {
 
     public String customName = "";
 
+    float bookRot = 0.0f;
+    float bookRotPrev = 0.0f;
+
     public void transport(EntityPlayerMP player) {
         if (world.isRemote || !this.isActive || player == null) {
             return;
@@ -49,6 +55,25 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable {
         PWTeleporter tp = new PWTeleporter((WorldServer) world, targetPos);
 
         player.changeDimension(this.targetID, tp);
+    }
+
+    @Override
+    public void update() {
+        this.bookRotPrev = this.bookRot;
+        EntityPlayer player = this.world.getClosestPlayer((double)((float)this.pos.getX() + 0.5F), (double)((float)this.pos.getY() + 0.5F), (double)((float)this.pos.getZ() + 0.5F), 3.0D, false);
+        if(player != null) {
+            double d0 = player.posX - (double)((float)this.pos.getX() + 0.5F);
+            double d1 = player.posZ - (double)((float)this.pos.getZ() + 0.5F);
+            this.bookRot = (float)MathHelper.atan2(d0, d1);
+
+        }
+        if(bookRot < -Math.PI) {
+            bookRot += Math.PI * 2.0f;
+        }
+        if(bookRot > Math.PI) {
+            bookRot -= Math.PI * 2.0f;
+        }
+
     }
 
     public void linkOtherPortal(boolean spawnPortal, EntityPlayerMP player) {

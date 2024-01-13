@@ -21,6 +21,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IBlockAccess;
@@ -44,6 +45,18 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         this.setCreativeTab(CreativeTabs.MISC);
         this.setTranslationKey("personal_portal");
         this.blockHardness = 0.4F;
+    }
+
+    private static AxisAlignedBB AABB = new AxisAlignedBB(0.0625f, 0.0f, 0.0625f, 0.9375f, 1.0625f, 0.9375f);
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return AABB;
+    }
+
+    @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return false;
     }
 
     @Nullable
