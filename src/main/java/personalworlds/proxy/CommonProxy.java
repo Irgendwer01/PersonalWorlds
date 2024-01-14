@@ -28,6 +28,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.common.network.NetworkHandshakeEstablished;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
+import personalworlds.PWConfig;
 import personalworlds.PWValues;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
@@ -40,6 +41,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+
+import static personalworlds.PWConfig.Values.presets;
 
 
 public class CommonProxy {
@@ -60,6 +63,9 @@ public class CommonProxy {
     }
 
     public void onInit(FMLInitializationEvent e) {
+        PWConfig.Values.presets = PWConfig.presets;
+        PWConfig.Values.allowedBiomes = PWConfig.allowedBiomes;
+        PWConfig.Values.allowedBlocks = PWConfig.allowedBlocks;
     }
 
     public void onServerStarting(FMLServerStartingEvent e) {
@@ -72,7 +78,6 @@ public class CommonProxy {
             if (dimCFG == null || !dimCFG.needsSaving()) {
                 return true;
             }
-            DimensionManager.unregisterDimension(dimID);
             dimCFG.update();
             return true;
         });
@@ -142,7 +147,7 @@ public class CommonProxy {
         }
     }
 
-    public void unregisterDims(boolean isClient) {
+    public static void unregisterDims(boolean isClient) {
         if (CommonProxy.getDimensionConfigs(isClient).isEmpty()) {
             return;
         }
@@ -154,8 +159,8 @@ public class CommonProxy {
                 }
                 return true;
             });
-            CommonProxy.getDimensionConfigs(isClient).clear();
         }
+        CommonProxy.getDimensionConfigs(isClient).clear();
     }
 
     public static class oreGenBusListener {

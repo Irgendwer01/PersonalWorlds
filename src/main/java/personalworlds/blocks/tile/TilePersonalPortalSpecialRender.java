@@ -8,9 +8,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
-import org.lwjgl.opengl.GL11;
 
 public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<TilePersonalPortal> {
+
 
     private static final ResourceLocation TEXTURE_BOOK = new ResourceLocation("textures/entity/enchanting_table_book.png");
     private ModelBook book = new ModelBook();
@@ -20,9 +20,10 @@ public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<T
 
         if (te.getDisplayName() != null) {
             this.setLightmapDisabled(true);
-            this.drawNameplate(te, te.getDisplayName().getFormattedText(), x, y, z, 24);
+            this.drawNameplate(te, te.getDisplayName().getFormattedText(), x, y+0.5D, z, 24);
             this.setLightmapDisabled(false);
         }
+
 
         GlStateManager.pushMatrix();
         GlStateManager.translate((float)x + 0.5f, (float)y + 1.125f, (float)z + 0.5f);
@@ -41,7 +42,7 @@ public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<T
         this.bindTexture(TEXTURE_BOOK);
         float pageRightAngle = 0.3F;
         float pageLeftAngle = 0.9F;
-        pageRightAngle = (pageRightAngle - (float)MathHelper.fastFloor((double)pageRightAngle)) * 1.6F - 0.3F;
+        pageRightAngle = (pageRightAngle - (float) MathHelper.fastFloor((double)pageRightAngle)) * 1.6F - 0.3F;
         pageLeftAngle = (pageLeftAngle - (float)MathHelper.fastFloor((double)pageLeftAngle)) * 1.6F - 0.3F;
 
         pageRightAngle = MathHelper.clamp(pageRightAngle, 0.0f, 1.0f);

@@ -115,12 +115,12 @@ public enum Packets {
                 return true;
             });
         }
-        pkt.writeVarInt(PWConfig.allowedBlocks.length);
-        Arrays.stream(PWConfig.allowedBlocks).forEach(pkt::writeString);
-        pkt.writeVarInt(PWConfig.allowedBiomes.length);
-        Arrays.stream(PWConfig.allowedBiomes).forEach(pkt::writeString);
-        pkt.writeVarInt(PWConfig.presets.length);
-        Arrays.stream(PWConfig.presets).forEach(pkt::writeString);
+        pkt.writeVarInt(PWConfig.Values.allowedBlocks.length);
+        Arrays.stream(PWConfig.Values.allowedBlocks).forEach(pkt::writeString);
+        pkt.writeVarInt(PWConfig.Values.allowedBiomes.length);
+        Arrays.stream(PWConfig.Values.allowedBiomes).forEach(pkt::writeString);
+        pkt.writeVarInt(PWConfig.Values.presets.length);
+        Arrays.stream(PWConfig.Values.presets).forEach(pkt::writeString);
         return pkt;
     }
 
@@ -137,16 +137,18 @@ public enum Packets {
         for (int i = 0; i < amount; ++i) {
             tmpList.add(pkt.readString());
         }
-        PWConfig.allowedBlocks = tmpList.toArray(new String[0]);
+        PWConfig.Values.allowedBlocks = tmpList.toArray(new String[0]);
         amount = pkt.readVarInt();
         tmpList = new ArrayList<>(amount);
         for (int i = 0; i < amount; ++i) {
             tmpList.add(pkt.readString());
         }
-        PWConfig.allowedBiomes = tmpList.toArray(new String[0]);
+        PWConfig.Values.allowedBiomes = tmpList.toArray(new String[0]);
         amount = pkt.readVarInt();
+        tmpList = new ArrayList<>(amount);
         for (int i = 0; i < amount; ++i) {
-
+            tmpList.add(pkt.readString());
         }
+        PWConfig.Values.presets = tmpList.toArray(new String[0]);
     }
 }

@@ -44,18 +44,9 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
 
     public String customName = "";
 
-    float bookRot = 0.0f;
-    float bookRotPrev = 0.0f;
 
-    public void transport(EntityPlayerMP player) {
-        if (world.isRemote || !this.isActive || player == null) {
-            return;
-        }
-
-        PWTeleporter tp = new PWTeleporter((WorldServer) world, targetPos);
-
-        player.changeDimension(this.targetID, tp);
-    }
+    public float bookRot = 0.0f;
+    public float bookRotPrev = 0.0f;
 
     @Override
     public void update() {
@@ -64,7 +55,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         if(player != null) {
             double d0 = player.posX - (double)((float)this.pos.getX() + 0.5F);
             double d1 = player.posZ - (double)((float)this.pos.getZ() + 0.5F);
-            this.bookRot = (float)MathHelper.atan2(d0, d1);
+            this.bookRot = (float) MathHelper.atan2(d0, d1);
 
         }
         if(bookRot < -Math.PI) {
@@ -74,6 +65,16 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             bookRot -= Math.PI * 2.0f;
         }
 
+    }
+
+    public void transport(EntityPlayerMP player) {
+        if (world.isRemote || !this.isActive || player == null) {
+            return;
+        }
+
+        PWTeleporter tp = new PWTeleporter((WorldServer) world, targetPos);
+
+        player.changeDimension(this.targetID, tp);
     }
 
     public void linkOtherPortal(boolean spawnPortal, EntityPlayerMP player) {
