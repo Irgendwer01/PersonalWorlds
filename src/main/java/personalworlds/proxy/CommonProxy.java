@@ -4,12 +4,14 @@ import codechicken.lib.packet.ICustomPacketHandler;
 import codechicken.lib.packet.PacketCustom;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.BiomeEvent;
@@ -48,6 +50,7 @@ import static personalworlds.PWConfig.Values.presets;
 public class CommonProxy {
 
     public static final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
+    public static ItemBlock itemBlockPersonalPortal;
 
     final TIntObjectHashMap<DimensionConfig> clientDimensionConfigs = new TIntObjectHashMap<>();
     final TIntObjectHashMap<DimensionConfig> serverDimensionConfigs = new TIntObjectHashMap<>();
@@ -95,8 +98,10 @@ public class CommonProxy {
 
     @SubscribeEvent
     public void registerItems(RegistryEvent.Register<Item> e) {
+        itemBlockPersonalPortal = new ItemBlock(blockPersonalPortal);
         e.getRegistry()
-                .register(new ItemBlock(blockPersonalPortal).setRegistryName(blockPersonalPortal.getRegistryName()));
+                .register(itemBlockPersonalPortal.setRegistryName(blockPersonalPortal.getRegistryName()));
+
     }
 
     @SubscribeEvent

@@ -24,7 +24,6 @@ public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<T
             this.setLightmapDisabled(false);
         }
 
-
         GlStateManager.pushMatrix();
         GlStateManager.translate((float)x + 0.5f, (float)y + 1.125f, (float)z + 0.5f);
 
@@ -47,10 +46,15 @@ public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<T
 
         pageRightAngle = MathHelper.clamp(pageRightAngle, 0.0f, 1.0f);
         pageLeftAngle = MathHelper.clamp(pageLeftAngle, 0.0f, 1.0f);
+        float pageSpread;
+        if(te.isActive()) {
+            pageSpread = Math.abs(pageRightAngle - pageLeftAngle);
+        }
+        else {
+            pageSpread = 0.0f;
+        }
 
-        float pageSpread = Math.abs(pageRightAngle - pageLeftAngle);
-
-        float age = 0.75f + 0.1f * (float)Math.sin(time);
+        //float age = 0.75f + 0.1f * (float)Math.sin(time);
         GlStateManager.enableCull();
         this.book.render(null, time, pageRightAngle, pageLeftAngle, pageSpread, 0.0f, 0.0625f);
         GlStateManager.popMatrix();

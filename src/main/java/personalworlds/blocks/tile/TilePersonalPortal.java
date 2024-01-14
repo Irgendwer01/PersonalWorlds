@@ -31,6 +31,9 @@ import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
 
+import static java.lang.Math.PI;
+
+
 public class TilePersonalPortal extends TileEntity implements IWorldNameable, ITickable {
 
     @Getter
@@ -51,18 +54,24 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
     @Override
     public void update() {
         this.bookRotPrev = this.bookRot;
-        EntityPlayer player = this.world.getClosestPlayer((double)((float)this.pos.getX() + 0.5F), (double)((float)this.pos.getY() + 0.5F), (double)((float)this.pos.getZ() + 0.5F), 3.0D, false);
+        EntityPlayer player = this.world.getClosestPlayer((this.pos.getX() + 0.5), (this.pos.getY() + 0.5), (this.pos.getZ() + 0.5), 3.0D, false);
         if(player != null) {
-            double d0 = player.posX - (double)((float)this.pos.getX() + 0.5F);
-            double d1 = player.posZ - (double)((float)this.pos.getZ() + 0.5F);
+            double d0 = player.posX - (this.pos.getX() + 0.5F);
+            double d1 = player.posZ - (this.pos.getZ() + 0.5F);
             this.bookRot = (float) MathHelper.atan2(d0, d1);
 
         }
-        if(bookRot < -Math.PI) {
-            bookRot += Math.PI * 2.0f;
+//        if (bookRot > PI / 2) {
+//            bookRot = (2.5f * (float)PI) - bookRot;
+//        } else {
+//            bookRot = (float)PI / 2.0f - bookRot;
+//        }
+
+        while(bookRot > Math.PI) {
+            bookRot -= 2.0 * Math.PI;
         }
-        if(bookRot > Math.PI) {
-            bookRot -= Math.PI * 2.0f;
+        while(bookRot < -Math.PI) {
+            bookRot += 2.0 * Math.PI;
         }
 
     }

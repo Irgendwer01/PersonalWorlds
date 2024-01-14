@@ -2,8 +2,11 @@ package personalworlds.proxy;
 
 import codechicken.lib.packet.ICustomPacketHandler;
 import codechicken.lib.packet.PacketCustom;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraftforge.client.ForgeClientHandler;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeInternalHandler;
 import net.minecraftforge.common.ForgeModContainer;
@@ -43,6 +46,11 @@ public class ClientProxy extends CommonProxy {
     public void onInit(FMLInitializationEvent e) {
         super.onInit(e);
         ClientRegistry.bindTileEntitySpecialRenderer(TilePersonalPortal.class, new TilePersonalPortalSpecialRender());
+    }
+
+    @SubscribeEvent
+    public static void registerModels(ModelRegistryEvent event) {
+        ModelLoader.setCustomModelResourceLocation(itemBlockPersonalPortal, 0, new ModelResourceLocation(blockPersonalPortal.getRegistryName(), "normal"));
     }
 
     @SubscribeEvent
