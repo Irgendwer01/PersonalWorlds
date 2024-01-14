@@ -16,6 +16,14 @@ import personalworlds.world.DimensionConfig;
 @Config(modid = PWValues.modID)
 public class PWConfig {
 
+    public static class Values {
+        public static String[] allowedBlocks;
+
+        public static String[] allowedBiomes;
+
+        public static String[] presets;
+    }
+
     @Config.Comment("Blocks allowed to be used in an Flat World.")
     public static String[] allowedBlocks = {
             "minecraft:stone",
@@ -74,7 +82,7 @@ public class PWConfig {
 
     public static Object2ObjectOpenHashMap<String, String> getPresets() {
         Object2ObjectOpenHashMap<String, String> map = new Object2ObjectOpenHashMap<>();
-        for (String string : presets) {
+        for (String string : Values.presets) {
             String[] stringArray = string.split(";");
             if (stringArray.length != 2) {
                 PersonalWorlds.log.error("Preset {} is invalid!", string);
@@ -94,7 +102,7 @@ public class PWConfig {
     public static List<IBlockState> getAllowedBlocks() {
         int metaData = 0;
         List<IBlockState> allowedBlocks = new ArrayList<>();
-        for (String string : PWConfig.allowedBlocks) {
+        for (String string : Values.allowedBlocks) {
             String[] stringArray = string.split(":");
             if (stringArray.length == 3) {
                 metaData = Integer.parseInt(stringArray[2]);
@@ -114,7 +122,7 @@ public class PWConfig {
 
     public static List<Biome> getAllowedBiomes() {
         List<Biome> allowedBiomes = new ArrayList<>();
-        for (String string : PWConfig.allowedBiomes) {
+        for (String string : Values.allowedBiomes) {
             Biome biome = Biome.REGISTRY.getObject(new ResourceLocation(string));
             if (biome == null) {
                 continue;

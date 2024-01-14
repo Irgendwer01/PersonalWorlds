@@ -1,53 +1,46 @@
 package personalworlds.gui;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
-
-import com.cleanroommc.modularui.api.ITheme;
+import com.cleanroommc.modularui.api.drawable.IDrawable;
+import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.api.value.IStringValue;
-import com.cleanroommc.modularui.drawable.*;
+import com.cleanroommc.modularui.api.widget.IWidget;
+import com.cleanroommc.modularui.drawable.GuiTextures;
+import com.cleanroommc.modularui.drawable.ItemDrawable;
+import com.cleanroommc.modularui.drawable.Rectangle;
+import com.cleanroommc.modularui.drawable.UITexture;
+import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.ModularScreen;
 import com.cleanroommc.modularui.screen.viewport.GuiContext;
 import com.cleanroommc.modularui.theme.WidgetTheme;
-import com.cleanroommc.modularui.utils.Color;
-import com.cleanroommc.modularui.utils.JsonHelper;
+import com.cleanroommc.modularui.utils.Alignment;
+import com.cleanroommc.modularui.value.DoubleValue;
 import com.cleanroommc.modularui.value.StringValue;
-import com.cleanroommc.modularui.value.sync.StringSyncValue;
+import com.cleanroommc.modularui.widget.ParentWidget;
 import com.cleanroommc.modularui.widget.Widget;
-import com.cleanroommc.modularui.widget.sizer.Area;
-import com.cleanroommc.modularui.widgets.*;
-import com.cleanroommc.modularui.widgets.textfield.TextEditorWidget;
+import com.cleanroommc.modularui.widget.WidgetTree;
+import com.cleanroommc.modularui.widgets.ButtonWidget;
+import com.cleanroommc.modularui.widgets.CategoryList;
+import com.cleanroommc.modularui.widgets.ListWidget;
+import com.cleanroommc.modularui.widgets.SliderWidget;
 import com.cleanroommc.modularui.widgets.textfield.TextFieldWidget;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.FlatLayerInfo;
-
-import com.cleanroommc.modularui.api.drawable.IDrawable;
-import com.cleanroommc.modularui.api.drawable.IKey;
-import com.cleanroommc.modularui.api.widget.IWidget;
-import com.cleanroommc.modularui.screen.ModularPanel;
-import com.cleanroommc.modularui.screen.ModularScreen;
-import com.cleanroommc.modularui.utils.Alignment;
-import com.cleanroommc.modularui.value.DoubleValue;
-import com.cleanroommc.modularui.widget.ParentWidget;
-import com.cleanroommc.modularui.widget.WidgetTree;
-
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import personalworlds.PWConfig;
-import personalworlds.PersonalWorlds;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static personalworlds.world.Enums.DaylightCycle.*;
 
@@ -84,8 +77,6 @@ public class PWGuiMUI {
                 .size(90, 20);
     private boolean firstDraw = true;
     private final IStringValue<String> name;
-
-    private boolean hasPresetSet = false;
 
     public PWGuiMUI(int targetDim, int dimID, int x, int y, int z, String name) {
         this.targetDim = targetDim;
@@ -383,6 +374,10 @@ public class PWGuiMUI {
         }
         presetsWidget.getChildren().clear();
         for (Map.Entry<String, String> entry : PWConfig.getPresets().entrySet()) {
+            if (layers.isEmpty() && !preset) {
+                presetsWidget.overlay(IKey.str("Void").color(0xFFFFFF));
+                preset = true;
+            }
             if (layers.equals(fromPreset(entry.getValue()))) {
                 presetsWidget.overlay(IKey.str(entry.getKey()).color(0xFFFFFF));
                 preset = true;
@@ -392,7 +387,6 @@ public class PWGuiMUI {
                         .overlay(IKey.str(entry.getKey()))
                         .onMousePressed(mouse -> {
                             this.layers = fromPreset(entry.getValue());
-                            redrawPresets();
                             redrawLayers();
                             return true;
                         }));
@@ -401,7 +395,6 @@ public class PWGuiMUI {
         if (!preset) {
             presetsWidget.overlay(IKey.str("Custom").color(0xFFFFFF));
         }
-        hasPresetSet = preset;
         panel.child(presetsWidget);
         if (!firstDraw) {
             WidgetTree.resize(panel);
@@ -410,9 +403,6 @@ public class PWGuiMUI {
     }
 
     private void redrawLayers() {
-        if (hasPresetSet) {
-            redrawPresets();
-        }
         if (layersWidget != null) {
             panel.getChildren().removeIf(widget -> widget.equals(layersWidget));
         }
@@ -500,6 +490,7 @@ public class PWGuiMUI {
         panel.child(layersWidget);
         WidgetTree.resize(panel);
         WidgetTree.resize(layersWidget);
+        redrawPresets();
     }
 
 
