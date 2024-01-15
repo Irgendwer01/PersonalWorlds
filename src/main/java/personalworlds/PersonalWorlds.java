@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.network.NetworkHandshakeEstablished;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import personalworlds.command.TPCommand;
 import personalworlds.packet.Packets;
 import personalworlds.proxy.CommonProxy;
 import personalworlds.world.PWWorldProvider;
@@ -48,6 +49,7 @@ public class PersonalWorlds {
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent e) {
         proxy.onServerStarting(e);
+        e.registerServerCommand(new TPCommand());
     }
 
     @Mod.EventHandler

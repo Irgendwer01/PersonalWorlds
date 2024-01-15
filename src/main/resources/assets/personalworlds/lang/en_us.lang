@@ -32,8 +32,8 @@ gui.personalWorld.notAllowed=Not allowed by the server's configuration
 gui.personalWorld.skyType.VANILLA=Vanilla sky
 gui.personalWorld.skyType.BARNADA_C=Barnada C sky
 
-commands.pspace.usage=/pspace (give-portal player DIM [X] [Y] [Z])|(tpx player DIM [X Y Z])|(ls)|(where player)|(allow-worldgen-change DIM)
-commands.pspace.badDimension=The specified dimension doesn't exist
-commands.pspace.where=Player %s is in dimension %d
-commands.pspace.tpx=Player %s was teleported to %d: %d, %d, %d
-commands.pspace.allow-worldgen-change=Player %s unlocked worldgen settings for dimension %d
+commands.pworlds.usage=/pworlds (give-portal player DIM [X] [Y] [Z])|(tpx player DIM [X Y Z])|(ls)|(where player)|(allow-worldgen-change DIM)
+commands.pworlds.badDimension=The specified dimension doesn't exist
+commands.pworlds.where=Player %s is in dimension %d
+commands.pworlds.tpx=Player %s was teleported to %d: %d, %d, %d
+commands.pworlds.allow-worldgen-change=Player %s unlocked worldgen settings for dimension %d
