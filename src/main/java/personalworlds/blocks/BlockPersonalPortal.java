@@ -2,7 +2,6 @@ package personalworlds.blocks;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
@@ -13,29 +12,20 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-
-import com.cleanroommc.modularui.factory.ClientGUI;
 
 import personalworlds.blocks.tile.TilePersonalPortal;
-import personalworlds.gui.PWGuiMUI;
 import personalworlds.packet.Packets;
-
-import java.util.Random;
 
 public class BlockPersonalPortal extends Block implements ITileEntityProvider {
 
@@ -99,7 +89,8 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @org.jetbrains.annotations.Nullable TileEntity te, ItemStack stack) {
+    public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state,
+                             @org.jetbrains.annotations.Nullable TileEntity te, ItemStack stack) {
         player.addStat(StatList.getBlockStats(this));
         player.addExhaustion(0.005F);
         if (te != null) {
@@ -137,5 +128,4 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         tpp.sendToClient();
         tpp.markDirty();
     }
-
 }

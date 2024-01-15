@@ -1,7 +1,5 @@
 package personalworlds.blocks.tile;
 
-import com.cleanroommc.modularui.api.value.IStringValue;
-import com.cleanroommc.modularui.value.StringValue;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -9,7 +7,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -20,9 +17,9 @@ import net.minecraft.world.IWorldNameable;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
+
+import lombok.Getter;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.packet.Packets;
@@ -30,9 +27,6 @@ import personalworlds.proxy.CommonProxy;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWTeleporter;
 import personalworlds.world.PWWorldProvider;
-
-import static java.lang.Math.PI;
-
 
 public class TilePersonalPortal extends TileEntity implements IWorldNameable, ITickable {
 
@@ -47,33 +41,32 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
 
     public String customName = "";
 
-
     public float bookRot = 0.0f;
     public float bookRotPrev = 0.0f;
 
     @Override
     public void update() {
         this.bookRotPrev = this.bookRot;
-        EntityPlayer player = this.world.getClosestPlayer((this.pos.getX() + 0.5), (this.pos.getY() + 0.5), (this.pos.getZ() + 0.5), 3.0D, false);
-        if(player != null) {
+        EntityPlayer player = this.world.getClosestPlayer((this.pos.getX() + 0.5), (this.pos.getY() + 0.5),
+                (this.pos.getZ() + 0.5), 3.0D, false);
+        if (player != null) {
             double d0 = player.posX - (this.pos.getX() + 0.5F);
             double d1 = player.posZ - (this.pos.getZ() + 0.5F);
             this.bookRot = (float) MathHelper.atan2(d0, d1);
 
         }
-//        if (bookRot > PI / 2) {
-//            bookRot = (2.5f * (float)PI) - bookRot;
-//        } else {
-//            bookRot = (float)PI / 2.0f - bookRot;
-//        }
+        // if (bookRot > PI / 2) {
+        // bookRot = (2.5f * (float)PI) - bookRot;
+        // } else {
+        // bookRot = (float)PI / 2.0f - bookRot;
+        // }
 
-        while(bookRot > Math.PI) {
+        while (bookRot > Math.PI) {
             bookRot -= 2.0 * Math.PI;
         }
-        while(bookRot < -Math.PI) {
+        while (bookRot < -Math.PI) {
             bookRot += 2.0 * Math.PI;
         }
-
     }
 
     public void transport(EntityPlayerMP player) {
@@ -136,7 +129,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             if (cfg.getLayers().isEmpty()) {
                 for (int x = 5; x < 12; x++) {
                     for (int z = 5; z < 12; z++) {
-                        otherWorld.setBlockState(new BlockPos(x, newPos.getY()-1, z), Blocks.STONE.getDefaultState());
+                        otherWorld.setBlockState(new BlockPos(x, newPos.getY() - 1, z), Blocks.STONE.getDefaultState());
                     }
                 }
             }
@@ -221,8 +214,9 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
     public void sendToClient() {
         if (world != null) {
             world.markBlockRangeForRenderUpdate(pos, pos);
-            world.notifyBlockUpdate(pos, this.getBlockType().getStateFromMeta(this.getBlockMetadata()), this.getBlockType().getStateFromMeta(this.getBlockMetadata()), 3);
-            world.scheduleBlockUpdate(pos,this.getBlockType(),0,0);
+            world.notifyBlockUpdate(pos, this.getBlockType().getStateFromMeta(this.getBlockMetadata()),
+                    this.getBlockType().getStateFromMeta(this.getBlockMetadata()), 3);
+            world.scheduleBlockUpdate(pos, this.getBlockType(), 0, 0);
         }
     }
 
@@ -270,7 +264,6 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         return !customName.isEmpty();
     }
 
-
     @Override
     @Nullable
     public SPacketUpdateTileEntity getUpdatePacket() {
@@ -287,6 +280,4 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         super.onDataPacket(net, pkt);
         handleUpdateTag(pkt.getNbtCompound());
     }
-
-
 }

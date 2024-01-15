@@ -17,7 +17,6 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraftforge.common.DimensionManager;
@@ -36,7 +35,7 @@ public class DimensionConfig {
     private boolean generateTrees = false;
     private boolean clouds = true;
     private boolean weather = false;
-    private int  skyColor = 0xc0d8ff;
+    private int skyColor = 0xc0d8ff;
     private float starsVisibility = 1F;
     private List<FlatLayerInfo> layers = new ArrayList<>();
     private boolean needsSaving = true;
@@ -149,32 +148,32 @@ public class DimensionConfig {
     }
 
     public void registerWithDimManager(int dimID, boolean isClient) {
-            this.config = new File(
-                    DimensionManager.getCurrentSaveRootDirectory() + "/" +
-                            "personal_world_" + dimID + "/PWConfig.dat");
-            if (!DimensionManager.isDimensionRegistered(dimID)) {
-                if (!isClient) {
-                    if (!registerDimension(dimID)) {
-                        log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
-                        return;
-                    }
-                }
-                DimensionManager.registerDimension(dimID, dimType);
-                PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
-            }
+        this.config = new File(
+                DimensionManager.getCurrentSaveRootDirectory() + "/" +
+                        "personal_world_" + dimID + "/PWConfig.dat");
+        if (!DimensionManager.isDimensionRegistered(dimID)) {
             if (!isClient) {
-                this.needsSaving = false;
-                this.allowGenerationChanges = false;
-                this.update();
-            }
-
-            synchronized (CommonProxy.getDimensionConfigs(isClient)) {
-                if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
-                    CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
-                } else {
-                    CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
+                if (!registerDimension(dimID)) {
+                    log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
+                    return;
                 }
             }
+            DimensionManager.registerDimension(dimID, dimType);
+            PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
+        }
+        if (!isClient) {
+            this.needsSaving = false;
+            this.allowGenerationChanges = false;
+            this.update();
+        }
+
+        synchronized (CommonProxy.getDimensionConfigs(isClient)) {
+            if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
+                CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
+            } else {
+                CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
+            }
+        }
     }
 
     private boolean registerDimension(int dimID) {
@@ -243,7 +242,7 @@ public class DimensionConfig {
 
     public String LayersToString(List<FlatLayerInfo> flatLayerInfos) {
         StringBuilder sb = new StringBuilder();
-        for (int i = flatLayerInfos.size()-1; i != -1; i--) {
+        for (int i = flatLayerInfos.size() - 1; i != -1; i--) {
             sb.append(flatLayerInfos.get(i).toString());
             if (i != 0) {
                 sb.append(",");
@@ -256,7 +255,7 @@ public class DimensionConfig {
         int currY = 0;
         ArrayList<FlatLayerInfo> flatLayerInfos = new ArrayList<>();
         String[] stringArray = string.split(",");
-        for (int i = stringArray.length-1; i > -1; i--) {
+        for (int i = stringArray.length - 1; i > -1; i--) {
             String string1 = stringArray[i];
             FlatLayerInfo flatLayerInfo = LayerFromString(string1);
             flatLayerInfo.setMinY(currY);
@@ -314,7 +313,6 @@ public class DimensionConfig {
         }
         return MathHelper.clamp(y, 0, 255);
     }
-
 
     public boolean allowGenerationChanges() {
         return allowGenerationChanges;
