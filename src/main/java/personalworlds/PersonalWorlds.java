@@ -3,14 +3,13 @@ package personalworlds;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import personalworlds.command.TPCommand;
+import personalworlds.command.PWCommand;
 import personalworlds.proxy.CommonProxy;
 import personalworlds.world.PWWorldProvider;
 
@@ -43,7 +42,7 @@ public class PersonalWorlds {
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent e) {
         proxy.onServerStarting(e);
-        e.registerServerCommand(new TPCommand());
+        e.registerServerCommand(new PWCommand());
     }
 
     @Mod.EventHandler

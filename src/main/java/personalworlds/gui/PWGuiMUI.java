@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
@@ -126,12 +127,12 @@ public class PWGuiMUI {
         ModularPanel panel = ModularPanel.defaultPanel("PWGUI");
         this.panel = panel;
         panel.size(350, 250);
-        panel.child(IKey.str("Portal Name").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.name")).asWidget()
                 .top(7).left(7));
         panel.child(nameWidget
                 .value(name));
         panel.child(new ButtonWidget<>()
-                .overlay(IKey.str("Done"))
+                .overlay(IKey.str(I18n.format("gui.personalWorld.done")))
                 .size(60, 20)
                 .bottom(9).right(9)
                 .onMousePressed(i -> {
@@ -141,24 +142,24 @@ public class PWGuiMUI {
                     return true;
                 }));
         panel.child(new ButtonWidget<>()
-                .overlay(IKey.str("Cancel"))
+                .overlay(IKey.str(I18n.format("gui.personalWorld.cancel")))
                 .size(60, 20)
                 .bottom(9).left(9)
                 .onMousePressed(i -> {
                     panel.closeIfOpen();
                     return true;
                 }));
-        panel.child(IKey.str("Trees").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.trees")).asWidget()
                 .bottom(170).left(40));
-        panel.child(IKey.str("Vegetation").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.vegetation")).asWidget()
                 .bottom(145).left(40));
-        panel.child(IKey.str("Clouds").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.clouds")).asWidget()
                 .bottom(170).left(120));
-        panel.child(IKey.str("Spawn peaceful").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.peaceful_mobs")).asWidget()
                 .bottom(170).left(200));
-        panel.child(IKey.str("Spawn hostile").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.hostile_mobs")).asWidget()
                 .bottom(145).left(200));
-        panel.child(IKey.str("Weather").asWidget()
+        panel.child(IKey.str(I18n.format("gui.personalWorld.weather")).asWidget()
                 .bottom(145).left(120));
         panel.child(new SliderWidget()
                 .size(125, 17)
@@ -167,7 +168,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     dimensionConfig.setStarVisibility((float) widget.getSliderValue());
                     widget.overlay(IKey.str(
-                            String.format("Star Brightness: %.0f", dimensionConfig.getStarVisibility() * 100) + "%")
+                            String.format(I18n.format("gui.personalWorld.starBrightness") + " %.0f", dimensionConfig.getStarVisibility() * 100) + "%")
                             .color(0xFFFFFF));
                 })
                 .bounds(0F, 1F)
@@ -291,7 +292,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     skyR = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
-                            String.format("Red: %s", skyR))
+                            String.format(I18n.format("gui.personalWorld.skyColor.red") + " %s", skyR))
                             .color(0xFFFFFF));
                 }));
         panel.child(new SliderWidget()
@@ -303,7 +304,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     skyG = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
-                            String.format("Green: %s", skyG))
+                            String.format(I18n.format("gui.personalWorld.skyColor.green") + " %s", skyG))
                             .color(0xFFFFFF));
                 }));
         panel.child(new SliderWidget()
@@ -315,7 +316,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     skyB = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
-                            String.format("Blue: %s", skyB))
+                            String.format(I18n.format("gui.personalWorld.skyColor.blue") + " %s", skyB))
                             .color(0xFFFFFF));
                 }));
         panel.child(skyWidget
@@ -342,11 +343,11 @@ public class PWGuiMUI {
                             widget.overlay(new Star(dimensionConfig.getStarVisibility()));
                         })));
         if (dimensionConfig.allowGenerationChanges()) {
-            panel.child(IKey.str("Layers").asWidget()
+            panel.child(IKey.str(I18n.format("gui.personalWorld.layers")).asWidget()
                     .top(7).right(320));
-            panel.child(IKey.str("Biome").asWidget()
+            panel.child(IKey.str(I18n.format("gui.personalWorld.biome")).asWidget()
                     .bottom(190).left(45));
-            panel.child(IKey.str("Presets").asWidget()
+            panel.child(IKey.str(I18n.format("gui.personalWorld.presets")).asWidget()
                     .bottom(190).left(270));
             panel.child(new ListWidget<>(blockList)
                     .top(20).right(50)
@@ -444,7 +445,7 @@ public class PWGuiMUI {
                     .child(new ButtonWidget<>().size(6, 6)
                             .align(Alignment.TopLeft)
                             .overlay(GuiTextures.ADD)
-                            .addTooltipLine("Increase")
+                            .addTooltipLine(I18n.format("gui.personalWorld.layers.increase"))
                             .tooltipScale(0.8F)
                             .onMousePressed(mouse -> {
                                 FlatLayerInfo newLayer = new FlatLayerInfo(3, layerCount.incrementAndGet(), block,
@@ -456,7 +457,7 @@ public class PWGuiMUI {
                     .child(new ButtonWidget<>().size(6, 6)
                             .align(Alignment.BottomLeft)
                             .overlay(GuiTextures.REMOVE)
-                            .addTooltipLine("Decrease")
+                            .addTooltipLine(I18n.format("gui.personalWorld.layers.decrease"))
                             .tooltipScale(0.8F)
                             .onMousePressed(mouse -> {
                                 if (layerCount.get() == 1) {
@@ -471,7 +472,7 @@ public class PWGuiMUI {
                     .child(new ButtonWidget<>().size(6, 6)
                             .align(Alignment.CenterLeft)
                             .overlay(GuiTextures.CROSS_TINY)
-                            .addTooltipLine("Remove")
+                            .addTooltipLine(I18n.format("gui.personalWorld.layers.remove"))
                             .tooltipScale(0.8F)
                             .onMousePressed(mouse -> {
                                 layers.remove(finalI.get());
@@ -481,7 +482,7 @@ public class PWGuiMUI {
                     .childIf(arrowUp, new ButtonWidget<>().size(6, 6)
                             .align(Alignment.TopRight)
                             .overlay(GuiTextures.MOVE_UP)
-                            .addTooltipLine("Move up")
+                            .addTooltipLine(I18n.format("gui.personalWorld.layers.moveUp"))
                             .tooltipScale(0.8F)
                             .onMousePressed(mouse -> {
                                 Collections.swap(layers, finalI.getAndDecrement(), finalI.get());
@@ -491,7 +492,7 @@ public class PWGuiMUI {
                     .childIf(arrowDown, new ButtonWidget<>().size(6, 6)
                             .align(Alignment.BottomRight)
                             .overlay(GuiTextures.MOVE_DOWN)
-                            .addTooltipLine("Move down")
+                            .addTooltipLine(I18n.format("gui.personalWorld.layers.moveDown"))
                             .tooltipScale(0.8F)
                             .onMousePressed(mouse -> {
                                 Collections.swap(layers, finalI.getAndIncrement(), finalI.get());
