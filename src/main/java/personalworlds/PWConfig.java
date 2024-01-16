@@ -3,20 +3,20 @@ package personalworlds;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.config.Config;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import personalworlds.world.DimensionConfig;
 
 @Config(modid = PWValues.modID)
 public class PWConfig {
 
     public static class Values {
+
         public static String[] allowedBlocks;
 
         public static String[] allowedBiomes;

@@ -3,14 +3,14 @@ package personalworlds.packet;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.cleanroommc.modularui.factory.ClientGUI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.INetHandlerPlayServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+
+import com.cleanroommc.modularui.factory.ClientGUI;
 
 import codechicken.lib.packet.PacketCustom;
 import personalworlds.PWConfig;
@@ -43,7 +43,8 @@ public enum Packets {
         return pkt;
     }
 
-    public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, String name, DimensionConfig dimensionConfig) {
+    public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, String name,
+                                                DimensionConfig dimensionConfig) {
         PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
         pkt.writeVarInt(dimID);
         pkt.writeVarInt(blockPos.getX());

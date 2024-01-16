@@ -1,33 +1,34 @@
 package personalworlds.proxy;
 
-import codechicken.lib.packet.ICustomPacketHandler;
-import codechicken.lib.packet.PacketCustom;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.terraingen.BiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLLog;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.common.network.NetworkHandshakeEstablished;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
+
+import codechicken.lib.packet.ICustomPacketHandler;
+import codechicken.lib.packet.PacketCustom;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import personalworlds.PWConfig;
 import personalworlds.PWValues;
 import personalworlds.PersonalWorlds;
@@ -36,14 +37,6 @@ import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWWorldProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
-
-import static personalworlds.PWConfig.Values.presets;
-
 
 public class CommonProxy {
 
@@ -59,7 +52,8 @@ public class CommonProxy {
     }
 
     public void onPreInit(FMLPreInitializationEvent e) {
-        PacketCustom.assignHandler(PWValues.modID, (ICustomPacketHandler.IServerPacketHandler) Packets.INSTANCE::handleServerPacket);
+        PacketCustom.assignHandler(PWValues.modID,
+                (ICustomPacketHandler.IServerPacketHandler) Packets.INSTANCE::handleServerPacket);
     }
 
     public void onInit(FMLInitializationEvent e) {
@@ -85,7 +79,7 @@ public class CommonProxy {
 
     public void serverStopped(FMLServerStoppedEvent event) {
         unregisterDims(false);
-        if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             unregisterDims(true);
             synchronized (CommonProxy.getDimensionConfigs(true)) {
                 CommonProxy.getDimensionConfigs(true).clear();
@@ -164,6 +158,7 @@ public class CommonProxy {
     }
 
     public static class oreGenBusListener {
+
         @SubscribeEvent(priority = EventPriority.HIGH)
         public void onOreGenerate(OreGenEvent.GenerateMinable event) {
             if (event.getWorld().provider instanceof PWWorldProvider) {
@@ -173,11 +168,14 @@ public class CommonProxy {
     }
 
     public static class BiomeBusListener {
+
         @SubscribeEvent(priority = EventPriority.HIGH)
         public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
             if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
                 if (!event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE)) {
-                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) || !PWWP.getConfig().generateVegetation()) {
+                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) ||
+                            event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM) ||
+                            !PWWP.getConfig().generateVegetation()) {
                         event.setResult(Event.Result.DENY);
                     }
                 } else {

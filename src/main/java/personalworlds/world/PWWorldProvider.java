@@ -24,8 +24,7 @@ public class PWWorldProvider extends WorldProvider {
     private BiomeProviderSingle biomeProviderSingle;
     private PWChunkGenerator pwChunkGenerator;
 
-    public PWWorldProvider() {
-    }
+    public PWWorldProvider() {}
 
     public DimensionConfig getConfig() {
         if (this.dimensionConfig == null) {

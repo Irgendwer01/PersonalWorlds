@@ -1,21 +1,15 @@
 package personalworlds;
 
-import codechicken.lib.packet.PacketCustom;
-import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLEventChannel;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.common.network.NetworkHandshakeEstablished;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import personalworlds.packet.Packets;
+
 import personalworlds.proxy.CommonProxy;
 import personalworlds.world.PWWorldProvider;
 
