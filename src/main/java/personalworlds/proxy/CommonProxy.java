@@ -192,6 +192,7 @@ public class CommonProxy {
             if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
                 if (!event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE)) {
                     if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) ||
+                            event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM) ||
                             !PWWP.getConfig().generateVegetation()) {
                         event.setResult(Event.Result.DENY);
                     }
