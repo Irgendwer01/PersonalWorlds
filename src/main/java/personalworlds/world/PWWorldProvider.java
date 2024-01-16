@@ -62,6 +62,11 @@ public class PWWorldProvider extends WorldProvider {
     }
 
     @Override
+    public BlockPos getSpawnCoordinate() {
+        return new BlockPos(8, dimensionConfig.getGroundLevel(), 8);
+    }
+
+    @Override
     public Vec3d getFogColor(float p_76562_1_, float p_76562_2_) {
         int color = getConfig().getSkyColor();
 

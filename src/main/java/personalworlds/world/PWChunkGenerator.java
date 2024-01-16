@@ -7,22 +7,15 @@ import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraft.world.gen.IChunkGenerator;
-import net.minecraft.world.gen.feature.WorldGenAbstractTree;
-import net.minecraft.world.gen.feature.WorldGenTrees;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.terraingen.BiomeEvent;
-import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
-import net.minecraftforge.event.terraingen.TerrainGen;
 
 public class PWChunkGenerator implements IChunkGenerator {
 
@@ -69,8 +62,8 @@ public class PWChunkGenerator implements IChunkGenerator {
         this.random.setSeed(this.world.getSeed());
         long k = this.random.nextLong() / 2L * 2L + 1L;
         long l = this.random.nextLong() / 2L * 2L + 1L;
-        this.random.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
-        Biome biome = world.provider.getBiomeProvider().getBiome(new BlockPos(i+16, 0, j+16));
+        this.random.setSeed((long) x * k + (long) z * l ^ this.world.getSeed());
+        Biome biome = world.provider.getBiomeProvider().getBiome(new BlockPos(i + 16, 0, j + 16));
 
         ForgeEventFactory.onChunkPopulate(true, this, this.world, this.random, x, z, false);
         biome.decorate(world, random, blockpos);

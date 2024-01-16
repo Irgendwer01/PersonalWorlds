@@ -1,5 +1,8 @@
 package personalworlds.proxy;
 
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -30,6 +33,12 @@ public class ClientProxy extends CommonProxy {
     public void onInit(FMLInitializationEvent e) {
         super.onInit(e);
         ClientRegistry.bindTileEntitySpecialRenderer(TilePersonalPortal.class, new TilePersonalPortalSpecialRender());
+    }
+
+    @SubscribeEvent
+    public static void registerModels(ModelRegistryEvent event) {
+        ModelLoader.setCustomModelResourceLocation(itemBlockPersonalPortal, 0,
+                new ModelResourceLocation(blockPersonalPortal.getRegistryName(), "normal"));
     }
 
     @SubscribeEvent

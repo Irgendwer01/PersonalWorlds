@@ -34,7 +34,9 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         this.setRegistryName("personal_portal");
         this.setCreativeTab(CreativeTabs.MISC);
         this.setTranslationKey("personal_portal");
-        this.blockHardness = 0.4F;
+        this.setHarvestLevel("pickaxe", 2);
+        this.setHardness(40.0f);
+        this.setResistance(6000000.0f);
     }
 
     private static AxisAlignedBB AABB = new AxisAlignedBB(0.0625f, 0.0f, 0.0625f, 0.9375f, 1.0625f, 0.9375f);

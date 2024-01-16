@@ -6,8 +6,13 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -41,6 +46,7 @@ import personalworlds.world.PWWorldProvider;
 public class CommonProxy {
 
     public static final BlockPersonalPortal blockPersonalPortal = new BlockPersonalPortal();
+    public static ItemBlock itemBlockPersonalPortal;
 
     final TIntObjectHashMap<DimensionConfig> clientDimensionConfigs = new TIntObjectHashMap<>();
     final TIntObjectHashMap<DimensionConfig> serverDimensionConfigs = new TIntObjectHashMap<>();
@@ -89,8 +95,9 @@ public class CommonProxy {
 
     @SubscribeEvent
     public void registerItems(RegistryEvent.Register<Item> e) {
+        itemBlockPersonalPortal = new ItemBlock(blockPersonalPortal);
         e.getRegistry()
-                .register(new ItemBlock(blockPersonalPortal).setRegistryName(blockPersonalPortal.getRegistryName()));
+                .register(itemBlockPersonalPortal.setRegistryName(blockPersonalPortal.getRegistryName()));
     }
 
     @SubscribeEvent
@@ -98,6 +105,17 @@ public class CommonProxy {
         e.getRegistry().register(blockPersonalPortal);
         GameRegistry.registerTileEntity(TilePersonalPortal.class,
                 new ResourceLocation("personalworlds:tile_personal_portal"));
+    }
+
+    @SubscribeEvent
+    public void initRecipes(RegistryEvent.Register<IRecipe> r) {
+        GameRegistry.addShapedRecipe(new ResourceLocation("portal_block"), new ResourceLocation(PWValues.modID),
+                new ItemStack(CommonProxy.itemBlockPersonalPortal),
+                "QBQ", "SQS", "OOO",
+                'Q', Blocks.QUARTZ_BLOCK,
+                'S', Blocks.QUARTZ_STAIRS,
+                'O', Blocks.OBSIDIAN,
+                'B', Ingredient.fromItems(Items.BOOK));
     }
 
     @SubscribeEvent
