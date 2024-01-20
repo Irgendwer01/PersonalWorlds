@@ -13,7 +13,11 @@ import personalworlds.command.PWCommand;
 import personalworlds.proxy.CommonProxy;
 import personalworlds.world.PWWorldProvider;
 
-@Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version)
+@Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version, dependencies =
+        "required-after:codechickenlib;"
+      + "required-after:modularui@[2.4,);"
+      + "after:theoneprobe;"
+      + "after:hwyla;")
 public class PersonalWorlds {
 
     public static final Logger log = LogManager.getLogger("personalworlds");
