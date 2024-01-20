@@ -64,7 +64,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
             TileEntity te = worldIn.getTileEntity(pos);
             if (te instanceof TilePersonalPortal tpp) {
                 if (tpp.isActive() && !playerIn.isSneaking()) {
-                    tpp.transport((EntityPlayerMP) playerIn);
+                    tpp.transport((EntityPlayerMP) playerIn, pos);
                     return true;
                 } else {
                     OpenGUI(worldIn, playerIn, tpp);

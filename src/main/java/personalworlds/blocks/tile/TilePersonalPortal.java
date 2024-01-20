@@ -69,13 +69,14 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         }
     }
 
-    public void transport(EntityPlayerMP player) {
+    public void transport(EntityPlayerMP player, BlockPos pos) {
         if (world.isRemote || !this.isActive || player == null) {
             return;
         }
+        int x = player.getPosition().getX() - pos.getX();
+        int z = player.getPosition().getZ() - pos.getZ();
 
-        PWTeleporter tp = new PWTeleporter((WorldServer) world, targetPos);
-
+        PWTeleporter tp = new PWTeleporter((WorldServer) world, new BlockPos(targetPos.getX() + x, targetPos.getY(), targetPos.getZ() + z));
         player.changeDimension(this.targetID, tp);
     }
 
