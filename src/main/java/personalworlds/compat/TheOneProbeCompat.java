@@ -28,11 +28,11 @@ public class TheOneProbeCompat implements IProbeInfoProvider {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {
             if (tpp.isActive()) {
-                iProbeInfo.text("Portal is activated");
+                iProbeInfo.text("Portal is active");
                 iProbeInfo.text(String.format("Dimension: %s", tpp.getTargetID()));
                 iProbeInfo.text(String.format("Position: %s", tpp.getTargetPos()));
             } else {
-                iProbeInfo.text("Portal is not yet activated");
+                iProbeInfo.text("Portal is not active");
             }
         }
     }
