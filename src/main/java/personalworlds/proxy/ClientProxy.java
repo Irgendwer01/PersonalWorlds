@@ -14,7 +14,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import codechicken.lib.packet.ICustomPacketHandler;
 import codechicken.lib.packet.PacketCustom;
 import personalworlds.PWConfig;
-import personalworlds.PWValues;
+import personalworlds.Values;
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortalSpecialRender;
 import personalworlds.packet.Packets;
@@ -25,7 +25,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void onPreInit(FMLPreInitializationEvent e) {
         super.onPreInit(e);
-        PacketCustom.assignHandler(PWValues.modID,
+        PacketCustom.assignHandler(Values.ModID,
                 (ICustomPacketHandler.IClientPacketHandler) Packets.INSTANCE::handleClientPacket);
     }
 

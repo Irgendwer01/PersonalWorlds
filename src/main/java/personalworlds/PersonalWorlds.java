@@ -1,7 +1,6 @@
 package personalworlds;
 
 import net.minecraft.world.DimensionType;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.event.*;
@@ -9,16 +8,15 @@ import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import personalworlds.command.PWCommand;
 import personalworlds.compat.TheOneProbeCompat;
 import personalworlds.proxy.CommonProxy;
 import personalworlds.world.PWWorldProvider;
 
-@Mod(name = PWValues.modName, modid = PWValues.modID, version = PWValues.version, dependencies =
-        "required-after:codechickenlib;"
-      + "required-after:modularui@[2.4,);"
-      + "after:theoneprobe;"
-      + "after:hwyla;")
+@Mod(name = Values.ModName,
+     modid = Values.ModID,
+     version = Values.Version,
+     dependencies = "required-after:codechickenlib;" + "required-after:modularui@[2.4,);" + "after:theoneprobe;" +
+             "after:hwyla;")
 public class PersonalWorlds {
 
     public static final Logger log = LogManager.getLogger("personalworlds");
@@ -50,7 +48,6 @@ public class PersonalWorlds {
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent e) {
         proxy.onServerStarting(e);
-        e.registerServerCommand(new PWCommand());
     }
 
     @Mod.EventHandler

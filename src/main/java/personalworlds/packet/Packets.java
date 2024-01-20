@@ -14,7 +14,7 @@ import com.cleanroommc.modularui.factory.ClientGUI;
 
 import codechicken.lib.packet.PacketCustom;
 import personalworlds.PWConfig;
-import personalworlds.PWValues;
+import personalworlds.Values;
 import personalworlds.blocks.tile.TilePersonalPortal;
 import personalworlds.gui.PWGuiMUI;
 import personalworlds.proxy.CommonProxy;
@@ -33,7 +33,7 @@ public enum Packets {
     }
 
     public PacketCustom sendOpenGui(TilePersonalPortal tpp) {
-        PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.OPEN_GUI.ordinal());
+        PacketCustom pkt = new PacketCustom(Values.ModID, PacketIds.OPEN_GUI.ordinal());
         pkt.writeVarInt(tpp.getTargetID());
         pkt.writeVarInt(tpp.getWorld().provider.getDimension());
         pkt.writeVarInt(tpp.getPos().getX());
@@ -45,7 +45,7 @@ public enum Packets {
 
     public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, String name,
                                                 DimensionConfig dimensionConfig) {
-        PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
+        PacketCustom pkt = new PacketCustom(Values.ModID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
         pkt.writeVarInt(dimID);
         pkt.writeVarInt(blockPos.getX());
         pkt.writeVarInt(blockPos.getY());
@@ -107,7 +107,7 @@ public enum Packets {
     }
 
     public PacketCustom sendWorldList() {
-        PacketCustom pkt = new PacketCustom(PWValues.modID, PacketIds.UPDATE_WORLDLIST.ordinal());
+        PacketCustom pkt = new PacketCustom(Values.ModID, PacketIds.UPDATE_WORLDLIST.ordinal());
         synchronized (CommonProxy.getDimensionConfigs(false)) {
             pkt.writeVarInt(CommonProxy.getDimensionConfigs(false).size());
             CommonProxy.getDimensionConfigs(false).forEachEntry((dimID, dimCfg) -> {

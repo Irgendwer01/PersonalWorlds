@@ -1,13 +1,14 @@
 package personalworlds.compat;
 
-import mcjty.theoneprobe.TheOneProbe;
-import mcjty.theoneprobe.api.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import personalworlds.PWValues;
+
+import mcjty.theoneprobe.TheOneProbe;
+import mcjty.theoneprobe.api.*;
+import personalworlds.Values;
 import personalworlds.blocks.tile.TilePersonalPortal;
 
 public class TheOneProbeCompat implements IProbeInfoProvider {
@@ -19,11 +20,12 @@ public class TheOneProbeCompat implements IProbeInfoProvider {
 
     @Override
     public String getID() {
-        return PWValues.modID;
+        return Values.ModID;
     }
 
     @Override
-    public void addProbeInfo(ProbeMode probeMode, IProbeInfo iProbeInfo, EntityPlayer entityPlayer, World world, IBlockState iBlockState, IProbeHitData iProbeHitData) {
+    public void addProbeInfo(ProbeMode probeMode, IProbeInfo iProbeInfo, EntityPlayer entityPlayer, World world,
+                             IBlockState iBlockState, IProbeHitData iProbeHitData) {
         BlockPos pos = iProbeHitData.getPos();
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TilePersonalPortal tpp) {

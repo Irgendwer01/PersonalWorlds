@@ -1,14 +1,17 @@
 package personalworlds.core;
 
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import org.jetbrains.annotations.Nullable;
-import zone.rong.mixinbooter.IEarlyMixinLoader;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+
+import org.jetbrains.annotations.Nullable;
+
+import zone.rong.mixinbooter.IEarlyMixinLoader;
+
 public class PWCoreMod implements IFMLLoadingPlugin, IEarlyMixinLoader {
+
     @Override
     public String[] getASMTransformerClass() {
         return new String[0];
@@ -26,9 +29,7 @@ public class PWCoreMod implements IFMLLoadingPlugin, IEarlyMixinLoader {
     }
 
     @Override
-    public void injectData(Map<String, Object> data) {
-
-    }
+    public void injectData(Map<String, Object> data) {}
 
     @Override
     public String getAccessTransformerClass() {

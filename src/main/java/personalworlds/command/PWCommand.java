@@ -75,7 +75,8 @@ public class PWCommand extends CommandBase {
                     if (dimWorld == null) throw new CommandException("commands.pworlds.badDimension");
                 }
                 BlockPos target = dimWorld.getSpawnCoordinate();
-                target = new BlockPos(target.getX(), dimWorld.getTopSolidOrLiquidBlock(target).getY() + 1, target.getZ());
+                target = new BlockPos(target.getX(), dimWorld.getTopSolidOrLiquidBlock(target).getY() + 1,
+                        target.getZ());
                 if (args.length >= 6) {
                     target = sender.getPosition();
                 }
@@ -98,7 +99,8 @@ public class PWCommand extends CommandBase {
                     if (dimWorld == null) throw new CommandException("commands.pworlds.badDimension");
                 }
                 BlockPos target = dimWorld.getSpawnCoordinate();
-                target = new BlockPos(target.getX(), dimWorld.getTopSolidOrLiquidBlock(target).getY() + 1, target.getZ());
+                target = new BlockPos(target.getX(), dimWorld.getTopSolidOrLiquidBlock(target).getY() + 1,
+                        target.getZ());
                 if (args.length >= 6) {
                     target = sender.getPosition();
                 }

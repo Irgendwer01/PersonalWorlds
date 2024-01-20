@@ -12,7 +12,7 @@ import net.minecraftforge.common.config.Config;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import personalworlds.world.DimensionConfig;
 
-@Config(modid = PWValues.modID)
+@Config(modid = Values.ModID)
 public class PWConfig {
 
     public static class Values {

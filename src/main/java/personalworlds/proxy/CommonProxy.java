@@ -35,10 +35,11 @@ import codechicken.lib.packet.ICustomPacketHandler;
 import codechicken.lib.packet.PacketCustom;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import personalworlds.PWConfig;
-import personalworlds.PWValues;
 import personalworlds.PersonalWorlds;
+import personalworlds.Values;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.blocks.tile.TilePersonalPortal;
+import personalworlds.command.PWCommand;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWWorldProvider;
@@ -58,7 +59,7 @@ public class CommonProxy {
     }
 
     public void onPreInit(FMLPreInitializationEvent e) {
-        PacketCustom.assignHandler(PWValues.modID,
+        PacketCustom.assignHandler(Values.ModID,
                 (ICustomPacketHandler.IServerPacketHandler) Packets.INSTANCE::handleServerPacket);
     }
 
@@ -69,6 +70,7 @@ public class CommonProxy {
     }
 
     public void onServerStarting(FMLServerStartingEvent e) {
+        e.registerServerCommand(new PWCommand());
         loadDimensionConfigs(DimensionManager.getCurrentSaveRootDirectory());
     }
 
@@ -109,7 +111,7 @@ public class CommonProxy {
 
     @SubscribeEvent
     public void initRecipes(RegistryEvent.Register<IRecipe> r) {
-        GameRegistry.addShapedRecipe(new ResourceLocation("portal_block"), new ResourceLocation(PWValues.modID),
+        GameRegistry.addShapedRecipe(new ResourceLocation("portal_block"), new ResourceLocation(Values.ModID),
                 new ItemStack(CommonProxy.itemBlockPersonalPortal),
                 "QBQ", "SQS", "OOO",
                 'Q', Blocks.QUARTZ_BLOCK,

@@ -168,7 +168,8 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     dimensionConfig.setStarVisibility((float) widget.getSliderValue());
                     widget.overlay(IKey.str(
-                            String.format(I18n.format("gui.personalWorld.starBrightness") + " %.0f", dimensionConfig.getStarVisibility() * 100) + "%")
+                            String.format(I18n.format("gui.personalWorld.starBrightness") + " %.0f",
+                                    dimensionConfig.getStarVisibility() * 100) + "%")
                             .color(0xFFFFFF));
                 })
                 .bounds(0F, 1F)
