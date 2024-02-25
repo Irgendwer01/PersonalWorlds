@@ -42,6 +42,7 @@ import com.cleanroommc.modularui.widgets.CategoryList;
 import com.cleanroommc.modularui.widgets.ListWidget;
 import com.cleanroommc.modularui.widgets.SliderWidget;
 import com.cleanroommc.modularui.widgets.textfield.TextFieldWidget;
+import com.github.bsideup.jabel.Desugar;
 
 import personalworlds.PWConfig;
 import personalworlds.packet.Packets;
@@ -49,9 +50,9 @@ import personalworlds.world.DimensionConfig;
 
 public class PWGuiMUI {
 
-    private int targetDim;
-    private int dimID;
-    private BlockPos blockPos;
+    private final int targetDim;
+    private final int dimID;
+    private final BlockPos blockPos;
     private final IDrawable checkmark = UITexture.builder().imageSize(16, 16).location("personalworlds", "checkmark")
             .build();
     private final IDrawable crossmark = UITexture.builder().imageSize(16, 16).location("personalworlds", "crossmark")
@@ -72,7 +73,7 @@ public class PWGuiMUI {
     private ModularPanel panel;
     private DimensionConfig dimensionConfig;
     private ListWidget layersWidget;
-    private ParentWidget<?> skyWidget = new ParentWidget<>()
+    private final ParentWidget<?> skyWidget = new ParentWidget<>()
             .size(80, 70)
             .top(60).left(80);
     private int skyR;
@@ -95,10 +96,11 @@ public class PWGuiMUI {
     }
 
     public ModularScreen createGUI() {
+        dimensionConfig = new DimensionConfig(0);
         if (targetDim == 0) {
-            dimensionConfig = dimID == 0 ? new DimensionConfig(0) : DimensionConfig.getForDimension(dimID, true);
+            if (dimID != 0) dimensionConfig.copyFrom(DimensionConfig.getForDimension(dimID, true), true, true, true);
         } else {
-            dimensionConfig = DimensionConfig.getForDimension(targetDim, true);
+            dimensionConfig.copyFrom(DimensionConfig.getForDimension(targetDim, true), true, true, true);
         }
         TextFieldWidget nameWidget = new TextFieldWidget()
                 .top(17).left(7)
@@ -114,7 +116,7 @@ public class PWGuiMUI {
                 int meta = block.getMetaFromState(blockState);
                 ItemStack stack = new ItemStack(block, 1, itemMeta);
                 blockList.add(new ButtonWidget<>().size(22, 22)
-                        .overlay(new ItemDrawable(stack))
+                        .overlay(new ItemDrawable(stack).asIcon().size(19, 19))
                         .addTooltipLine(stack.getDisplayName())
                         .tooltipScale(0.8F)
                         .onMousePressed(i -> {
@@ -170,7 +172,7 @@ public class PWGuiMUI {
                     widget.overlay(IKey.str(
                             String.format(I18n.format("gui.personalWorld.starBrightness") + " %.0f",
                                     dimensionConfig.getStarVisibility() * 100) + "%")
-                            .color(0xFFFFFF));
+                            .color(0xFFFFFF).shadow(true));
                 })
                 .bounds(0F, 1F)
                 .background(GuiTextures.MC_BUTTON_DISABLED));
@@ -188,9 +190,7 @@ public class PWGuiMUI {
                     }
                     return true;
                 })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.generateTrees() ? checkmark : crossmark);
-                }));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.generateTrees() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(14)
@@ -205,9 +205,8 @@ public class PWGuiMUI {
                     }
                     return true;
                 })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.generateVegetation() ? checkmark : crossmark);
-                }));
+                .onUpdateListener(
+                        widget -> widget.overlay(dimensionConfig.generateVegetation() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(75).left(176)
@@ -222,9 +221,8 @@ public class PWGuiMUI {
                     }
                     return true;
                 })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.spawnPassiveMobs() ? checkmark : crossmark);
-                }));
+                .onUpdateListener(
+                        widget -> widget.overlay(dimensionConfig.spawnPassiveMobs() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(176)
@@ -239,9 +237,7 @@ public class PWGuiMUI {
                     }
                     return true;
                 })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.spawnMonsters() ? checkmark : crossmark);
-                }));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.spawnMonsters() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(95)
@@ -250,9 +246,7 @@ public class PWGuiMUI {
                     dimensionConfig.enableWeather(!dimensionConfig.weatherEnabled());
                     return true;
                 })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.weatherEnabled() ? checkmark : crossmark);
-                }));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.weatherEnabled() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(75).left(95)
@@ -261,9 +255,7 @@ public class PWGuiMUI {
                     dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled());
                     return true;
                 })
-                .onUpdateListener(widget -> {
-                    widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark);
-                }));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .top(39).left(142)
@@ -294,7 +286,7 @@ public class PWGuiMUI {
                     skyR = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
                             String.format(I18n.format("gui.personalWorld.skyColor.red") + " %s", skyR))
-                            .color(0xFFFFFF));
+                            .color(0xFFFFFF).shadow(true));
                 }));
         panel.child(new SliderWidget()
                 .size(70, 15)
@@ -306,7 +298,7 @@ public class PWGuiMUI {
                     skyG = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
                             String.format(I18n.format("gui.personalWorld.skyColor.green") + " %s", skyG))
-                            .color(0xFFFFFF));
+                            .color(0xFFFFFF).shadow(true));
                 }));
         panel.child(new SliderWidget()
                 .size(70, 15)
@@ -318,7 +310,7 @@ public class PWGuiMUI {
                     skyB = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
                             String.format(I18n.format("gui.personalWorld.skyColor.blue") + " %s", skyB))
-                            .color(0xFFFFFF));
+                            .color(0xFFFFFF).shadow(true));
                 }));
         panel.child(skyWidget
                 .onUpdateListener(widget -> {
@@ -328,21 +320,15 @@ public class PWGuiMUI {
                 .child(new Widget<>()
                         .align(Alignment.TopRight)
                         .size(14, 14)
-                        .onUpdateListener(widget -> {
-                            widget.overlay(new Star(dimensionConfig.getStarVisibility()));
-                        }))
+                        .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarVisibility()))))
                 .child(new Widget<>()
                         .align(Alignment.TopLeft)
                         .size(14, 14)
-                        .onUpdateListener(widget -> {
-                            widget.overlay(new Star(dimensionConfig.getStarVisibility()));
-                        }))
+                        .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarVisibility()))))
                 .child(new Widget<>()
                         .align(Alignment.BottomCenter)
                         .size(14, 14)
-                        .onUpdateListener(widget -> {
-                            widget.overlay(new Star(dimensionConfig.getStarVisibility()));
-                        })));
+                        .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarVisibility())))));
         if (dimensionConfig.allowGenerationChanges()) {
             panel.child(IKey.str(I18n.format("gui.personalWorld.layers")).asWidget()
                     .top(7).right(320));
@@ -438,7 +424,7 @@ public class PWGuiMUI {
             boolean arrowUp = i > 0;
             AtomicInteger finalI = new AtomicInteger(i);
             layerWidget.add(i, new ParentWidget<>().size(22, 22)
-                    .overlay(new ItemDrawable(stack))
+                    .overlay(new ItemDrawable(stack).asIcon().size(19, 19))
                     .addTooltipLine(stack.getDisplayName())
                     .tooltipScale(0.8F)
                     .child(IKey.str(Integer.toString(layerCount.get())).color(0xFFFFF).asWidget()
@@ -536,13 +522,8 @@ public class PWGuiMUI {
         return layers;
     }
 
-    private static class Star implements IDrawable {
-
-        private final float brightness;
-
-        public Star(float brightness) {
-            this.brightness = brightness;
-        }
+    @Desugar
+    private record Star(float brightness) implements IDrawable {
 
         @SideOnly(Side.CLIENT)
         @Override
