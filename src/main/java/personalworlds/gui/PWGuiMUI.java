@@ -116,7 +116,7 @@ public class PWGuiMUI {
                 int meta = block.getMetaFromState(blockState);
                 ItemStack stack = new ItemStack(block, 1, itemMeta);
                 blockList.add(new ButtonWidget<>().size(22, 22)
-                        .overlay(new ItemDrawable(stack).asIcon().size(19, 19))
+                        .overlay(new ItemDrawable(stack).asIcon().size(20, 20))
                         .addTooltipLine(stack.getDisplayName())
                         .tooltipScale(0.8F)
                         .onMousePressed(i -> {
@@ -424,7 +424,7 @@ public class PWGuiMUI {
             boolean arrowUp = i > 0;
             AtomicInteger finalI = new AtomicInteger(i);
             layerWidget.add(i, new ParentWidget<>().size(22, 22)
-                    .overlay(new ItemDrawable(stack).asIcon().size(19, 19))
+                    .overlay(new ItemDrawable(stack).asIcon().size(20, 20))
                     .addTooltipLine(stack.getDisplayName())
                     .tooltipScale(0.8F)
                     .child(IKey.str(Integer.toString(layerCount.get())).color(0xFFFFF).asWidget()
