@@ -105,7 +105,9 @@ public class DimensionConfig {
     public boolean update() {
         File worldFolder = new File(config.toString().replaceAll("/PWConfig.dat", ""));
         if (!worldFolder.exists()) {
-            worldFolder.mkdirs();
+            // Workaround to work under both Unix and Windows
+            if (SystemUtils.IS_OS_WINDOWS) worldFolder.mkdir();
+            else worldFolder.mkdirs();
         }
         if (!config.exists()) {
             try {
