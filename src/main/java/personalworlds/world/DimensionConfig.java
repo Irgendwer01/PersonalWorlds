@@ -21,6 +21,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraftforge.common.DimensionManager;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.packet.PacketCustom;
