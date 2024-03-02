@@ -30,7 +30,7 @@ public class PWWorldProvider extends WorldProvider {
         if (this.dimensionConfig == null) {
             boolean isClient = (this.world != null) ? this.world.isRemote :
                     FMLCommonHandler.instance().getEffectiveSide().isClient();
-            this.dimensionConfig = DimensionConfig.getForDimension(this.getDimension(), isClient);
+            this.dimensionConfig = DimensionConfig.getConfig(this.getDimension(), isClient);
             if (this.dimensionConfig == null) {
                 PersonalWorlds.log.fatal(
                         "PersonalSpace couldn't find dimension config for dimension {}, detected side: {}\nknown client dimension IDs: {}\nknown server dimension IDs: {}\n",
@@ -83,7 +83,7 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public float getCloudHeight() {
-        return getConfig().cloudsEnabled() ? 256.0F : Float.NEGATIVE_INFINITY;
+        return getConfig().isClouds() ? 256.0F : Float.NEGATIVE_INFINITY;
     }
 
     @Override
@@ -98,38 +98,40 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public boolean isDaytime() {
-        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.isDaytime();
+        if (getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.CYCLE) return super.isDaytime();
 
-        return !(this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON);
+        return !(this.getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.MOON);
     }
 
     @Override
     public float getSunBrightnessFactor(float par1) {
-        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightnessFactor(par1);
+        if (getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.CYCLE)
+            return super.getSunBrightnessFactor(par1);
 
-        return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.0f : 1.0f;
+        return this.getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.MOON ? 0.0f : 1.0f;
     }
 
     @Override
     public float getSunBrightness(float par1) {
-        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getSunBrightness(par1);
+        if (getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.CYCLE) return super.getSunBrightness(par1);
 
-        return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.2f : 1.0f;
+        return this.getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.MOON ? 0.2f : 1.0f;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public float getStarBrightness(float brightness) {
-        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE) return super.getStarBrightness(brightness);
-        return getConfig().getStarVisibility();
+        if (getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.CYCLE)
+            return super.getStarBrightness(brightness);
+        return getConfig().getStarsVisibility();
     }
 
     @Override
     public float calculateCelestialAngle(long worldTime, float partialTicks) {
-        if (getConfig().getDaylightCycle() == Enums.DaylightCycle.CYCLE)
+        if (getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.CYCLE)
             return super.calculateCelestialAngle(worldTime, partialTicks);
 
-        return this.getConfig().getDaylightCycle() == Enums.DaylightCycle.MOON ? 0.5f : 0.0f;
+        return this.getConfig().getDaylightCycle() == DimensionConfig.DaylightCycle.MOON ? 0.5f : 0.0f;
     }
 
     @Override
@@ -140,7 +142,7 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void updateWeather() {
-        if (!this.world.isRemote && getConfig().weatherEnabled()) {
+        if (!this.world.isRemote && getConfig().isWeather()) {
             super.updateWeather();
         } else {
             this.world.rainingStrength = 0.0f;
@@ -152,7 +154,7 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void calculateInitialWeather() {
-        if (!this.world.isRemote && getConfig().weatherEnabled()) {
+        if (!this.world.isRemote && getConfig().isWeather()) {
             super.calculateInitialWeather();
         } else {
             this.world.rainingStrength = 0.0f;
@@ -166,22 +168,22 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public boolean canDoLightning(Chunk chunk) {
-        return this.getConfig().weatherEnabled();
+        return this.getConfig().isWeather();
     }
 
     @Override
     public boolean canDoRainSnowIce(Chunk chunk) {
-        return this.getConfig().weatherEnabled();
+        return this.getConfig().isWeather();
     }
 
     @Override
     public boolean canBlockFreeze(BlockPos pos, boolean byWater) {
-        return this.getConfig().weatherEnabled() && super.canBlockFreeze(pos, byWater);
+        return this.getConfig().isWeather() && super.canBlockFreeze(pos, byWater);
     }
 
     @Override
     public boolean canSnowAt(BlockPos pos, boolean checkLight) {
-        return this.getConfig().weatherEnabled() && super.canSnowAt(pos, checkLight);
+        return this.getConfig().isWeather() && super.canSnowAt(pos, checkLight);
     }
 
     @Override
@@ -194,6 +196,6 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void setAllowedSpawnTypes(boolean allowHostile, boolean allowPeaceful) {
-        super.setAllowedSpawnTypes(getConfig().spawnMonsters(), getConfig().spawnPassiveMobs());
+        super.setAllowedSpawnTypes(getConfig().isSpawnMonsters(), getConfig().isSpawnPassiveMobs());
     }
 }

@@ -21,11 +21,10 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.FlatLayerInfo;
 import net.minecraftforge.common.DimensionManager;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
-import codechicken.lib.packet.PacketCustom;
+import lombok.Getter;
+import lombok.Setter;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
 
@@ -33,26 +32,43 @@ public class DimensionConfig {
 
     private File config;
 
+    @Setter
+    private int dimID;
+    @Getter
     private boolean allowGenerationChanges = true;
+    @Getter
     private boolean generateTrees = false;
+    @Getter
     private boolean clouds = true;
+    @Getter
     private boolean weather = false;
+    @Getter
     private int skyColor = 0xc0d8ff;
+    @Getter
     private float starsVisibility = 1F;
+    @Getter
     private List<FlatLayerInfo> layers = new ArrayList<>();
+    @Getter
     private boolean needsSaving = true;
+    @Getter
     private Biome biome = Biomes.PLAINS;
-    private Enums.DaylightCycle daylightCycle = Enums.DaylightCycle.CYCLE;
+    @Getter
+    private DaylightCycle daylightCycle = DaylightCycle.CYCLE;
+    @Getter
     private boolean vegetation = false;
+    @Getter
     private boolean spawnPassiveMobs = false;
+    @Getter
     private boolean spawnMonsters = false;
     public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
     public static final String PRESET_MINING = "Mining;4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
+
     public static final Pattern PRESET_VALIDATION_PATTERN = Pattern
             .compile(
                     "^(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?(?:,(?:[1-9][0-9]*\\*)?[a-zA-Z+_]+:[a-zA-Z+_]+(?::[1-9][0-9]?)?+)*$");
 
     public DimensionConfig(int dimID) {
+        this.dimID = dimID;
         this.config = new File(
                 DimensionManager.getCurrentSaveRootDirectory() + "/" +
                         "personal_world_" + dimID + "/PWConfig.dat");
@@ -64,7 +80,7 @@ public class DimensionConfig {
                 this.spawnMonsters = configNBT.getBoolean("spawn_monsters");
                 this.spawnPassiveMobs = configNBT.getBoolean("spawn_passive_mobs");
                 this.generateTrees = configNBT.getBoolean("generate_trees");
-                this.daylightCycle = Enums.DaylightCycle.fromOrdinal(configNBT.getInteger("daylightcycle"));
+                this.daylightCycle = DaylightCycle.fromOrdinal(configNBT.getInteger("daylightcycle"));
                 this.clouds = configNBT.getBoolean("clouds");
                 this.weather = configNBT.getBoolean("weather");
                 this.biome = Biome.REGISTRY.getObject(new ResourceLocation(configNBT.getString("biome")));
@@ -81,36 +97,40 @@ public class DimensionConfig {
         }
     }
 
-    public boolean copyFrom(DimensionConfig source, boolean copySaveInfo, boolean copyVisualInfo,
-                            boolean copyGenerationInfo) {
-        this.needsSaving = false;
-        if (copySaveInfo) {
-            this.needsSaving = source.needsSaving;
-        }
-        if (copyVisualInfo) {
-            this.setSkyColor(source.getSkyColor());
-            this.setStarVisibility(source.getStarVisibility());
-            this.setDaylightCycle(source.getDaylightCycle());
-            this.enableClouds(source.cloudsEnabled());
-            this.enableWeather(source.weatherEnabled());
-        }
-        if (copyGenerationInfo) {
-            this.setGeneratingTrees(source.generateTrees());
-            this.layers = source.layers;
-            this.needsSaving = true;
-        }
-        boolean modified = this.needsSaving;
-        this.needsSaving = true;
-        return modified;
+    public DimensionConfig copy() {
+        return copy(this.dimID);
     }
 
-    public boolean update() {
-        File worldFolder = new File(config.toString().replaceAll("/PWConfig.dat", ""));
-        if (!worldFolder.exists()) {
-            // Workaround to work under both Unix and Windows
-            if (SystemUtils.IS_OS_WINDOWS) worldFolder.mkdir();
-            else worldFolder.mkdirs();
-        }
+    public DimensionConfig copy(int dimID) {
+        DimensionConfig copy = new DimensionConfig(dimID);
+        copy.needsSaving = true;
+        copy.skyColor = this.skyColor;
+        copy.starsVisibility = this.starsVisibility;
+        copy.daylightCycle = this.daylightCycle;
+        copy.clouds = this.clouds;
+        copy.weather = this.weather;
+        copy.generateTrees = this.generateTrees;
+        copy.layers = this.layers;
+        copy.allowGenerationChanges = this.allowGenerationChanges;
+        copy.biome = this.biome;
+        copy.vegetation = this.vegetation;
+        copy.spawnMonsters = this.spawnMonsters;
+        copy.spawnPassiveMobs = this.spawnPassiveMobs;
+        return copy;
+    }
+
+    public void copyFrom(DimensionConfig src) {
+        this.needsSaving = true;
+        this.skyColor = src.skyColor;
+        this.starsVisibility = src.starsVisibility;
+        this.daylightCycle = src.daylightCycle;
+        this.clouds = src.clouds;
+        this.weather = src.weather;
+        this.spawnMonsters = src.spawnMonsters;
+        this.spawnPassiveMobs = src.spawnPassiveMobs;
+    }
+
+    public void update() {
         if (!config.exists()) {
             try {
                 config.createNewFile();
@@ -142,16 +162,15 @@ public class DimensionConfig {
                     .error(String.format("Could not save config in %s! Error:", config.getAbsolutePath()));
             throw new RuntimeException(e);
         }
-        return true;
     }
 
-    public static DimensionConfig getForDimension(int dimId, boolean isClient) {
+    public static DimensionConfig getConfig(int dimId, boolean isClient) {
         synchronized (CommonProxy.getDimensionConfigs(isClient)) {
             return CommonProxy.getDimensionConfigs(isClient).get(dimId);
         }
     }
 
-    public void registerWithDimManager(int dimID, boolean isClient) {
+    public void registerWithDimManager(boolean isClient) {
         this.config = new File(
                 DimensionManager.getCurrentSaveRootDirectory() + "/" +
                         "personal_world_" + dimID + "/PWConfig.dat");
@@ -165,18 +184,18 @@ public class DimensionConfig {
             DimensionManager.registerDimension(dimID, dimType);
             PersonalWorlds.log.info("DimensionConfig registered for dim {}, client {}", dimID, isClient);
         }
-        if (!isClient) {
-            this.needsSaving = false;
-            this.allowGenerationChanges = false;
-            this.update();
-        }
-
         synchronized (CommonProxy.getDimensionConfigs(isClient)) {
             if (!CommonProxy.getDimensionConfigs(isClient).containsKey(dimID)) {
                 CommonProxy.getDimensionConfigs(isClient).put(dimID, this);
             } else {
-                CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this, true, true, true);
+                CommonProxy.getDimensionConfigs(isClient).get(dimID).copyFrom(this);
             }
+        }
+        if (!isClient) {
+            DimensionManager.initDimension(dimID);
+            this.needsSaving = false;
+            this.allowGenerationChanges = false;
+            this.update();
         }
     }
 
@@ -303,10 +322,6 @@ public class DimensionConfig {
         this.layers = LayersFromString(preset);
     }
 
-    public List<FlatLayerInfo> getLayers() {
-        return this.layers;
-    }
-
     public int getGroundLevel() {
         if (layers.isEmpty()) {
             return 128;
@@ -318,14 +333,6 @@ public class DimensionConfig {
         return MathHelper.clamp(y, 0, 255);
     }
 
-    public boolean allowGenerationChanges() {
-        return allowGenerationChanges;
-    }
-
-    public boolean spawnPassiveMobs() {
-        return this.spawnPassiveMobs;
-    }
-
     public void setSpawnPassiveMobs(boolean spawnPassiveMobs) {
         if (this.spawnPassiveMobs != spawnPassiveMobs) {
             this.needsSaving = true;
@@ -333,19 +340,11 @@ public class DimensionConfig {
         }
     }
 
-    public boolean spawnMonsters() {
-        return this.spawnMonsters;
-    }
-
     public void setSpawnMonsters(boolean spawnMonsters) {
         if (this.spawnMonsters != spawnMonsters) {
             this.needsSaving = true;
             this.spawnMonsters = spawnMonsters;
         }
-    }
-
-    public boolean generateVegetation() {
-        return this.vegetation;
     }
 
     public void setGeneratingVegetation(boolean generateVegetation) {
@@ -360,27 +359,11 @@ public class DimensionConfig {
         this.biome = biome;
     }
 
-    public Biome getBiome() {
-        return this.biome;
-    }
-
-    public float getStarVisibility() {
-        return this.starsVisibility;
-    }
-
-    public boolean needsSaving() {
-        return this.needsSaving;
-    }
-
     public void setStarVisibility(float starVisibility) {
         if (this.starsVisibility != starVisibility) {
             this.needsSaving = true;
             this.starsVisibility = MathHelper.clamp(starVisibility, 0.0f, 1.0f);
         }
-    }
-
-    public int getSkyColor() {
-        return this.skyColor;
     }
 
     public void setSkyColor(int skyColor) {
@@ -390,10 +373,6 @@ public class DimensionConfig {
         }
     }
 
-    public boolean weatherEnabled() {
-        return this.weather;
-    }
-
     public void enableWeather(boolean enableWeather) {
         if (this.weather != enableWeather) {
             this.needsSaving = true;
@@ -401,19 +380,11 @@ public class DimensionConfig {
         }
     }
 
-    public Enums.DaylightCycle getDaylightCycle() {
-        return this.daylightCycle;
-    }
-
-    public void setDaylightCycle(Enums.DaylightCycle cycle) {
+    public void setDaylightCycle(DaylightCycle cycle) {
         if (this.daylightCycle != cycle) {
             this.needsSaving = true;
             this.daylightCycle = cycle;
         }
-    }
-
-    public boolean cloudsEnabled() {
-        return this.clouds;
     }
 
     public void enableClouds(boolean enableClouds) {
@@ -423,10 +394,6 @@ public class DimensionConfig {
         }
     }
 
-    public boolean generateTrees() {
-        return this.generateTrees;
-    }
-
     public void setGeneratingTrees(boolean generateTrees) {
         if (this.generateTrees != generateTrees) {
             this.needsSaving = true;
@@ -434,24 +401,19 @@ public class DimensionConfig {
         }
     }
 
-    public static DimensionConfig fromPacket(PacketCustom packet) {
-        DimensionConfig cfg = new DimensionConfig(0);
-        cfg.readFromPacket(packet);
-        return cfg;
-    }
-
-    public void readFromPacket(MCDataInput packet) {
-        this.setSkyColor(packet.readInt());
-        this.setStarVisibility(packet.readFloat());
-        this.setDaylightCycle(Enums.DaylightCycle.fromOrdinal(packet.readInt()));
-        this.enableClouds(packet.readBoolean());
-        this.enableWeather(packet.readBoolean());
-        this.setGeneratingTrees(packet.readBoolean());
-        this.setGeneratingVegetation(packet.readBoolean());
-        this.setBiome(Biome.REGISTRY.getObject(new ResourceLocation(packet.readString())));
-        this.allowGenerationChanges = packet.readBoolean();
-        this.setSpawnMonsters(packet.readBoolean());
-        this.setSpawnPassiveMobs(packet.readBoolean());
+    public static DimensionConfig readFromPacket(MCDataInput packet) {
+        DimensionConfig cfg = new DimensionConfig(packet.readInt());
+        cfg.setSkyColor(packet.readInt());
+        cfg.setStarVisibility(packet.readFloat());
+        cfg.setDaylightCycle(DaylightCycle.fromOrdinal(packet.readInt()));
+        cfg.enableClouds(packet.readBoolean());
+        cfg.enableWeather(packet.readBoolean());
+        cfg.setGeneratingTrees(packet.readBoolean());
+        cfg.setGeneratingVegetation(packet.readBoolean());
+        cfg.setBiome(Biome.REGISTRY.getObject(new ResourceLocation(packet.readString())));
+        cfg.allowGenerationChanges = packet.readBoolean();
+        cfg.setSpawnMonsters(packet.readBoolean());
+        cfg.setSpawnPassiveMobs(packet.readBoolean());
         int layers = packet.readVarInt();
         for (int i = 0; i < layers; i++) {
             int minY = packet.readInt();
@@ -464,11 +426,13 @@ public class DimensionConfig {
             }
             FlatLayerInfo fli = new FlatLayerInfo(3, layerCount, block, meta);
             fli.setMinY(minY);
-            this.layers.add(fli);
+            cfg.layers.add(fli);
         }
+        return cfg;
     }
 
     public void writeToPacket(MCDataOutput packet) {
+        packet.writeInt(dimID);
         packet.writeInt(skyColor);
         packet.writeFloat(starsVisibility);
         packet.writeInt(daylightCycle.ordinal());
@@ -486,6 +450,17 @@ public class DimensionConfig {
             packet.writeVarInt(fli.getLayerCount());
             packet.writeVarInt(Block.getIdFromBlock(fli.getLayerMaterial().getBlock()));
             packet.writeByte((byte) fli.getLayerMaterial().getBlock().getMetaFromState(fli.getLayerMaterial()));
+        }
+    }
+
+    public enum DaylightCycle {
+
+        SUN,
+        MOON,
+        CYCLE;
+
+        public static DaylightCycle fromOrdinal(int ordinal) {
+            return (ordinal < 0 || ordinal >= values().length) ? DaylightCycle.CYCLE : values()[ordinal];
         }
     }
 }

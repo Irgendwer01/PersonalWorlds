@@ -77,7 +77,7 @@ public class CommonProxy {
     public void onServerStopping(FMLServerStoppingEvent event) {
         TIntObjectHashMap<DimensionConfig> configs = CommonProxy.getDimensionConfigs(false);
         configs.forEachEntry((dimID, dimCFG) -> {
-            if (dimCFG == null || !dimCFG.needsSaving()) {
+            if (dimCFG == null || !dimCFG.isNeedsSaving()) {
                 return true;
             }
             dimCFG.update();
@@ -126,7 +126,7 @@ public class CommonProxy {
             return;
         }
         DimensionConfig cfg = PWWP.getConfig();
-        if (cfg == null || !cfg.needsSaving()) {
+        if (cfg == null || !cfg.isNeedsSaving()) {
             return;
         }
         cfg.update();
@@ -152,7 +152,7 @@ public class CommonProxy {
                 Arrays.stream(dimensions).forEach(dimID -> {
                     try {
                         DimensionConfig dimCFG = new DimensionConfig(dimID);
-                        dimCFG.registerWithDimManager(dimID, false);
+                        dimCFG.registerWithDimManager(false);
                     } catch (Exception e) {
                         PersonalWorlds.log.error("Couldn't load personal dimension data!", e);
                     }
@@ -161,6 +161,7 @@ public class CommonProxy {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void unregisterDims(boolean isClient) {
         if (CommonProxy.getDimensionConfigs(isClient).isEmpty()) {
             return;
@@ -195,11 +196,11 @@ public class CommonProxy {
                 if (!event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE)) {
                     if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) ||
                             event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM) ||
-                            !PWWP.getConfig().generateVegetation()) {
+                            !PWWP.getConfig().isVegetation()) {
                         event.setResult(Event.Result.DENY);
                     }
                 } else {
-                    if (!PWWP.getConfig().generateTrees()) {
+                    if (!PWWP.getConfig().isGenerateTrees()) {
                         event.setResult(Event.Result.DENY);
                     }
                 }

@@ -10,7 +10,7 @@ public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<T
 
     private static final ResourceLocation TEXTURE_BOOK = new ResourceLocation(
             "textures/entity/enchanting_table_book.png");
-    private ModelBook book = new ModelBook();
+    private final ModelBook book = new ModelBook();
 
     @Override
     public void render(TilePersonalPortal te, double x, double y, double z, float partialTicks, int destroyStage,

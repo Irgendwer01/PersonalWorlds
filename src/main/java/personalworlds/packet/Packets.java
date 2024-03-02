@@ -61,9 +61,7 @@ public enum Packets {
             return;
 
         switch (PacketIds.values()[id]) {
-            case UPDATE_WORLDLIST -> {
-                handleWorldList(packet);
-            }
+            case UPDATE_WORLDLIST -> handleWorldList(packet);
             case CHANGE_WORLD_SETTINGS -> {}
             case OPEN_GUI -> handleOpenGUI(packet);
         }
@@ -82,7 +80,7 @@ public enum Packets {
                 int y = packet.readVarInt();
                 int z = packet.readVarInt();
                 String name = packet.readString();
-                DimensionConfig conf = DimensionConfig.fromPacket(packet);
+                DimensionConfig conf = DimensionConfig.readFromPacket(packet);
                 if (player != null && player.getServerWorld() != null &&
                         player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
@@ -111,7 +109,6 @@ public enum Packets {
         synchronized (CommonProxy.getDimensionConfigs(false)) {
             pkt.writeVarInt(CommonProxy.getDimensionConfigs(false).size());
             CommonProxy.getDimensionConfigs(false).forEachEntry((dimID, dimCfg) -> {
-                pkt.writeVarInt(dimID);
                 dimCfg.writeToPacket(pkt);
                 return true;
             });
@@ -128,9 +125,8 @@ public enum Packets {
     private static void handleWorldList(PacketCustom pkt) {
         int dimConfigs = pkt.readVarInt();
         for (int i = 0; i < dimConfigs; i++) {
-            int dimID = pkt.readVarInt();
-            DimensionConfig cfg = DimensionConfig.fromPacket(pkt);
-            cfg.registerWithDimManager(dimID, true);
+            DimensionConfig cfg = DimensionConfig.readFromPacket(pkt);
+            cfg.registerWithDimManager(true);
         }
 
         int amount = pkt.readVarInt();

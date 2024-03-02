@@ -115,7 +115,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
                 }
             }
         }
-        DimensionConfig cfg = DimensionConfig.getForDimension(this.targetID, false);
+        DimensionConfig cfg = DimensionConfig.getConfig(this.targetID, false);
         TilePersonalPortal otherPortal = null;
         if (otherWorld.getBlockState(blockPos).getBlock() instanceof BlockPersonalPortal) {
             TileEntity te = otherWorld.getTileEntity(blockPos.toImmutable());
@@ -128,7 +128,8 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             BlockPos newPos = new BlockPos(otherX, otherY, otherZ);
             otherWorld.setBlockState(newPos, CommonProxy.blockPersonalPortal.getDefaultState(), 3);
             otherPortal = (TilePersonalPortal) otherWorld.getTileEntity(newPos);
-            if (cfg.getLayers().isEmpty()) {
+            if (cfg.getLayers().isEmpty() || cfg.getLayersAsString().equals("minecraft:air")) {
+                otherPortal.setPos(new BlockPos(targetPos.getX(), 128, targetPos.getZ()));
                 for (int x = 5; x < 12; x++) {
                     for (int z = 5; z < 12; z++) {
                         otherWorld.setBlockState(new BlockPos(x, newPos.getY() - 1, z), Blocks.STONE.getDefaultState());
@@ -138,7 +139,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         }
         if (otherPortal != null) {
             otherPortal.isActive = true;
-            DimensionConfig otherPortalCfg = DimensionConfig.getForDimension(otherPortal.targetID, false);
+            DimensionConfig otherPortalCfg = DimensionConfig.getConfig(otherPortal.targetID, false);
             if (otherPortal.targetID != world.provider.getDimension() && otherPortalCfg != null) {
                 if (player != null) {
                     player.sendMessage(new TextComponentTranslation("chat.personalWorld.relinked.error"));
@@ -174,8 +175,6 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             return;
         }
 
-        DimensionConfig sanitized = new DimensionConfig(0);
-        sanitized.copyFrom(conf, false, true, true);
         boolean createNewDim = false;
         int targetID = 0;
         if (this.world.provider instanceof PWWorldProvider) {
@@ -183,23 +182,23 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         } else if (this.isActive) {
             targetID = this.targetID;
         }
-        boolean changed = true;
         if (targetID > 0) {
-            DimensionConfig realConf = DimensionConfig.getForDimension(targetID, false);
-            if (realConf == null) {
+            if (DimensionConfig.getConfig(targetID, false) == null) {
                 return;
             }
-            changed = realConf.copyFrom(sanitized, false, true, false);
-
+            CommonProxy.getDimensionConfigs(false).remove(targetID);
+            conf.setDimID(targetID);
+            CommonProxy.getDimensionConfigs(false).put(targetID, conf);
         } else {
             if (this.world.provider.getDimension() != 0) {
                 return;
             }
             targetID = DimensionManager.getNextFreeDimId();
-            conf.registerWithDimManager(targetID, false);
+            conf.setDimID(targetID);
+            conf.registerWithDimManager(false);
             this.isActive = true;
             this.targetID = targetID;
-            this.targetPos = new BlockPos(this.targetPos.getX(), sanitized.getGroundLevel(), this.targetPos.getZ());
+            this.targetPos = new BlockPos(this.targetPos.getX(), conf.getGroundLevel(), this.targetPos.getZ());
             markDirty();
             createNewDim = true;
 
@@ -208,7 +207,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         Packets.INSTANCE.sendWorldList().sendToClients();
         if (createNewDim) {
             player.sendMessage(new TextComponentTranslation("chat.personalWorld.created"));
-        } else if (changed) {
+        } else {
             player.sendMessage(new TextComponentTranslation("chat.personalWorld.updated"));
         }
     }

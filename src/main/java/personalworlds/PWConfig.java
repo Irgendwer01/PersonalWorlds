@@ -64,7 +64,8 @@ public class PWConfig {
             "minecraft:concrete:12",
             "minecraft:concrete:13",
             "minecraft:concrete:14",
-            "minecraft:concrete:15"
+            "minecraft:concrete:15",
+            "minecraft:bedrock"
     };
 
     @Config.Comment("Biomes allowed to be used in an Personal World.")

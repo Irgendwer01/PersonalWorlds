@@ -9,7 +9,7 @@ import personalworlds.blocks.tile.TilePersonalPortal;
 
 public class PWTeleporter extends Teleporter {
 
-    private BlockPos pos;
+    private final BlockPos pos;
     TilePersonalPortal tpp;
 
     public PWTeleporter(WorldServer worldIn, BlockPos pos) {

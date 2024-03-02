@@ -50,7 +50,7 @@ public class PWCommand extends CommandBase {
                         return true;
 
                     sender.sendMessage(
-                            new TextComponentTranslation(String.format("%d: %s", dimID, dimCFG.cloudsEnabled())));
+                            new TextComponentTranslation(String.format("%d: %s", dimID, dimCFG.isClouds())));
                     return true;
                 });
                 return;

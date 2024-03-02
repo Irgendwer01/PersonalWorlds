@@ -39,7 +39,7 @@ public class BlockPersonalPortal extends Block implements ITileEntityProvider {
         this.setResistance(6000000.0f);
     }
 
-    private static AxisAlignedBB AABB = new AxisAlignedBB(0.0625f, 0.0f, 0.0625f, 0.9375f, 1.0625f, 0.9375f);
+    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.0625f, 0.0f, 0.0625f, 0.9375f, 1.0625f, 0.9375f);
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
