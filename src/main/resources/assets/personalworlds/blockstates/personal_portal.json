@@ -1,13 +1,16 @@
 {
   "forge_marker": 1,
   "defaults": {
-    "model": "personalworlds:personal_portal"
+    "model": "personalworlds:block/personal_portal"
   },
   "variants": {
     "normal": [
       {}
     ],
     "inventory": [
+      {}
+    ],
+    "personalworlds:personal_portal#": [
       {}
     ]
   }

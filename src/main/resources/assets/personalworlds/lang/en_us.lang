@@ -38,6 +38,8 @@ gui.personalWorld.clouds=Clouds
 gui.personalWorld.peaceful_mobs=Spawn peaceful
 gui.personalWorld.hostile_mobs=Spawn hostile
 
+gui.personalWorld.locked=Locked
+
 commands.pworlds.usage=/pworlds (give-portal player DIM [X] [Y] [Z])|(tpx player DIM [X Y Z])|(ls)|(where player)|(allow-worldgen-change DIM)
 commands.pworlds.badDimension=The specified dimension doesn't exist
 commands.pworlds.where=Player %s is in dimension %d
