@@ -23,8 +23,6 @@ import net.minecraftforge.common.DimensionManager;
 
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
-import lombok.Getter;
-import lombok.Setter;
 import personalworlds.PersonalWorlds;
 import personalworlds.proxy.CommonProxy;
 
@@ -32,33 +30,19 @@ public class DimensionConfig {
 
     private File config;
 
-    @Setter
     private int dimID;
-    @Getter
     private boolean allowGenerationChanges = true;
-    @Getter
     private boolean generateTrees = false;
-    @Getter
     private boolean clouds = true;
-    @Getter
     private boolean weather = false;
-    @Getter
     private int skyColor = 0xc0d8ff;
-    @Getter
     private float starsVisibility = 1F;
-    @Getter
     private List<FlatLayerInfo> layers = new ArrayList<>();
-    @Getter
     private boolean needsSaving = true;
-    @Getter
     private Biome biome = Biomes.PLAINS;
-    @Getter
     private DaylightCycle daylightCycle = DaylightCycle.CYCLE;
-    @Getter
     private boolean vegetation = false;
-    @Getter
     private boolean spawnPassiveMobs = false;
-    @Getter
     private boolean spawnMonsters = false;
     public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
     public static final String PRESET_MINING = "Mining;4*minecraft:bedrock,58*minecraft:stone,minecraft:dirt,minecraft:grass";
@@ -314,6 +298,69 @@ public class DimensionConfig {
         return new FlatLayerInfo(3, layers, block, metadata);
     }
 
+    public static DimensionConfig readFromPacket(MCDataInput packet) {
+        DimensionConfig cfg = new DimensionConfig(packet.readInt());
+        cfg.setSkyColor(packet.readInt());
+        cfg.setStarVisibility(packet.readFloat());
+        cfg.setDaylightCycle(DaylightCycle.fromOrdinal(packet.readInt()));
+        cfg.enableClouds(packet.readBoolean());
+        cfg.enableWeather(packet.readBoolean());
+        cfg.setGeneratingTrees(packet.readBoolean());
+        cfg.setGeneratingVegetation(packet.readBoolean());
+        cfg.setBiome(Biome.REGISTRY.getObject(new ResourceLocation(packet.readString())));
+        cfg.allowGenerationChanges = packet.readBoolean();
+        cfg.setSpawnMonsters(packet.readBoolean());
+        cfg.setSpawnPassiveMobs(packet.readBoolean());
+        int layers = packet.readVarInt();
+        for (int i = 0; i < layers; i++) {
+            int minY = packet.readInt();
+            int layerCount = packet.readVarInt();
+            Block block = Block.getBlockById(packet.readVarInt());
+            byte meta = packet.readByte();
+            if (block == null) {
+                log.error("Block was missing");
+                continue;
+            }
+            FlatLayerInfo fli = new FlatLayerInfo(3, layerCount, block, meta);
+            fli.setMinY(minY);
+            cfg.layers.add(fli);
+        }
+        return cfg;
+    }
+
+    public void writeToPacket(MCDataOutput packet) {
+        packet.writeInt(dimID);
+        packet.writeInt(skyColor);
+        packet.writeFloat(starsVisibility);
+        packet.writeInt(daylightCycle.ordinal());
+        packet.writeBoolean(clouds);
+        packet.writeBoolean(weather);
+        packet.writeBoolean(generateTrees);
+        packet.writeBoolean(vegetation);
+        packet.writeString(biome.getRegistryName().toString());
+        packet.writeBoolean(allowGenerationChanges);
+        packet.writeBoolean(spawnMonsters);
+        packet.writeBoolean(spawnPassiveMobs);
+        packet.writeVarInt(layers.size());
+        for (FlatLayerInfo fli : layers) {
+            packet.writeInt(fli.getMinY());
+            packet.writeVarInt(fli.getLayerCount());
+            packet.writeVarInt(Block.getIdFromBlock(fli.getLayerMaterial().getBlock()));
+            packet.writeByte((byte) fli.getLayerMaterial().getBlock().getMetaFromState(fli.getLayerMaterial()));
+        }
+    }
+
+    public enum DaylightCycle {
+
+        SUN,
+        MOON,
+        CYCLE;
+
+        public static DaylightCycle fromOrdinal(int ordinal) {
+            return (ordinal < 0 || ordinal >= values().length) ? DaylightCycle.CYCLE : values()[ordinal];
+        }
+    }
+
     public String getLayersAsString() {
         return LayersToString(this.layers);
     }
@@ -331,6 +378,10 @@ public class DimensionConfig {
             y += info.getLayerCount();
         }
         return MathHelper.clamp(y, 0, 255);
+    }
+
+    public void setDimID(int dimID) {
+        this.dimID = dimID;
     }
 
     public void setSpawnPassiveMobs(boolean spawnPassiveMobs) {
@@ -401,66 +452,57 @@ public class DimensionConfig {
         }
     }
 
-    public static DimensionConfig readFromPacket(MCDataInput packet) {
-        DimensionConfig cfg = new DimensionConfig(packet.readInt());
-        cfg.setSkyColor(packet.readInt());
-        cfg.setStarVisibility(packet.readFloat());
-        cfg.setDaylightCycle(DaylightCycle.fromOrdinal(packet.readInt()));
-        cfg.enableClouds(packet.readBoolean());
-        cfg.enableWeather(packet.readBoolean());
-        cfg.setGeneratingTrees(packet.readBoolean());
-        cfg.setGeneratingVegetation(packet.readBoolean());
-        cfg.setBiome(Biome.REGISTRY.getObject(new ResourceLocation(packet.readString())));
-        cfg.allowGenerationChanges = packet.readBoolean();
-        cfg.setSpawnMonsters(packet.readBoolean());
-        cfg.setSpawnPassiveMobs(packet.readBoolean());
-        int layers = packet.readVarInt();
-        for (int i = 0; i < layers; i++) {
-            int minY = packet.readInt();
-            int layerCount = packet.readVarInt();
-            Block block = Block.getBlockById(packet.readVarInt());
-            byte meta = packet.readByte();
-            if (block == null) {
-                log.error("Block was missing");
-                continue;
-            }
-            FlatLayerInfo fli = new FlatLayerInfo(3, layerCount, block, meta);
-            fli.setMinY(minY);
-            cfg.layers.add(fli);
-        }
-        return cfg;
+    public boolean needsSaving() {
+        return needsSaving;
     }
 
-    public void writeToPacket(MCDataOutput packet) {
-        packet.writeInt(dimID);
-        packet.writeInt(skyColor);
-        packet.writeFloat(starsVisibility);
-        packet.writeInt(daylightCycle.ordinal());
-        packet.writeBoolean(clouds);
-        packet.writeBoolean(weather);
-        packet.writeBoolean(generateTrees);
-        packet.writeBoolean(vegetation);
-        packet.writeString(biome.getRegistryName().toString());
-        packet.writeBoolean(allowGenerationChanges);
-        packet.writeBoolean(spawnMonsters);
-        packet.writeBoolean(spawnPassiveMobs);
-        packet.writeVarInt(layers.size());
-        for (FlatLayerInfo fli : layers) {
-            packet.writeInt(fli.getMinY());
-            packet.writeVarInt(fli.getLayerCount());
-            packet.writeVarInt(Block.getIdFromBlock(fli.getLayerMaterial().getBlock()));
-            packet.writeByte((byte) fli.getLayerMaterial().getBlock().getMetaFromState(fli.getLayerMaterial()));
-        }
+    public boolean generateTrees() {
+        return generateTrees;
     }
 
-    public enum DaylightCycle {
-
-        SUN,
-        MOON,
-        CYCLE;
-
-        public static DaylightCycle fromOrdinal(int ordinal) {
-            return (ordinal < 0 || ordinal >= values().length) ? DaylightCycle.CYCLE : values()[ordinal];
-        }
+    public boolean cloudsEnabled() {
+        return clouds;
     }
+
+    public boolean weatherEnabled() {
+        return weather;
+    }
+
+    public int getSkyColor() {
+        return skyColor;
+    }
+
+    public float getStarsVisibility() {
+        return starsVisibility;
+    }
+
+    public List<FlatLayerInfo> getLayers() {
+        return layers;
+    }
+
+    public Biome getBiome() {
+        return biome;
+    }
+
+    public boolean vegetationEnabled() {
+        return vegetation;
+    }
+
+    public boolean spawnPassiveMobs() {
+        return spawnPassiveMobs;
+    }
+
+    public boolean spawnMonsters() {
+        return spawnMonsters;
+    }
+
+    public boolean allowGenerationChanges() {
+        return allowGenerationChanges;
+    }
+
+    public DaylightCycle getDaylightCycle() {
+        return daylightCycle;
+    }
+
+
 }

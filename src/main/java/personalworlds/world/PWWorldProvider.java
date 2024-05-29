@@ -83,7 +83,7 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public float getCloudHeight() {
-        return getConfig().isClouds() ? 256.0F : Float.NEGATIVE_INFINITY;
+        return getConfig().cloudsEnabled() ? 256.0F : Float.NEGATIVE_INFINITY;
     }
 
     @Override
@@ -142,7 +142,7 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void updateWeather() {
-        if (!this.world.isRemote && getConfig().isWeather()) {
+        if (!this.world.isRemote && getConfig().weatherEnabled()) {
             super.updateWeather();
         } else {
             this.world.rainingStrength = 0.0f;
@@ -154,7 +154,7 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void calculateInitialWeather() {
-        if (!this.world.isRemote && getConfig().isWeather()) {
+        if (!this.world.isRemote && getConfig().weatherEnabled()) {
             super.calculateInitialWeather();
         } else {
             this.world.rainingStrength = 0.0f;
@@ -168,22 +168,22 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public boolean canDoLightning(Chunk chunk) {
-        return this.getConfig().isWeather();
+        return this.getConfig().weatherEnabled();
     }
 
     @Override
     public boolean canDoRainSnowIce(Chunk chunk) {
-        return this.getConfig().isWeather();
+        return this.getConfig().weatherEnabled();
     }
 
     @Override
     public boolean canBlockFreeze(BlockPos pos, boolean byWater) {
-        return this.getConfig().isWeather() && super.canBlockFreeze(pos, byWater);
+        return this.getConfig().weatherEnabled() && super.canBlockFreeze(pos, byWater);
     }
 
     @Override
     public boolean canSnowAt(BlockPos pos, boolean checkLight) {
-        return this.getConfig().isWeather() && super.canSnowAt(pos, checkLight);
+        return this.getConfig().weatherEnabled() && super.canSnowAt(pos, checkLight);
     }
 
     @Override
@@ -196,6 +196,6 @@ public class PWWorldProvider extends WorldProvider {
 
     @Override
     public void setAllowedSpawnTypes(boolean allowHostile, boolean allowPeaceful) {
-        super.setAllowedSpawnTypes(getConfig().isSpawnMonsters(), getConfig().isSpawnPassiveMobs());
+        super.setAllowedSpawnTypes(getConfig().spawnMonsters(), getConfig().spawnPassiveMobs());
     }
 }

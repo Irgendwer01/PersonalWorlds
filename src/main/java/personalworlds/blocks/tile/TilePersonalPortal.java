@@ -19,7 +19,6 @@ import net.minecraftforge.common.DimensionManager;
 
 import org.jetbrains.annotations.Nullable;
 
-import lombok.Getter;
 import personalworlds.PersonalWorlds;
 import personalworlds.blocks.BlockPersonalPortal;
 import personalworlds.packet.Packets;
@@ -30,19 +29,15 @@ import personalworlds.world.PWWorldProvider;
 
 public class TilePersonalPortal extends TileEntity implements IWorldNameable, ITickable {
 
-    @Getter
     private boolean isActive = false;
-
-    @Getter
     private int targetID = 0;
 
-    @Getter
     private BlockPos targetPos = new BlockPos(8, 8, 8);
 
-    public String customName = "";
+    private String customName = "";
 
-    public float bookRot = 0.0f;
-    public float bookRotPrev = 0.0f;
+    private float bookRot = 0.0f;
+    private float bookRotPrev = 0.0f;
 
     @Override
     public void update() {
@@ -280,5 +275,33 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         super.onDataPacket(net, pkt);
         handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public BlockPos getTargetPos() {
+        return targetPos;
+    }
+
+    public int getTargetID() {
+        return targetID;
+    }
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public float getBookRot() {
+        return bookRot;
+    }
+
+    public float getBookRotPrev() {
+        return bookRotPrev;
     }
 }

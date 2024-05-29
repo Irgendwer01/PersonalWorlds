@@ -28,7 +28,7 @@ public class TilePersonalPortalSpecialRender extends TileEntitySpecialRenderer<T
         float levValue = MathHelper.sin(time * 0.01f);
         GlStateManager.translate(0.0f, 0.1F + levValue, 0.0f);
 
-        float rot = te.bookRotPrev + (te.bookRot - te.bookRotPrev) * partialTicks;
+        float rot = te.getBookRotPrev() + (te.getBookRot() - te.getBookRotPrev()) * partialTicks;
 
         GlStateManager.rotate(rot * 180.0f / (float) Math.PI, 0.0f, 1.0f, 0.0f);
         GlStateManager.rotate(-270.0f / (float) Math.PI, 0.0f, 1.0f, 0.0f);

@@ -109,7 +109,7 @@ public class PWGuiMUI {
         skyG = ((dimensionConfig.getSkyColor() >> 8) & 0xFF);
         skyB = ((dimensionConfig.getSkyColor()) & 0xFF);
         final ArrayList<IWidget> blockList = new ArrayList<>();
-        if (dimensionConfig.isAllowGenerationChanges()) {
+        if (dimensionConfig.allowGenerationChanges()) {
             for (IBlockState blockState : PWConfig.getAllowedBlocks()) {
                 Block block = blockState.getBlock();
                 int itemMeta = block.damageDropped(blockState);
@@ -180,82 +180,82 @@ public class PWGuiMUI {
                 .size(18, 18)
                 .bottom(75).left(14)
                 .overlay(crossmark)
-                .background(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON :
+                .background(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON :
                         GuiTextures.MC_BUTTON_DISABLED)
-                .hoverBackground(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
+                .hoverBackground(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
                         GuiTextures.MC_BUTTON_DISABLED)
                 .onMousePressed(i -> {
-                    if (dimensionConfig.isAllowGenerationChanges()) {
-                        dimensionConfig.setGeneratingTrees(!dimensionConfig.isGenerateTrees());
+                    if (dimensionConfig.allowGenerationChanges()) {
+                        dimensionConfig.setGeneratingTrees(!dimensionConfig.generateTrees());
                     }
                     return true;
                 })
-                .onUpdateListener(widget -> widget.overlay(dimensionConfig.isGenerateTrees() ? checkmark : crossmark)));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.generateTrees() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(14)
                 .overlay(crossmark)
-                .background(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON :
+                .background(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON :
                         GuiTextures.MC_BUTTON_DISABLED)
-                .hoverBackground(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
+                .hoverBackground(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
                         GuiTextures.MC_BUTTON_DISABLED)
                 .onMousePressed(i -> {
-                    if (dimensionConfig.isAllowGenerationChanges()) {
-                        dimensionConfig.setGeneratingVegetation(!dimensionConfig.isVegetation());
+                    if (dimensionConfig.allowGenerationChanges()) {
+                        dimensionConfig.setGeneratingVegetation(!dimensionConfig.vegetationEnabled());
                     }
                     return true;
                 })
                 .onUpdateListener(
-                        widget -> widget.overlay(dimensionConfig.isVegetation() ? checkmark : crossmark)));
+                        widget -> widget.overlay(dimensionConfig.vegetationEnabled() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(75).left(176)
                 .overlay(crossmark)
-                .background(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON :
+                .background(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON :
                         GuiTextures.MC_BUTTON_DISABLED)
-                .hoverBackground(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
+                .hoverBackground(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
                         GuiTextures.MC_BUTTON_DISABLED)
                 .onMousePressed(i -> {
-                    if (dimensionConfig.isAllowGenerationChanges()) {
-                        dimensionConfig.setSpawnPassiveMobs(!dimensionConfig.isSpawnPassiveMobs());
+                    if (dimensionConfig.allowGenerationChanges()) {
+                        dimensionConfig.setSpawnPassiveMobs(!dimensionConfig.spawnPassiveMobs());
                     }
                     return true;
                 })
                 .onUpdateListener(
-                        widget -> widget.overlay(dimensionConfig.isSpawnPassiveMobs() ? checkmark : crossmark)));
+                        widget -> widget.overlay(dimensionConfig.spawnPassiveMobs() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(176)
                 .overlay(crossmark)
-                .background(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON :
+                .background(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON :
                         GuiTextures.MC_BUTTON_DISABLED)
-                .hoverBackground(dimensionConfig.isAllowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
+                .hoverBackground(dimensionConfig.allowGenerationChanges() ? GuiTextures.MC_BUTTON_HOVERED :
                         GuiTextures.MC_BUTTON_DISABLED)
                 .onMousePressed(i -> {
-                    if (dimensionConfig.isAllowGenerationChanges()) {
-                        dimensionConfig.setSpawnMonsters(!dimensionConfig.isSpawnMonsters());
+                    if (dimensionConfig.allowGenerationChanges()) {
+                        dimensionConfig.setSpawnMonsters(!dimensionConfig.spawnMonsters());
                     }
                     return true;
                 })
-                .onUpdateListener(widget -> widget.overlay(dimensionConfig.isSpawnMonsters() ? checkmark : crossmark)));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.spawnMonsters() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(100).left(95)
                 .overlay(crossmark)
                 .onMousePressed(i -> {
-                    dimensionConfig.enableWeather(!dimensionConfig.isWeather());
+                    dimensionConfig.enableWeather(!dimensionConfig.weatherEnabled());
                     return true;
                 })
-                .onUpdateListener(widget -> widget.overlay(dimensionConfig.isWeather() ? checkmark : crossmark)));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.weatherEnabled() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .bottom(75).left(95)
                 .overlay(crossmark)
                 .onMousePressed(i -> {
-                    dimensionConfig.enableClouds(!dimensionConfig.isClouds());
+                    dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled());
                     return true;
                 })
-                .onUpdateListener(widget -> widget.overlay(dimensionConfig.isClouds() ? checkmark : crossmark)));
+                .onUpdateListener(widget -> widget.overlay(dimensionConfig.cloudsEnabled() ? checkmark : crossmark)));
         panel.child(new ButtonWidget<>()
                 .size(18, 18)
                 .top(39).left(142)
@@ -329,7 +329,7 @@ public class PWGuiMUI {
                         .align(Alignment.BottomCenter)
                         .size(14, 14)
                         .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarsVisibility())))));
-        if (dimensionConfig.isAllowGenerationChanges()) {
+        if (dimensionConfig.allowGenerationChanges()) {
             panel.child(IKey.str(I18n.format("gui.personalWorld.layers")).asWidget()
                     .top(7).right(320));
             panel.child(IKey.str(I18n.format("gui.personalWorld.biome")).asWidget()

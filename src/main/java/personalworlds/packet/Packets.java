@@ -39,7 +39,7 @@ public enum Packets {
         pkt.writeVarInt(tpp.getPos().getX());
         pkt.writeVarInt(tpp.getPos().getY());
         pkt.writeVarInt(tpp.getPos().getZ());
-        pkt.writeString(tpp.customName);
+        pkt.writeString(tpp.getCustomName());
         return pkt;
     }
 
@@ -85,7 +85,7 @@ public enum Packets {
                         player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
                     if (te instanceof TilePersonalPortal tpp) {
-                        tpp.customName = name;
+                        tpp.setCustomName(name);
                         tpp.updateSettings(player, conf);
                         tpp.sendToClient();
                     }

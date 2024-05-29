@@ -76,7 +76,7 @@ public class PWConfig {
             "minecraft:desert"
     };
 
-    @Config.Comment("Default Presets used for generating a world")
+    @Config.Comment("Default Presets used for generating a world.")
     public static String[] presets = new String[] {
             DimensionConfig.PRESET_FLAT, DimensionConfig.PRESET_MINING
     };
