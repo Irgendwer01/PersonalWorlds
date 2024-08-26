@@ -17,6 +17,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
@@ -43,6 +44,7 @@ import personalworlds.command.PWCommand;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
 import personalworlds.world.PWWorldProvider;
+import personalworlds.world.WeatherSyncHandler;
 
 public class CommonProxy {
 
@@ -67,6 +69,7 @@ public class CommonProxy {
         PWConfig.Values.presets = PWConfig.presets;
         PWConfig.Values.allowedBiomes = PWConfig.allowedBiomes;
         PWConfig.Values.allowedBlocks = PWConfig.allowedBlocks;
+        MinecraftForge.EVENT_BUS.register(new WeatherSyncHandler());
     }
 
     public void onServerStarting(FMLServerStartingEvent e) {
