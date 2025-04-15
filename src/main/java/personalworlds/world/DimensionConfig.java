@@ -4,6 +4,8 @@ import static personalworlds.PersonalWorlds.*;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -183,46 +185,85 @@ public class DimensionConfig {
         }
     }
 
-    private boolean registerDimension(int dimID) {
+//    private boolean registerDimension(int dimID) {
+//        NBTTagCompound nbtTagCompound;
+//        File file = new File(DimensionManager.getCurrentSaveRootDirectory() + "/PWWorlds.dat");
+//        if (!file.exists()) {
+//            try {
+//                file.createNewFile();
+//            } catch (IOException e) {
+//                log.error("Could not create PWWorlds.dat! Error:");
+//                throw new RuntimeException(e);
+//            }
+//            nbtTagCompound = new NBTTagCompound();
+//        } else {
+//            try {
+//                nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+//            } catch (IOException e) {
+//                log.error("Could not read PWWorlds.dat! Error:");
+//                throw new RuntimeException(e);
+//            }
+//        }
+//        int[] intArray;
+//        if (nbtTagCompound.hasKey("dimensions")) {
+//            int[] dimensions = nbtTagCompound.getIntArray("dimensions");
+//            intArray = new int[dimensions.length + 1];
+//            System.arraycopy(dimensions, 0, intArray, 0, dimensions.length);
+//            intArray[dimensions.length] = dimID;
+//            nbtTagCompound.setIntArray("dimensions", intArray);
+//        } else {
+//            intArray = new int[1];
+//            intArray[0] = dimID;
+//            nbtTagCompound.setIntArray("dimensions", intArray);
+//        }
+//        try {
+//            CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
+//        } catch (IOException e) {
+//            log.error("Could not save PWWorlds.dat! Error:");
+//            throw new RuntimeException(e);
+//        }
+//        return true;
+//    }
+    private synchronized boolean registerDimension(int dimID) {
+        Path filePath = Paths.get(DimensionManager.getCurrentSaveRootDirectory().getPath(), "PWWorlds.dat");
         NBTTagCompound nbtTagCompound;
-        File file = new File(DimensionManager.getCurrentSaveRootDirectory() + "/PWWorlds.dat");
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                log.error("Could not create PWWorlds.dat! Error:");
-                throw new RuntimeException(e);
-            }
+
+        // 读取或创建文件
+        if (!Files.exists(filePath)) {
             nbtTagCompound = new NBTTagCompound();
         } else {
-            try {
-                nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
+            try (InputStream is = Files.newInputStream(filePath)) {
+                nbtTagCompound = CompressedStreamTools.readCompressed(is);
             } catch (IOException e) {
-                log.error("Could not read PWWorlds.dat! Error:");
-                throw new RuntimeException(e);
+                log.error("读取维度数据文件失败: {}", filePath, e);
+                return false; // 改为返回false而不是抛出异常
             }
         }
-        int[] intArray;
-        if (nbtTagCompound.hasKey("dimensions")) {
-            int[] dimensions = nbtTagCompound.getIntArray("dimensions");
-            intArray = new int[dimensions.length + 1];
-            System.arraycopy(dimensions, 0, intArray, 0, dimensions.length);
-            intArray[dimensions.length] = dimID;
-            nbtTagCompound.setIntArray("dimensions", intArray);
-        } else {
-            intArray = new int[1];
-            intArray[0] = dimID;
-            nbtTagCompound.setIntArray("dimensions", intArray);
-        }
-        try {
-            CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
-        } catch (IOException e) {
-            log.error("Could not save PWWorlds.dat! Error:");
-            throw new RuntimeException(e);
-        }
-        return true;
-    }
 
+        // 处理维度ID列表
+        int[] existingIDs = nbtTagCompound.hasKey("dimensions") ?
+                nbtTagCompound.getIntArray("dimensions") : new int[0];
+
+        // 检查是否已存在
+        if (Arrays.stream(existingIDs).anyMatch(id -> id == dimID)) {
+            log.warn("维度ID {} 已存在，跳过注册", dimID);
+            return false;
+        }
+
+        // 追加新ID
+        int[] newIDs = Arrays.copyOf(existingIDs, existingIDs.length + 1);
+        newIDs[existingIDs.length] = dimID;
+        nbtTagCompound.setIntArray("dimensions", newIDs);
+
+        // 保存文件
+        try (OutputStream os = Files.newOutputStream(filePath)) {
+            CompressedStreamTools.writeCompressed(nbtTagCompound, os);
+            return true;
+        } catch (IOException e) {
+            log.error("保存维度数据文件失败: {}", filePath, e);
+            return false;
+        }
+    }
     private boolean unregisterDimension(int dimID) {
         File file = new File(DimensionManager.getCurrentSaveRootDirectory() + "/PWWorlds.dat");
         if (file.exists()) {
