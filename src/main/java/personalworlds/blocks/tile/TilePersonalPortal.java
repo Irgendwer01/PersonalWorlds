@@ -160,7 +160,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
         }
     }
 
-    public void updateSettings(EntityPlayerMP player, DimensionConfig conf) {
+    public void updateSettings(EntityPlayerMP player, DimensionConfig conf, String name) {
         if (world.isRemote || player == null) {
             return;
         }
@@ -190,7 +190,10 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             }
             targetID = DimensionManager.getNextFreeDimId();
             conf.setDimID(targetID);
-            conf.registerWithDimManager(false, true);
+            if (!conf.registerWithDimManager(false, true)) {
+                player.sendMessage(new TextComponentTranslation("chat.personalWorld.failed"));
+                return;
+            }
             this.isActive = true;
             this.targetID = targetID;
             this.targetPos = new BlockPos(this.targetPos.getX(), conf.getGroundLevel(), this.targetPos.getZ());
@@ -199,6 +202,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
 
             linkOtherPortal(true, player);
         }
+        this.setCustomName(name);
         Packets.INSTANCE.sendWorldList().sendToClients();
         if (createNewDim) {
             player.sendMessage(new TextComponentTranslation("chat.personalWorld.created"));

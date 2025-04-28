@@ -151,7 +151,7 @@ public class DimensionConfig {
         }
     }
 
-    public void registerWithDimManager(boolean isClient, boolean saveToWorldConfig) {
+    public boolean registerWithDimManager(boolean isClient, boolean saveToWorldConfig) {
         this.config = new File(
                 DimensionManager.getCurrentSaveRootDirectory() + "/" +
                         "personal_world_" + dimID + "/PWConfig.dat");
@@ -159,7 +159,7 @@ public class DimensionConfig {
             if (!isClient && saveToWorldConfig) {
                 if (!registerDimensionToFile(dimID)) {
                     log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
-                    return;
+                    return false;
                 }
             }
             DimensionManager.registerDimension(dimID, dimType);
@@ -178,6 +178,7 @@ public class DimensionConfig {
             this.allowGenerationChanges = false;
             this.update();
         }
+        return true;
     }
 
     private synchronized boolean registerDimensionToFile(int dimID) {

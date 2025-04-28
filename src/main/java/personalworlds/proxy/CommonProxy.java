@@ -148,7 +148,7 @@ public class CommonProxy {
             try {
                 configNBT = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
             } catch (IOException ex) {
-                PersonalWorlds.log.error(String.format("Could not read PWWorlds.dat! Error: %s", ex));
+                PersonalWorlds.log.error("Could not read PWWorlds.dat!", ex);
             }
             if (configNBT != null) {
                 int[] dimensions = configNBT.getIntArray("dimensions");
@@ -172,7 +172,7 @@ public class CommonProxy {
         synchronized (CommonProxy.getDimensionConfigs(isClient)) {
             CommonProxy.getDimensionConfigs(isClient).forEachEntry((dimID, dimCFG) -> {
                 if (DimensionManager.isDimensionRegistered(dimID)) {
-                    FMLLog.info("unregistering PersonalWorld dimension %d", dimID);
+                    PersonalWorlds.log.info("unregistering PersonalWorld dimension {}", dimID);
                     DimensionManager.unregisterDimension(dimID);
                 }
                 return true;

@@ -85,8 +85,7 @@ public enum Packets {
                         player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
                     if (te instanceof TilePersonalPortal tpp) {
-                        tpp.setCustomName(name);
-                        tpp.updateSettings(player, conf);
+                        tpp.updateSettings(player, conf, name);
                         tpp.sendToClient();
                     }
                 }
