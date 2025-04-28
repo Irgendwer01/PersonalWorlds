@@ -5,11 +5,8 @@ import static personalworlds.PersonalWorlds.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Biomes;
@@ -154,13 +151,13 @@ public class DimensionConfig {
         }
     }
 
-    public void registerWithDimManager(boolean isClient) {
+    public void registerWithDimManager(boolean isClient, boolean saveToWorldConfig) {
         this.config = new File(
                 DimensionManager.getCurrentSaveRootDirectory() + "/" +
                         "personal_world_" + dimID + "/PWConfig.dat");
         if (!DimensionManager.isDimensionRegistered(dimID)) {
-            if (!isClient) {
-                if (!registerDimension(dimID)) {
+            if (!isClient && saveToWorldConfig) {
+                if (!registerDimensionToFile(dimID)) {
                     log.fatal("Failed to register dimension {} in PWWorlds.dat!", dimID);
                     return;
                 }
@@ -183,28 +180,34 @@ public class DimensionConfig {
         }
     }
 
-    private boolean registerDimension(int dimID) {
+    private synchronized boolean registerDimensionToFile(int dimID) {
         NBTTagCompound nbtTagCompound;
         File file = new File(DimensionManager.getCurrentSaveRootDirectory() + "/PWWorlds.dat");
         if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                log.error("Could not create PWWorlds.dat! Error:");
-                throw new RuntimeException(e);
+                log.fatal("Could not create PWWorlds.dat!", e);
+                return false;
             }
             nbtTagCompound = new NBTTagCompound();
         } else {
             try {
                 nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
             } catch (IOException e) {
-                log.error("Could not read PWWorlds.dat! Error:");
-                throw new RuntimeException(e);
+                log.fatal("Could not read PWWorlds.dat for dim {}!", dimID, e);
+                return false;
             }
         }
         int[] intArray;
         if (nbtTagCompound.hasKey("dimensions")) {
             int[] dimensions = nbtTagCompound.getIntArray("dimensions");
+            for (int dimension : dimensions) {
+                if (dimension == dimID) {
+                    log.fatal("Dimension with ID {} is already registered!", dimID, new Throwable());
+                    return false;
+                }
+            }
             intArray = new int[dimensions.length + 1];
             System.arraycopy(dimensions, 0, intArray, 0, dimensions.length);
             intArray[dimensions.length] = dimID;
@@ -217,32 +220,8 @@ public class DimensionConfig {
         try {
             CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
         } catch (IOException e) {
-            log.error("Could not save PWWorlds.dat! Error:");
-            throw new RuntimeException(e);
-        }
-        return true;
-    }
-
-    private boolean unregisterDimension(int dimID) {
-        File file = new File(DimensionManager.getCurrentSaveRootDirectory() + "/PWWorlds.dat");
-        if (file.exists()) {
-            NBTTagCompound nbtTagCompound;
-            try {
-                nbtTagCompound = CompressedStreamTools.readCompressed(Files.newInputStream(file.toPath()));
-            } catch (IOException e) {
-                log.error("Could not read PWWorlds.dat! Error:");
-                throw new RuntimeException(e);
-            }
-            int[] dimensions = nbtTagCompound.getIntArray("dimensions");
-            List<Integer> dimensionsList = Arrays.stream(dimensions).boxed().collect(Collectors.toList());
-            dimensionsList.removeIf(Predicate.isEqual(dimID));
-            nbtTagCompound.setIntArray("dimensions", dimensionsList.stream().mapToInt(Integer::intValue).toArray());
-            try {
-                CompressedStreamTools.writeCompressed(nbtTagCompound, Files.newOutputStream(file.toPath()));
-            } catch (IOException e) {
-                log.error("Could not save PWWorlds.dat! Error:");
-                throw new RuntimeException(e);
-            }
+            log.fatal("Could not save PWWorlds.dat for dim {}!", dimID, e);
+            return false;
         }
         return true;
     }
@@ -504,5 +483,7 @@ public class DimensionConfig {
         return daylightCycle;
     }
 
-
+    public int getDimID() {
+        return dimID;
+    }
 }

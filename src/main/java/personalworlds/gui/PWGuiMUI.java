@@ -169,8 +169,8 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     dimensionConfig.setStarVisibility((float) widget.getSliderValue());
                     widget.overlay(IKey.str(
-                                    String.format(I18n.format("gui.personalWorld.starBrightness") + " %.0f",
-                                            dimensionConfig.getStarsVisibility() * 100) + "%")
+                            String.format(I18n.format("gui.personalWorld.starBrightness") + " %.0f",
+                                    dimensionConfig.getStarsVisibility() * 100) + "%")
                             .color(0xFFFFFF).shadow(true));
                 })
                 .bounds(0F, 1F)
@@ -284,7 +284,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     skyR = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
-                                    String.format(I18n.format("gui.personalWorld.skyColor.red") + " %s", skyR))
+                            String.format(I18n.format("gui.personalWorld.skyColor.red") + " %s", skyR))
                             .color(0xFFFFFF).shadow(true));
                 }));
         panel.child(new SliderWidget()
@@ -296,7 +296,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     skyG = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
-                                    String.format(I18n.format("gui.personalWorld.skyColor.green") + " %s", skyG))
+                            String.format(I18n.format("gui.personalWorld.skyColor.green") + " %s", skyG))
                             .color(0xFFFFFF).shadow(true));
                 }));
         panel.child(new SliderWidget()
@@ -308,7 +308,7 @@ public class PWGuiMUI {
                 .onUpdateListener(widget -> {
                     skyB = (int) widget.getSliderValue();
                     widget.overlay(IKey.str(
-                                    String.format(I18n.format("gui.personalWorld.skyColor.blue") + " %s", skyB))
+                            String.format(I18n.format("gui.personalWorld.skyColor.blue") + " %s", skyB))
                             .color(0xFFFFFF).shadow(true));
                 }));
         panel.child(skyWidget

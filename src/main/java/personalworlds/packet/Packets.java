@@ -126,7 +126,7 @@ public enum Packets {
         int dimConfigs = pkt.readVarInt();
         for (int i = 0; i < dimConfigs; i++) {
             DimensionConfig cfg = DimensionConfig.readFromPacket(pkt);
-            cfg.registerWithDimManager(true);
+            cfg.registerWithDimManager(true, false);
         }
 
         int amount = pkt.readVarInt();

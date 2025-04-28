@@ -190,7 +190,7 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             }
             targetID = DimensionManager.getNextFreeDimId();
             conf.setDimID(targetID);
-            conf.registerWithDimManager(false);
+            conf.registerWithDimManager(false, true);
             this.isActive = true;
             this.targetID = targetID;
             this.targetPos = new BlockPos(this.targetPos.getX(), conf.getGroundLevel(), this.targetPos.getZ());
