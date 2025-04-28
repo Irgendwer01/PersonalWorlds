@@ -155,7 +155,7 @@ public class CommonProxy {
                 Arrays.stream(dimensions).forEach(dimID -> {
                     try {
                         DimensionConfig dimCFG = new DimensionConfig(dimID);
-                        dimCFG.registerWithDimManager(false);
+                        dimCFG.registerWithDimManager(false, false);
                     } catch (Exception e) {
                         PersonalWorlds.log.error("Couldn't load personal dimension data!", e);
                     }
