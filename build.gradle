@@ -1,4 +1,4 @@
-//version: 1720840170
+//version: 1743737794
 /*
  * DO NOT CHANGE THIS FILE!
  * Also, you may replace this file at any time if there is an update available.
@@ -37,7 +37,7 @@ plugins {
     id 'com.gtnewhorizons.retrofuturagradle' version '1.4.0'
     id 'net.darkhax.curseforgegradle' version '1.1.24' apply false
     id 'com.modrinth.minotaur' version '2.8.7' apply false
-    //id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'com.diffplug.spotless' version '6.13.0' apply false
     id 'com.palantir.git-version' version '3.0.0' apply false
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
     id 'org.jetbrains.kotlin.jvm' version '1.8.0' apply false
@@ -80,6 +80,7 @@ propertyDefaultIfUnset("includeWellKnownRepositories", true)
 propertyDefaultIfUnset("includeCommonDevEnvMods", true)
 propertyDefaultIfUnset("stripForgeRequirements", false)
 propertyDefaultIfUnset("noPublishedSources", false)
+propertyDefaultIfUnset("mixinProviderSpec", "zone.rong:mixinbooter:10.6")
 propertyDefaultIfUnset("forceEnableMixins", false)
 propertyDefaultIfUnset("mixinConfigRefmap", "mixins.${project.modId}.refmap.json")
 propertyDefaultIfUnsetWithEnvVar("enableCoreModDebug", false, "CORE_MOD_DEBUG")
@@ -212,6 +213,57 @@ pluginManager.withPlugin('org.jetbrains.kotlin.jvm') {
 // Spotless
 //noinspection GroovyAssignabilityCheck
 project.extensions.add(com.diffplug.blowdryer.Blowdryer, 'Blowdryer', com.diffplug.blowdryer.Blowdryer) // make Blowdryer available in plugin application
+if (enableSpotless.toBoolean()) {
+    apply plugin: 'com.diffplug.spotless'
+
+    // Spotless auto-formatter
+    // See https://github.com/diffplug/spotless/tree/main/plugin-gradle
+    // Can be locally toggled via spotless:off/spotless:on comments
+    spotless {
+        encoding 'UTF-8'
+
+        format 'misc', {
+            target '.gitignore'
+
+            trimTrailingWhitespace()
+            indentWithSpaces(4)
+            endWithNewline()
+        }
+        java {
+            target 'src/main/java/**/*.java', 'src/test/java/**/*.java' // exclude api as they are not our files
+
+            def orderFile = project.file('spotless.importorder')
+            if (!orderFile.exists()) {
+                orderFile = Blowdryer.file('spotless.importorder')
+            }
+            def formatFile = project.file('spotless.eclipseformat.xml')
+            if (!formatFile.exists()) {
+                formatFile = Blowdryer.file('spotless.eclipseformat.xml')
+            }
+
+            toggleOffOn()
+            importOrderFile(orderFile)
+            removeUnusedImports()
+            endWithNewline()
+            //noinspection GroovyAssignabilityCheck
+            eclipse('4.19.0').configFile(formatFile)
+        }
+        kotlin {
+            target 'src/*/kotlin/**/*.kt'
+
+            toggleOffOn()
+            ktfmt('0.39')
+
+            trimTrailingWhitespace()
+            indentWithSpaces(4)
+            endWithNewline()
+        }
+        scala {
+            target 'src/*/scala/**/*.scala'
+            scalafmt('3.7.1')
+        }
+    }
+}
 
 // Git version checking, also checking for if this is a submodule
 if (project.file('.git/HEAD').isFile() || project.file('.git').isFile()) {
@@ -467,7 +519,6 @@ configurations {
     testRuntimeClasspath.extendsFrom(runtimeOnlyNonPublishable)
 }
 
-String mixinProviderSpec = 'zone.rong:mixinbooter:9.1'
 dependencies {
     if (usesMixins.toBoolean()) {
         annotationProcessor 'org.ow2.asm:asm-debug-all:5.2'
@@ -820,9 +871,9 @@ if (enableJava17RunTasks.toBoolean()) {
     dependencies {
         if (modId != 'lwjgl3ify') {
             java17Dependencies("io.github.twilightflower:lwjgl3ify:1.0.0")
-        }
-        java17PatchDependencies("io.github.twilightflower:lwjgl3ify:1.0.0:forgePatches") {
+            java17PatchDependencies("io.github.twilightflower:lwjgl3ify:1.0.0:forgePatches") {
             transitive = false
+            }
         }
     }
 
@@ -958,7 +1009,7 @@ abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
 
         if (project.usesMixins.toBoolean()) {
             this.extraJvmArgs.addAll(project.provider(() -> {
-                def mixinCfg = project.configurations.detachedConfiguration(project.dependencies.create(project.mixinProviderSpec))
+                def mixinCfg = project.configurations.detachedConfiguration(project.dependencies.create(mixinProviderSpec))
                 mixinCfg.canBeConsumed = false
                 mixinCfg.canBeResolved = true
                 mixinCfg.transitive = false
@@ -1340,7 +1391,7 @@ def getChangelog() {
 
 // Buildscript updating
 
-def buildscriptGradleVersion = '8.5'
+def buildscriptGradleVersion = '8.9'
 
 tasks.named('wrapper', Wrapper).configure {
     gradleVersion = buildscriptGradleVersion
@@ -1380,7 +1431,6 @@ static URL availableSettingsGradleUrl() {
 }
 
 boolean performBuildScriptUpdate() {
-    return true
     if (isNewBuildScriptVersionAvailable()) {
         def buildscriptFile = getFile("build.gradle")
         def settingsFile = getFile("settings.gradle")
@@ -1394,7 +1444,6 @@ boolean performBuildScriptUpdate() {
 }
 
 boolean isNewBuildScriptVersionAvailable() {
-    return true
     Map parameters = ["connectTimeout": 10000, "readTimeout": 10000]
 
     String currentBuildScript = getFile("build.gradle").getText()
