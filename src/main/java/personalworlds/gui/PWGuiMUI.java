@@ -36,9 +36,7 @@ import com.cleanroommc.modularui.value.DoubleValue;
 import com.cleanroommc.modularui.value.StringValue;
 import com.cleanroommc.modularui.widget.ParentWidget;
 import com.cleanroommc.modularui.widget.Widget;
-import com.cleanroommc.modularui.widget.WidgetTree;
 import com.cleanroommc.modularui.widgets.ButtonWidget;
-import com.cleanroommc.modularui.widgets.CategoryList;
 import com.cleanroommc.modularui.widgets.ListWidget;
 import com.cleanroommc.modularui.widgets.SliderWidget;
 import com.cleanroommc.modularui.widgets.textfield.TextFieldWidget;
@@ -70,22 +68,20 @@ public class PWGuiMUI {
             .location("personalworlds", "widgets")
             .build();
     private List<String> layers = new ArrayList<>();
-    private ModularPanel panel;
     private DimensionConfig dimensionConfig;
-    private ListWidget<?, ?> layersWidget;
+    private final ListWidget<IWidget, ?> layersWidget = new ListWidget<>()
+            .top(20).right(20)
+            .size(22, 150);
     private final ParentWidget<?> skyWidget = new ParentWidget<>()
             .size(80, 70)
             .top(60).left(80);
     private int skyR;
     private int skyG;
     private int skyB;
-    private final CategoryList biomesWidget = new CategoryList()
-            .bottom(35).left(9)
-            .size(90, 20);
-    private final CategoryList presetsWidget = new CategoryList().background(GuiTextures.MC_BUTTON)
+    private final CategoryListModifiable presetsCategory = (CategoryListModifiable) new CategoryListModifiable().background(GuiTextures.MC_BUTTON)
             .bottom(35).right(9)
-            .size(90, 20);
-    private boolean firstDraw = true;
+            .size(90, 20)
+            .overlay(IKey.str("Void").color(0xFFFFFF));
     private final IStringValue<String> name;
 
     public PWGuiMUI(int targetDim, int dimID, int x, int y, int z, String name) {
@@ -126,7 +122,6 @@ public class PWGuiMUI {
             }
         }
         ModularPanel panel = ModularPanel.defaultPanel("PWGUI");
-        this.panel = panel;
         panel.size(350, 250);
         panel.child(IKey.str(I18n.format("gui.personalWorld.name")).asWidget()
                 .top(7).left(7));
@@ -139,7 +134,7 @@ public class PWGuiMUI {
                 .onMousePressed(i -> {
                     Packets.INSTANCE.sendChangeWorldSettings(dimID, blockPos, name.getStringValue(), dimensionConfig)
                             .sendToServer();
-                    panel.closeIfOpen(false);
+                    panel.closeIfOpen();
                     return true;
                 }));
         panel.child(new ButtonWidget<>()
@@ -147,7 +142,7 @@ public class PWGuiMUI {
                 .size(60, 20)
                 .bottom(9).left(9)
                 .onMousePressed(i -> {
-                    panel.closeIfOpen(false);
+                    panel.closeIfOpen();
                     return true;
                 }));
         panel.child(IKey.str(I18n.format("gui.personalWorld.trees")).asWidget()
@@ -338,95 +333,62 @@ public class PWGuiMUI {
             panel.child(new ListWidget<>().children(blockList)
                     .top(20).right(50)
                     .size(22, 150));
-            redrawBiomeList();
-            redrawPresets();
+            panel.child(createBiomesCategory());
+            panel.child(createPresetsCategory());
+            panel.child(layersWidget);
         }
-        this.firstDraw = false;
         return new ModularScreen(panel);
     }
 
-    private void redrawBiomeList() {
-        if (!firstDraw) {
-            panel.getChildren().removeIf(widget -> widget.equals(biomesWidget));
-        }
-        biomesWidget.getChildren().clear();
+    private IWidget createBiomesCategory() {
+        CategoryListModifiable biomesCategory = (CategoryListModifiable) new CategoryListModifiable()
+                .bottom(35).left(9)
+                .size(90, 20)
+                .background(GuiTextures.MC_BUTTON)
+                .overlay(IKey.str(dimensionConfig.getBiome().getBiomeName()).color(0xFFFFFF));
         for (Biome biome : PWConfig.getAllowedBiomes()) {
-            if (biome == dimensionConfig.getBiome()) {
-                biomesWidget.background(GuiTextures.MC_BUTTON)
-                        .overlay(IKey.str(biome.getBiomeName()).color(0xFFFFFF));
-            } else {
-                ButtonWidget<?> widget = new ButtonWidget<>().size(90, 20)
-                        .overlay(IKey.str(biome.getBiomeName()))
-                        .onMousePressed(mouse -> {
-                            dimensionConfig.setBiome(biome);
-                            redrawBiomeList();
-                            return true;
-                        });
-                biomesWidget.getChildren().add(widget);
-                biomesWidget.onChildAdd(widget);
-            }
+            ButtonWidget<?> widget = new ButtonWidget<>().size(90, 20)
+                    .overlay(IKey.str(biome.getBiomeName()))
+                    .onMousePressed(mouse -> {
+                        dimensionConfig.setBiome(biome);
+                        biomesCategory.background(GuiTextures.MC_BUTTON)
+                                .overlay(IKey.str(biome.getBiomeName()).color(0xFFFFFF));
+                        return true;
+                    });
+             biomesCategory.child(widget);
         }
-        panel.child(biomesWidget);
-        if (!firstDraw) {
-            WidgetTree.resize(panel);
-            WidgetTree.resize(biomesWidget);
-        }
+        return biomesCategory;
     }
 
-    private void redrawPresets() {
-        boolean preset = false;
-        if (!firstDraw) {
-            panel.getChildren().removeIf(widget -> widget.equals(presetsWidget));
-        }
-        presetsWidget.getChildren().clear();
+    private IWidget createPresetsCategory() {
         for (Map.Entry<String, String> entry : PWConfig.getPresets().entrySet()) {
-            if (layers.isEmpty() && !preset) {
-                presetsWidget.overlay(IKey.str("Void").color(0xFFFFFF));
-                preset = true;
-            }
-            if (layers.equals(fromPreset(entry.getValue()))) {
-                presetsWidget.overlay(IKey.str(entry.getKey()).color(0xFFFFFF));
-                preset = true;
-            } else {
-                ButtonWidget<?> widget = new ButtonWidget<>()
-                        .size(90, 20)
-                        .overlay(IKey.str(entry.getKey()))
-                        .onMousePressed(mouse -> {
-                            this.layers = fromPreset(entry.getValue());
-                            redrawLayers();
-                            return true;
-                        });
-                presetsWidget.getChildren().add(widget);
-                presetsWidget.onChildAdd(widget);
-            }
-        }
-        if (!layers.isEmpty()) {
             ButtonWidget<?> widget = new ButtonWidget<>()
                     .size(90, 20)
-                    .overlay(IKey.str("Void"))
+                    .overlay(IKey.str(entry.getKey()))
                     .onMousePressed(mouse -> {
-                        this.layers.clear();
-                        dimensionConfig.getLayers().clear();
+                        this.layers = fromPreset(entry.getValue());
+                        presetsCategory.overlay(IKey.str(entry.getKey()).color(0xFFFFFF));
                         redrawLayers();
                         return true;
                     });
-            presetsWidget.getChildren().add(widget);
-            presetsWidget.onChildAdd(widget);
+            presetsCategory.child(widget);
         }
-        if (!preset) {
-            presetsWidget.overlay(IKey.str("Custom").color(0xFFFFFF));
-        }
-        panel.child(presetsWidget);
-        if (!firstDraw) {
-            WidgetTree.resize(panel);
-            WidgetTree.resize(presetsWidget);
-        }
+        ButtonWidget<?> widget = new ButtonWidget<>()
+                .size(90, 20)
+                .overlay(IKey.str("Void"))
+                .onMousePressed(mouse -> {
+                    this.layers.clear();
+                    dimensionConfig.getLayers().clear();
+                    presetsCategory.overlay(IKey.str("Void").color(0xFFFFFF));
+                    redrawLayers();
+                    return true;
+                });
+        presetsCategory.child(widget);
+        return presetsCategory;
     }
 
     private void redrawLayers() {
-        if (layersWidget != null) {
-            panel.getChildren().removeIf(widget -> widget.equals(layersWidget));
-        }
+        boolean preset = false;
         ArrayList<IWidget> layerWidget = new ArrayList<>();
         for (int i = 0; i < layers.size(); i++) {
             FlatLayerInfo layerInfo = DimensionConfig.LayerFromString(layers.get(i));
@@ -496,16 +458,24 @@ public class PWGuiMUI {
                                 redrawLayers();
                                 return true;
                             })));
-
         }
+
         dimensionConfig.setLayers(toPreset(layers));
-        layersWidget = new ListWidget<>().children(layerWidget)
-                .top(20).right(20)
-                .size(22, 150);
-        panel.child(layersWidget);
-        WidgetTree.resize(panel);
-        WidgetTree.resize(layersWidget);
-        redrawPresets();
+        if (layers.isEmpty()) {
+            presetsCategory.overlay(IKey.str("Void").color(0xFFFFFF));
+            preset = true;
+        }
+        for (Map.Entry<String, String> entry : PWConfig.getPresets().entrySet()) {
+            if (layers.equals(fromPreset(entry.getValue())) && !preset) {
+                presetsCategory.overlay(IKey.str(entry.getKey()).color(0xFFFFFF));
+                preset = true;
+            }
+        }
+        if (!preset) {
+            presetsCategory.overlay(IKey.str("Custom").color(0xFFFFFF));
+        }
+        layersWidget.removeAll();
+        layersWidget.children(layerWidget);
     }
 
     private String toPreset(List<String> layerList) {
