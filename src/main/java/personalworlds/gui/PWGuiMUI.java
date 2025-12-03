@@ -78,7 +78,8 @@ public class PWGuiMUI {
     private int skyR;
     private int skyG;
     private int skyB;
-    private final CategoryListModifiable presetsCategory = (CategoryListModifiable) new CategoryListModifiable().background(GuiTextures.MC_BUTTON)
+    private final CategoryListModifiable presetsCategory = (CategoryListModifiable) new CategoryListModifiable()
+            .background(GuiTextures.MC_BUTTON)
             .bottom(35).right(9)
             .size(90, 20)
             .overlay(IKey.str("Void").color(0xFFFFFF));
@@ -355,7 +356,7 @@ public class PWGuiMUI {
                                 .overlay(IKey.str(biome.getBiomeName()).color(0xFFFFFF));
                         return true;
                     });
-             biomesCategory.child(widget);
+            biomesCategory.child(widget);
         }
         return biomesCategory;
     }
