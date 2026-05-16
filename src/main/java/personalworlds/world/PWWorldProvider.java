@@ -43,6 +43,10 @@ public class PWWorldProvider extends WorldProvider {
         return this.dimensionConfig;
     }
 
+    public void refreshConfigCache() {
+        this.biomeProviderSingle = null;
+    }
+
     @Override
     public DimensionType getDimensionType() {
         return DimensionType.OVERWORLD;
