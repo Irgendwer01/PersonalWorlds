@@ -178,12 +178,17 @@ public class TilePersonalPortal extends TileEntity implements IWorldNameable, IT
             targetID = this.targetID;
         }
         if (targetID > 0) {
-            if (DimensionConfig.getConfig(targetID, false) == null) {
+            DimensionConfig existingConfig = DimensionConfig.getConfig(targetID, false);
+            if (existingConfig == null) {
                 return;
             }
-            CommonProxy.getDimensionConfigs(false).remove(targetID);
             conf.setDimID(targetID);
-            CommonProxy.getDimensionConfigs(false).put(targetID, conf);
+            existingConfig.copyFrom(conf);
+            existingConfig.update();
+            WorldServer targetWorld = DimensionManager.getWorld(targetID);
+            if (targetWorld != null && targetWorld.provider instanceof PWWorldProvider provider) {
+                provider.refreshConfigCache();
+            }
         } else {
             if (this.world.provider.getDimension() != 0) {
                 return;

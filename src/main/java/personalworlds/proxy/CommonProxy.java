@@ -23,7 +23,11 @@ import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -54,8 +58,9 @@ public class CommonProxy {
     private final TIntObjectHashMap<DimensionConfig> serverDimensionConfigs = new TIntObjectHashMap<>();
 
     public static TIntObjectHashMap<DimensionConfig> getDimensionConfigs(boolean isClient) {
-        if (isClient)
+        if (isClient) {
             return PersonalWorlds.proxy.clientDimensionConfigs;
+        }
         return PersonalWorlds.proxy.serverDimensionConfigs;
     }
 
@@ -68,6 +73,9 @@ public class CommonProxy {
         PWConfig.Values.presets = PWConfig.presets;
         PWConfig.Values.allowedBiomes = PWConfig.allowedBiomes;
         PWConfig.Values.allowedBlocks = PWConfig.allowedBlocks;
+        PWConfig.Values.allowedBoundaryBlocks = PWConfig.allowedBoundaryBlocks;
+        PWConfig.Values.allowedGapBlocks = PWConfig.allowedGapBlocks;
+        PWConfig.Values.allowedCenterBlocks = PWConfig.allowedCenterBlocks;
         MinecraftForge.EVENT_BUS.register(new WeatherSyncHandler());
     }
 
@@ -100,8 +108,7 @@ public class CommonProxy {
     @SubscribeEvent
     public void registerItems(RegistryEvent.Register<Item> e) {
         itemBlockPersonalPortal = new ItemBlock(blockPersonalPortal);
-        e.getRegistry()
-                .register(itemBlockPersonalPortal.setRegistryName(blockPersonalPortal.getRegistryName()));
+        e.getRegistry().register(itemBlockPersonalPortal.setRegistryName(blockPersonalPortal.getRegistryName()));
     }
 
     @SubscribeEvent
@@ -114,20 +121,17 @@ public class CommonProxy {
     @SubscribeEvent
     public void initRecipes(RegistryEvent.Register<IRecipe> r) {
         GameRegistry.addShapedRecipe(new ResourceLocation("portal_block"), new ResourceLocation(Values.ModID),
-                new ItemStack(CommonProxy.itemBlockPersonalPortal),
-                "QBQ", "SQS", "OOO",
-                'Q', Blocks.QUARTZ_BLOCK,
-                'S', Blocks.QUARTZ_STAIRS,
-                'O', Blocks.OBSIDIAN,
-                'B', Ingredient.fromItems(Items.BOOK));
+                new ItemStack(CommonProxy.itemBlockPersonalPortal), "QBQ", "SQS", "OOO", 'Q',
+                Blocks.QUARTZ_BLOCK, 'S', Blocks.QUARTZ_STAIRS, 'O', Blocks.OBSIDIAN, 'B',
+                Ingredient.fromItems(Items.BOOK));
     }
 
     @SubscribeEvent
     public void worldSave(WorldEvent.Save event) {
-        if (!(event.getWorld().provider instanceof PWWorldProvider PWWP)) {
+        if (!(event.getWorld().provider instanceof PWWorldProvider provider)) {
             return;
         }
-        DimensionConfig cfg = PWWP.getConfig();
+        DimensionConfig cfg = provider.getConfig();
         if (cfg == null || !cfg.needsSaving()) {
             return;
         }
@@ -194,17 +198,15 @@ public class CommonProxy {
 
         @SubscribeEvent(priority = EventPriority.HIGH)
         public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
-            if (event.getWorld().provider instanceof PWWorldProvider PWWP) {
+            if (event.getWorld().provider instanceof PWWorldProvider provider) {
                 if (!event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE)) {
-                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) ||
-                            event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM) ||
-                            !PWWP.getConfig().vegetationEnabled()) {
+                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL)
+                            || event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM)
+                            || !provider.getConfig().vegetationEnabled()) {
                         event.setResult(Event.Result.DENY);
                     }
-                } else {
-                    if (!PWWP.getConfig().generateTrees()) {
-                        event.setResult(Event.Result.DENY);
-                    }
+                } else if (!provider.getConfig().generateTrees()) {
+                    event.setResult(Event.Result.DENY);
                 }
             }
         }

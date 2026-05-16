@@ -44,7 +44,7 @@ public enum Packets {
     }
 
     public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, String name,
-                                                DimensionConfig dimensionConfig) {
+            DimensionConfig dimensionConfig) {
         PacketCustom pkt = new PacketCustom(Values.ModID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
         pkt.writeVarInt(dimID);
         pkt.writeVarInt(blockPos.getX());
@@ -57,8 +57,9 @@ public enum Packets {
 
     public void handleClientPacket(PacketCustom packet, Minecraft mc, INetHandlerPlayClient handler) {
         int id = packet.getType();
-        if (id >= PacketIds.values().length || id < 0)
+        if (id >= PacketIds.values().length || id < 0) {
             return;
+        }
 
         switch (PacketIds.values()[id]) {
             case UPDATE_WORLDLIST -> handleWorldList(packet);
@@ -69,8 +70,9 @@ public enum Packets {
 
     public void handleServerPacket(PacketCustom packet, EntityPlayerMP player, INetHandlerPlayServer handler) {
         int id = packet.getType();
-        if (id >= PacketIds.values().length || id < 0)
+        if (id >= PacketIds.values().length || id < 0) {
             return;
+        }
 
         switch (PacketIds.values()[id]) {
             case UPDATE_WORLDLIST -> {}
@@ -81,8 +83,8 @@ public enum Packets {
                 int z = packet.readVarInt();
                 String name = packet.readString();
                 DimensionConfig conf = DimensionConfig.readFromPacket(packet);
-                if (player != null && player.getServerWorld() != null &&
-                        player.getServerWorld().provider.getDimension() == dim) {
+                if (player != null && player.getServerWorld() != null
+                        && player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
                     if (te instanceof TilePersonalPortal tpp) {
                         tpp.updateSettings(player, conf, name);
@@ -112,13 +114,27 @@ public enum Packets {
                 return true;
             });
         }
-        pkt.writeVarInt(PWConfig.Values.allowedBlocks.length);
-        Arrays.stream(PWConfig.Values.allowedBlocks).forEach(pkt::writeString);
-        pkt.writeVarInt(PWConfig.Values.allowedBiomes.length);
-        Arrays.stream(PWConfig.Values.allowedBiomes).forEach(pkt::writeString);
-        pkt.writeVarInt(PWConfig.Values.presets.length);
-        Arrays.stream(PWConfig.Values.presets).forEach(pkt::writeString);
+        writeStringArray(pkt, PWConfig.Values.allowedBlocks);
+        writeStringArray(pkt, PWConfig.Values.allowedBoundaryBlocks);
+        writeStringArray(pkt, PWConfig.Values.allowedGapBlocks);
+        writeStringArray(pkt, PWConfig.Values.allowedCenterBlocks);
+        writeStringArray(pkt, PWConfig.Values.allowedBiomes);
+        writeStringArray(pkt, PWConfig.Values.presets);
         return pkt;
+    }
+
+    private static void writeStringArray(PacketCustom pkt, String[] values) {
+        pkt.writeVarInt(values.length);
+        Arrays.stream(values).forEach(pkt::writeString);
+    }
+
+    private static String[] readStringArray(PacketCustom pkt) {
+        int amount = pkt.readVarInt();
+        ArrayList<String> tmpList = new ArrayList<>(amount);
+        for (int i = 0; i < amount; ++i) {
+            tmpList.add(pkt.readString());
+        }
+        return tmpList.toArray(new String[0]);
     }
 
     private static void handleWorldList(PacketCustom pkt) {
@@ -128,23 +144,11 @@ public enum Packets {
             cfg.registerWithDimManager(true, false);
         }
 
-        int amount = pkt.readVarInt();
-        ArrayList<String> tmpList = new ArrayList<>(amount);
-        for (int i = 0; i < amount; ++i) {
-            tmpList.add(pkt.readString());
-        }
-        PWConfig.Values.allowedBlocks = tmpList.toArray(new String[0]);
-        amount = pkt.readVarInt();
-        tmpList = new ArrayList<>(amount);
-        for (int i = 0; i < amount; ++i) {
-            tmpList.add(pkt.readString());
-        }
-        PWConfig.Values.allowedBiomes = tmpList.toArray(new String[0]);
-        amount = pkt.readVarInt();
-        tmpList = new ArrayList<>(amount);
-        for (int i = 0; i < amount; ++i) {
-            tmpList.add(pkt.readString());
-        }
-        PWConfig.Values.presets = tmpList.toArray(new String[0]);
+        PWConfig.Values.allowedBlocks = readStringArray(pkt);
+        PWConfig.Values.allowedBoundaryBlocks = readStringArray(pkt);
+        PWConfig.Values.allowedGapBlocks = readStringArray(pkt);
+        PWConfig.Values.allowedCenterBlocks = readStringArray(pkt);
+        PWConfig.Values.allowedBiomes = readStringArray(pkt);
+        PWConfig.Values.presets = readStringArray(pkt);
     }
 }
