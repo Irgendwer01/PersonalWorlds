@@ -2,10 +2,7 @@ package personalworlds.gui;
 
 import static personalworlds.world.DimensionConfig.DaylightCycle.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -47,6 +44,7 @@ import com.cleanroommc.modularui.widgets.textfield.TextFieldWidget;
 import com.github.bsideup.jabel.Desugar;
 
 import personalworlds.PWConfig;
+import personalworlds.Values;
 import personalworlds.packet.Packets;
 import personalworlds.world.DimensionConfig;
 
@@ -83,7 +81,7 @@ public class PWGuiMUI {
     private final StringValue boundaryZValue = new StringValue("0");
     private final StringValue gapWidthValue = new StringValue("0");
     private final List<String> layers = new ArrayList<>();
-    private final ListWidget<IWidget, ?> layerListWidget = new ListWidget<>().top(58).left(310).size(22, 128);
+    private final ListWidget<IWidget, ?> layerListWidget = new ListWidget<>().top(58).left(306).size(22, 128);
 
     private DimensionConfig dimensionConfig;
     private Page page = Page.GENERAL;
@@ -100,7 +98,7 @@ public class PWGuiMUI {
 
     public ModularScreen createGUI() {
         initDimensionConfig();
-        ModularPanel panel = ModularPanel.defaultPanel("PWGUI");
+        ModularPanel panel = ModularPanel.defaultPanel("PWGUI_" + page.toString().toUpperCase(Locale.ROOT));
         panel.size(340, 230);
 
         panel.child(IKey.str(I18n.format("gui.personalWorld.name")).asWidget().top(7).left(7));
@@ -137,7 +135,7 @@ public class PWGuiMUI {
             case LAYOUT -> buildLayoutPage(panel);
             case MARKER -> buildMarkerPage(panel);
         }
-        return new ModularScreen(panel);
+        return new ModularScreen(Values.ModID, panel);
     }
 
     private void initDimensionConfig() {
@@ -172,7 +170,7 @@ public class PWGuiMUI {
                     if (targetPage != page) {
                         applyGridTextValues();
                         page = targetPage;
-                        reopen(panel);
+                        ClientGUI.open(createGUI());
                     }
                     return true;
                 });
@@ -220,18 +218,27 @@ public class PWGuiMUI {
                 .top(68).left(98)
                 .onUpdateListener(widget -> {
                     dimensionConfig.setSkyColor((skyR << 16) | (skyG << 8) | skyB);
-                    widget.overlay(new Rectangle().setColor(0xFF000000 | dimensionConfig.getSkyColor()));
+                    widget.overlay(new Rectangle().color(0xFF000000 | dimensionConfig.getSkyColor()));
                 })
                 .child(new Widget<>()
-                        .align(Alignment.TopRight)
+                        .leftRel(Alignment.TopRight.x)
+                        .anchorLeft(Alignment.TopRight.x)
+                        .topRel(Alignment.TopRight.y)
+                        .anchorTop(Alignment.TopRight.y)
                         .size(14, 14)
                         .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarsVisibility()))))
                 .child(new Widget<>()
-                        .align(Alignment.TopLeft)
+                        .leftRel(Alignment.TopLeft.x)
+                        .anchorLeft(Alignment.TopLeft.x)
+                        .topRel(Alignment.TopLeft.y)
+                        .anchorTop(Alignment.TopLeft.y)
                         .size(14, 14)
                         .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarsVisibility()))))
                 .child(new Widget<>()
-                        .align(Alignment.BottomCenter)
+                        .leftRel(Alignment.BottomCenter.x)
+                        .anchorLeft(Alignment.BottomCenter.x)
+                        .topRel(Alignment.BottomCenter.y)
+                        .anchorTop(Alignment.BottomCenter.y)
                         .size(14, 14)
                         .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarsVisibility())))));
 
@@ -260,7 +267,7 @@ public class PWGuiMUI {
             int itemMeta = block.damageDropped(blockState);
             int meta = block.getMetaFromState(blockState);
             ItemStack stack = new ItemStack(block, 1, itemMeta);
-            paletteButtons.add(new ButtonWidget<>().size(22, 22)
+            paletteButtons.add(new ButtonWidget<>().size(20, 20)
                     .overlay(new ItemDrawable(stack).asIcon().size(20, 20))
                     .addTooltipLine(stack.getDisplayName())
                     .onMousePressed(i -> {
@@ -271,10 +278,10 @@ public class PWGuiMUI {
         }
 
         panel.child(IKey.str(I18n.format("gui.personalWorld.palette")).asWidget().top(44).left(8));
-        panel.child(new ListWidget<>().children(paletteButtons).top(58).left(8).size(22, 128));
+        panel.child(new ListWidget<>().children(paletteButtons).top(58).left(8).size(24, 128));
         panel.child(IKey.str(I18n.format("gui.personalWorld.presets")).asWidget().top(44).left(42));
         panel.child(createPresetSelector(42, 58, 118));
-        panel.child(IKey.str(I18n.format("gui.personalWorld.layers")).asWidget().top(44).left(304));
+        panel.child(IKey.str(I18n.format("gui.personalWorld.layers")).asWidget().top(44).left(300));
         refreshLayerList();
         panel.child(layerListWidget);
     }
@@ -657,9 +664,15 @@ public class PWGuiMUI {
                     .overlay(new ItemDrawable(stack).asIcon().size(20, 20))
                     .addTooltipLine(stack.getDisplayName())
                     .child(IKey.str(Integer.toString(layerCount.get())).color(0xFFFFF).asWidget()
-                            .align(Alignment.BottomCenter))
+                            .leftRel(Alignment.BottomCenter.x)
+                            .anchorLeft(Alignment.BottomCenter.x)
+                            .topRel(Alignment.BottomCenter.y)
+                            .anchorTop(Alignment.BottomCenter.y))
                     .child(new ButtonWidget<>().size(6, 6)
-                            .align(Alignment.TopLeft)
+                            .leftRel(Alignment.TopLeft.x)
+                            .anchorLeft(Alignment.TopLeft.x)
+                            .topRel(Alignment.TopLeft.y)
+                            .anchorTop(Alignment.TopLeft.y)
                             .overlay(GuiTextures.ADD)
                             .addTooltipLine(I18n.format("gui.personalWorld.layers.increase"))
                             .onMousePressed(mouse -> {
@@ -669,7 +682,10 @@ public class PWGuiMUI {
                                 return true;
                             }))
                     .child(new ButtonWidget<>().size(6, 6)
-                            .align(Alignment.BottomLeft)
+                            .leftRel(Alignment.BottomLeft.x)
+                            .anchorLeft(Alignment.BottomLeft.x)
+                            .topRel(Alignment.BottomLeft.y)
+                            .anchorTop(Alignment.BottomLeft.y)
                             .overlay(GuiTextures.REMOVE)
                             .addTooltipLine(I18n.format("gui.personalWorld.layers.decrease"))
                             .onMousePressed(mouse -> {
@@ -682,7 +698,10 @@ public class PWGuiMUI {
                                 return true;
                             }))
                     .child(new ButtonWidget<>().size(6, 6)
-                            .align(Alignment.CenterLeft)
+                            .leftRel(Alignment.CenterLeft.x)
+                            .anchorLeft(Alignment.CenterLeft.x)
+                            .topRel(Alignment.CenterLeft.y)
+                            .anchorTop(Alignment.CenterLeft.y)
                             .overlay(GuiTextures.CROSS_TINY)
                             .addTooltipLine(I18n.format("gui.personalWorld.layers.remove"))
                             .onMousePressed(mouse -> {
@@ -690,8 +709,11 @@ public class PWGuiMUI {
                                 refreshLayerList();
                                 return true;
                             }))
-                    .childIf(arrowUp, new ButtonWidget<>().size(6, 6)
-                            .align(Alignment.TopRight)
+                    .childIf(arrowUp, () -> new ButtonWidget<>().size(6, 6)
+                            .leftRel(Alignment.TopRight.x)
+                            .anchorLeft(Alignment.TopRight.x)
+                            .topRel(Alignment.TopRight.y)
+                            .anchorTop(Alignment.TopRight.y)
                             .overlay(GuiTextures.MOVE_UP)
                             .addTooltipLine(I18n.format("gui.personalWorld.layers.moveUp"))
                             .onMousePressed(mouse -> {
@@ -699,8 +721,11 @@ public class PWGuiMUI {
                                 refreshLayerList();
                                 return true;
                             }))
-                    .childIf(arrowDown, new ButtonWidget<>().size(6, 6)
-                            .align(Alignment.BottomRight)
+                    .childIf(arrowDown, () -> new ButtonWidget<>().size(6, 6)
+                            .leftRel(Alignment.BottomRight.x)
+                            .anchorLeft(Alignment.BottomRight.x)
+                            .topRel(Alignment.BottomRight.y)
+                            .anchorTop(Alignment.BottomRight.y)
                             .overlay(GuiTextures.MOVE_DOWN)
                             .addTooltipLine(I18n.format("gui.personalWorld.layers.moveDown"))
                             .onMousePressed(mouse -> {
@@ -749,11 +774,6 @@ public class PWGuiMUI {
         } catch (Exception ignored) {
             return min;
         }
-    }
-
-    private void reopen(ModularPanel panel) {
-        panel.closeIfOpen();
-        ClientGUI.open(createGUI());
     }
 
     private String toPreset(List<String> layerList) {
