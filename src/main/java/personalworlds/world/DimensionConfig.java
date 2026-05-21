@@ -53,16 +53,16 @@ public class DimensionConfig {
 
     private int gapWidth = 0;
     private GapPreset gapPreset = GapPreset.ROAD;
-    private String gapBlockA = "minecraft:stonebrick";
+    private String gapBlockA = "minecraft:air";
     private int gapMetaA = 0;
-    private String gapBlockB = "minecraft:stone_slab";
+    private String gapBlockB = "minecraft:air";
     private int gapMetaB = 0;
-    private String gapBlockC = "minecraft:concrete";
+    private String gapBlockC = "minecraft:air";
     private int gapMetaC = 15;
 
     private boolean centerEnabled = false;
     private CenterDirection centerDirection = CenterDirection.SE;
-    private String centerBlock = "minecraft:concrete";
+    private String centerBlock = "minecraft:air";
     private int centerMeta = 14;
 
     public static final String PRESET_FLAT = "Flat;minecraft:bedrock,3*minecraft:dirt,minecraft:grass";
