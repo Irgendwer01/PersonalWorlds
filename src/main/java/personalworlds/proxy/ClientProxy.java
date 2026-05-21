@@ -46,6 +46,9 @@ public class ClientProxy extends CommonProxy {
         PWConfig.Values.presets = PWConfig.presets;
         PWConfig.Values.allowedBiomes = PWConfig.allowedBiomes;
         PWConfig.Values.allowedBlocks = PWConfig.allowedBlocks;
+        PWConfig.Values.allowedBoundaryBlocks = PWConfig.allowedBoundaryBlocks;
+        PWConfig.Values.allowedCenterBlocks = PWConfig.allowedCenterBlocks;
+        PWConfig.Values.allowedGapBlocks = PWConfig.allowedGapBlocks;
         unregisterDims(true);
     }
 }
