@@ -132,9 +132,9 @@ public class DimensionConfig {
                 }
             }
             this.vegetation = configNBT.getBoolean("vegetation");
-            this.allowGenerationChanges = configNBT.hasKey("allow_generation_changes")
-                    ? configNBT.getBoolean("allow_generation_changes")
-                    : configNBT.getBoolean("allow_configuration_changes");
+            this.allowGenerationChanges = configNBT.hasKey("allow_generation_changes") ?
+                    configNBT.getBoolean("allow_generation_changes") :
+                    configNBT.getBoolean("allow_configuration_changes");
             if (configNBT.hasKey("blocks") && !configNBT.getString("blocks").isEmpty()) {
                 this.layers = LayersFromString(configNBT.getString("blocks"));
             }
@@ -228,7 +228,8 @@ public class DimensionConfig {
             try {
                 config.createNewFile();
             } catch (IOException e) {
-                PersonalWorlds.log.error(String.format("Could not create config in %s! Error:", config.getAbsolutePath()));
+                PersonalWorlds.log
+                        .error(String.format("Could not create config in %s! Error:", config.getAbsolutePath()));
                 throw new RuntimeException(e);
             }
         }
@@ -644,7 +645,8 @@ public class DimensionConfig {
         int firstColon = trimmed.indexOf(':');
         if (lastColon > firstColon) {
             try {
-                return new BlockSelection(trimmed.substring(0, lastColon), Integer.parseInt(trimmed.substring(lastColon + 1)));
+                return new BlockSelection(trimmed.substring(0, lastColon),
+                        Integer.parseInt(trimmed.substring(lastColon + 1)));
             } catch (NumberFormatException ignored) {
                 return new BlockSelection(trimmed, 0);
             }

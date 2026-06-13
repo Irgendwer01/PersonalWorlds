@@ -167,7 +167,6 @@ public class CommonProxy {
         }
     }
 
-    @SuppressWarnings("deprecation")
     public static void unregisterDims(boolean isClient) {
         if (CommonProxy.getDimensionConfigs(isClient).isEmpty()) {
             return;
@@ -200,9 +199,9 @@ public class CommonProxy {
         public void onBiomeDecorate(DecorateBiomeEvent.Decorate event) {
             if (event.getWorld().provider instanceof PWWorldProvider provider) {
                 if (!event.getType().equals(DecorateBiomeEvent.Decorate.EventType.TREE)) {
-                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL)
-                            || event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM)
-                            || !provider.getConfig().vegetationEnabled()) {
+                    if (event.getType().equals(DecorateBiomeEvent.Decorate.EventType.FOSSIL) ||
+                            event.getType().equals(DecorateBiomeEvent.Decorate.EventType.CUSTOM) ||
+                            !provider.getConfig().vegetationEnabled()) {
                         event.setResult(Event.Result.DENY);
                     }
                 } else if (!provider.getConfig().generateTrees()) {

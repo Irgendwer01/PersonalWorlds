@@ -106,7 +106,8 @@ public class PWChunkGenerator implements IChunkGenerator {
         boolean hasA = boundaryBlockA != null && boundaryBlockA != Blocks.AIR;
         boolean hasB = boundaryBlockB != null && boundaryBlockB != Blocks.AIR;
 
-        if ((hasA || hasB) && !isGapChunkX && !isGapChunkZ && (isBoundaryX || prevBoundaryX || isBoundaryZ || prevBoundaryZ)) {
+        if ((hasA || hasB) && !isGapChunkX && !isGapChunkZ &&
+                (isBoundaryX || prevBoundaryX || isBoundaryZ || prevBoundaryZ)) {
             for (int localZ = 0; localZ < 16; localZ++) {
                 if (isBoundaryX) {
                     setStripeBlock(chunkPrimer, groundLevel, 0, localZ, chunkX, chunkZ, boundaryBlockA, boundaryMetaA,
@@ -133,8 +134,10 @@ public class PWChunkGenerator implements IChunkGenerator {
             Block centerBlock = dimensionConfig.getCenterBlockResolved();
             if (centerBlock != null && centerBlock != Blocks.AIR) {
                 DimensionConfig.CenterDirection dir = dimensionConfig.getCenterDirection();
-                int dirOffX = (dir == DimensionConfig.CenterDirection.SW || dir == DimensionConfig.CenterDirection.NW) ? -1 : 0;
-                int dirOffZ = (dir == DimensionConfig.CenterDirection.NE || dir == DimensionConfig.CenterDirection.NW) ? -1 : 0;
+                int dirOffX = (dir == DimensionConfig.CenterDirection.SW || dir == DimensionConfig.CenterDirection.NW) ?
+                        -1 : 0;
+                int dirOffZ = (dir == DimensionConfig.CenterDirection.NE || dir == DimensionConfig.CenterDirection.NW) ?
+                        -1 : 0;
                 int centerLocalX = intervalX * 8 + dirOffX;
                 int centerLocalZ = intervalZ * 8 + dirOffZ;
 
@@ -143,8 +146,8 @@ public class PWChunkGenerator implements IChunkGenerator {
                 if (modCX < intervalX && modCZ < intervalZ) {
                     int blockStartX = modCX * 16;
                     int blockStartZ = modCZ * 16;
-                    if (centerLocalX >= blockStartX && centerLocalX < blockStartX + 16
-                            && centerLocalZ >= blockStartZ && centerLocalZ < blockStartZ + 16) {
+                    if (centerLocalX >= blockStartX && centerLocalX < blockStartX + 16 && centerLocalZ >= blockStartZ &&
+                            centerLocalZ < blockStartZ + 16) {
                         int localX = centerLocalX - blockStartX;
                         int localZ = centerLocalZ - blockStartZ;
                         IBlockState state = dimensionConfig.stateFromSelection(dimensionConfig.getCenterBlock(),
@@ -159,7 +162,7 @@ public class PWChunkGenerator implements IChunkGenerator {
     }
 
     private void setStripeBlock(ChunkPrimer chunkPrimer, int groundLevel, int localX, int localZ, int chunkX,
-            int chunkZ, Block blockA, int metaA, Block blockB, int metaB) {
+                                int chunkZ, Block blockA, int metaA, Block blockB, int metaB) {
         int worldX = (chunkX << 4) + localX;
         int worldZ = (chunkZ << 4) + localZ;
         StripeBlock stripe = getStripeBlock(worldX, worldZ, blockA, metaA, blockB, metaB);
@@ -169,7 +172,8 @@ public class PWChunkGenerator implements IChunkGenerator {
     }
 
     private void generateGapInChunk(ChunkPrimer chunkPrimer, int chunkX, int chunkZ, int groundLevel,
-            boolean isGapX, boolean isGapZ, int periodX, int periodZ, int gapWidth, int intervalX, int intervalZ) {
+                                    boolean isGapX, boolean isGapZ, int periodX, int periodZ, int gapWidth,
+                                    int intervalX, int intervalZ) {
         IBlockState gapStateA = dimensionConfig.stateFromSelection(dimensionConfig.getGapBlockA(),
                 dimensionConfig.getGapMetaA());
         IBlockState gapStateB = dimensionConfig.stateFromSelection(dimensionConfig.getGapBlockB(),
@@ -224,7 +228,7 @@ public class PWChunkGenerator implements IChunkGenerator {
     }
 
     private IBlockState getRoadState(int offsetInGap, int alongRoad, int gapWidthBlocks, IBlockState baseState,
-            IBlockState stripeState, IBlockState dashState) {
+                                     IBlockState stripeState, IBlockState dashState) {
         boolean hasStripe = stripeState != null && stripeState.getBlock() != Blocks.AIR;
         boolean hasDash = dashState != null && dashState.getBlock() != Blocks.AIR;
         if (hasStripe && (offsetInGap == 0 || offsetInGap == gapWidthBlocks - 1)) {
@@ -315,7 +319,7 @@ public class PWChunkGenerator implements IChunkGenerator {
     @Nullable
     @Override
     public BlockPos getNearestStructurePos(World worldIn, String structureName, BlockPos position,
-            boolean findUnexplored) {
+                                           boolean findUnexplored) {
         return null;
     }
 

@@ -44,7 +44,7 @@ public enum Packets {
     }
 
     public PacketCustom sendChangeWorldSettings(int dimID, BlockPos blockPos, String name,
-            DimensionConfig dimensionConfig) {
+                                                DimensionConfig dimensionConfig) {
         PacketCustom pkt = new PacketCustom(Values.ModID, PacketIds.CHANGE_WORLD_SETTINGS.ordinal());
         pkt.writeVarInt(dimID);
         pkt.writeVarInt(blockPos.getX());
@@ -83,8 +83,8 @@ public enum Packets {
                 int z = packet.readVarInt();
                 String name = packet.readString();
                 DimensionConfig conf = DimensionConfig.readFromPacket(packet);
-                if (player != null && player.getServerWorld() != null
-                        && player.getServerWorld().provider.getDimension() == dim) {
+                if (player != null && player.getServerWorld() != null &&
+                        player.getServerWorld().provider.getDimension() == dim) {
                     TileEntity te = player.getServerWorld().getTileEntity(new BlockPos(x, y, z));
                     if (te instanceof TilePersonalPortal tpp) {
                         tpp.updateSettings(player, conf, name);

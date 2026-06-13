@@ -248,13 +248,15 @@ public class PWGuiMUI {
                         .onUpdateListener(widget -> widget.overlay(new Star(dimensionConfig.getStarsVisibility())))));
 
         addLabeledToggle(panel, 180, 44, "gui.personalWorld.trees", () -> dimensionConfig.generateTrees(),
-                () -> dimensionConfig.setGeneratingTrees(!dimensionConfig.generateTrees()), dimensionConfig.allowGenerationChanges());
+                () -> dimensionConfig.setGeneratingTrees(!dimensionConfig.generateTrees()),
+                dimensionConfig.allowGenerationChanges());
         addLabeledToggle(panel, 180, 68, "gui.personalWorld.clouds", () -> dimensionConfig.cloudsEnabled(),
                 () -> dimensionConfig.enableClouds(!dimensionConfig.cloudsEnabled()), true);
         addLabeledToggle(panel, 180, 92, "gui.personalWorld.peaceful_mobs", () -> dimensionConfig.spawnPassiveMobs(),
                 () -> dimensionConfig.setSpawnPassiveMobs(!dimensionConfig.spawnPassiveMobs()), true);
         addLabeledToggle(panel, 180, 116, "gui.personalWorld.vegetation", () -> dimensionConfig.vegetationEnabled(),
-                () -> dimensionConfig.setGeneratingVegetation(!dimensionConfig.vegetationEnabled()), dimensionConfig.allowGenerationChanges());
+                () -> dimensionConfig.setGeneratingVegetation(!dimensionConfig.vegetationEnabled()),
+                dimensionConfig.allowGenerationChanges());
         addLabeledToggle(panel, 180, 140, "gui.personalWorld.weather", () -> dimensionConfig.weatherEnabled(),
                 () -> dimensionConfig.enableWeather(!dimensionConfig.weatherEnabled()), true);
         addLabeledToggle(panel, 180, 164, "gui.personalWorld.hostile_mobs", () -> dimensionConfig.spawnMonsters(),
