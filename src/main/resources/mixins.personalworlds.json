@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "GameRegistryMixin"
+    "gregtech.MetaTileEntityGasCollectorMixin"
   ],
   "client": [],
   "server": []
